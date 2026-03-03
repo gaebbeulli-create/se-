@@ -185,7 +185,7 @@ const login=e=>{e?.preventDefault();setEr("");setLd(true);setTimeout(()=>{
   setU({name:found.name,role:found.role,org:found.org,email:found.email});SS.setItem("nw_u",JSON.stringify({name:found.name,role:found.role,org:found.org,email:found.email}));SS.setItem("nw_ch","home");setPg("app");setCh("home");setLd(false);},300);};
 const logout=()=>{setU(null);setPg("land");setEm("");setPw("");SS.removeItem("nw_u");SS.removeItem("nw_ch");};
 const fbtn=s=>({padding:"5px 10px",borderRadius:6,border:fil===s?"none":"1px solid #E5E7EB",background:fil===s?"#1E1E1E":"#fff",color:fil===s?"#fff":"#6B7280",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"});
-const mm={contracts:"c",inventory:"v",dispatch:"d",incidents:"i",claims:"cl",notices:"n",requests:"r",meetings:"m",schedule:"s",files:"f"};
+const mm={contracts:"c",inventory:"v",dispatch:"d",incidents:"i",claims:"cl",notices:"n",requests:"r",meetings:"m",schedule:"s",files:"f",settings:"user"};
 const sq=q.toLowerCase();
 const startEdit=(item,modal)=>{setFm({...item});setEditId(item.id);setMdl(modal);setDet(null);};
 const confirmDel=(msg)=>window.confirm(msg||"정말 삭제하시겠습니까?");
@@ -522,7 +522,7 @@ return <div key={item.p} onClick={()=>go(item.p)} style={{display:"flex",alignIt
 <span style={{fontSize:mob?16:18}}>{ci?.i||ai?.i}</span><span style={{fontSize:mob?14:16,fontWeight:700}}>{ci?.l||ai?.l}</span></div>
 <div style={{display:"flex",gap:5,alignItems:"center",width:mob?"100%":"auto"}}>
 <input value={q} onChange={e=>setQ(e.target.value)} placeholder="🔍 검색..." style={{padding:"6px 10px",borderRadius:7,border:"1px solid #E5E7EB",fontSize:12,flex:mob?1:"none",width:mob?"auto":150,fontFamily:"inherit"}}/>
-<button onClick={()=>{setFm({});setEditId(null);setMdl(mm[ch]);}} style={{padding:"6px 12px",borderRadius:7,border:"none",background:"#1E1E1E",fontSize:11.5,fontWeight:600,color:"#fff",cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}}>+ 작성</button>
+{(ch!=="settings"||(ch==="settings"&&isAdmin))&&<button onClick={()=>{setFm({});setEditId(null);setMdl(mm[ch]);}} style={{padding:"6px 12px",borderRadius:7,border:"none",background:"#1E1E1E",fontSize:11.5,fontWeight:600,color:"#fff",cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}}>{ch==="settings"?"+ 사용자 등록":"+ 작성"}</button>}
 </div></div>
 <div style={{flex:1,overflowY:"auto",padding:mob?12:16,background:"#F7F8FA"}}>{RC()}</div>
 </div>
