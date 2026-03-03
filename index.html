@@ -94,13 +94,41 @@ const td=new Date().toISOString().slice(0,10);
 const go=p=>{setCh(p);setQ("");setFil("전체");setDet(null);setEditId(null);setSideOpen(false);SS.setItem("nw_ch",p);};
 const isAdmin=u&&u.role==="관리자";
 
-const[contracts,setContracts]=useState(sC);const[vehicles,setVehicles]=useState(sV);const[dispatches,setDispatches]=useState(sD);const[incidents,setIncidents]=useState(sI);const[claims,setClaims]=useState(sCL);const[notices,setNotices]=useState(sN);const[requests,setRequests]=useState(sR);const[meetings,setMeetings]=useState(sM);const[schedule,setSchedule]=useState(sSc);const[files,setFiles]=useState(sFl);const[users,setUsers]=useState(initUsers);
+/* 데이터 영속성 - sessionStorage */
+const _load=(key,fb)=>{try{const v=SS.getItem("nw_"+key);return v?JSON.parse(v):fb;}catch(e){return fb;}};
+
+const[contracts,setContracts]=useState(()=>_load("ct",sC));
+const[vehicles,setVehicles]=useState(()=>_load("vh",sV));
+const[dispatches,setDispatches]=useState(()=>_load("dp",sD));
+const[incidents,setIncidents]=useState(()=>_load("ic",sI));
+const[claims,setClaims]=useState(()=>_load("cl",sCL));
+const[notices,setNotices]=useState(()=>_load("nt",sN));
+const[requests,setRequests]=useState(()=>_load("rq",sR));
+const[meetings,setMeetings]=useState(()=>_load("mt",sM));
+const[schedule,setSchedule]=useState(()=>_load("sc",sSc));
+const[files,setFiles]=useState(()=>_load("fl",sFl));
+const[users,setUsers]=useState(()=>_load("us",initUsers));
+
+/* 변경 감지 → 자동 저장 */
+useEffect(()=>{SS.setItem("nw_ct",JSON.stringify(contracts));},[contracts]);
+useEffect(()=>{SS.setItem("nw_vh",JSON.stringify(vehicles));},[vehicles]);
+useEffect(()=>{SS.setItem("nw_dp",JSON.stringify(dispatches));},[dispatches]);
+useEffect(()=>{SS.setItem("nw_ic",JSON.stringify(incidents));},[incidents]);
+useEffect(()=>{SS.setItem("nw_cl",JSON.stringify(claims));},[claims]);
+useEffect(()=>{SS.setItem("nw_nt",JSON.stringify(notices));},[notices]);
+useEffect(()=>{SS.setItem("nw_rq",JSON.stringify(requests));},[requests]);
+useEffect(()=>{SS.setItem("nw_mt",JSON.stringify(meetings));},[meetings]);
+useEffect(()=>{SS.setItem("nw_sc",JSON.stringify(schedule));},[schedule]);
+useEffect(()=>{SS.setItem("nw_fl",JSON.stringify(files));},[files]);
+useEffect(()=>{SS.setItem("nw_us",JSON.stringify(users));},[users]);
 
 /* 토스트 알림 시스템 */
 const[toasts,setToasts]=useState([]);
 /* 댓글 & 이모지 리액션 시스템 */
-const[comments,setComments]=useState({});/* {channelKey_id: [{id,au,txt,dt,ts}]} */
-const[reactions,setReactions]=useState({});/* {channelKey_id: {emoji: [userName,...]}} */
+const[comments,setComments]=useState(()=>_load("cmt",{}));/* {channelKey_id: [{id,au,txt,dt,ts}]} */
+const[reactions,setReactions]=useState(()=>_load("rxn",{}));/* {channelKey_id: {emoji: [userName,...]}} */
+useEffect(()=>{SS.setItem("nw_cmt",JSON.stringify(comments));},[comments]);
+useEffect(()=>{SS.setItem("nw_rxn",JSON.stringify(reactions));},[reactions]);
 
 const EMOJIS=["👍","❤️","🔥","👏","😊","✅","❓","👀","🎉","💯"];
 const ik=(ch,id)=>ch+"_"+id;/* item key */
