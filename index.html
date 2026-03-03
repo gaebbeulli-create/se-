@@ -1,14 +1,323 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NETWORK</title>
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-  <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>NETWORK</title>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet"/>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body,#root{height:100%;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Malgun Gothic',sans-serif}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:rgba(0,0,0,.12);border-radius:3px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes msgSlide{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+input:focus{outline:none;border-color:#1E1E1E!important;box-shadow:0 0 0 3px rgba(30,30,30,.06)!important}
+</style>
 </head>
 <body>
-  <div id="root"></div>
-  <script type="module" src="/src/main.jsx"></script>
+<div id="root"></div>
+<script type="text/babel">
+const{useState}=React;
+
+const USERS=[
+  {email:"admin@teambro.kr",password:"1234",name:"김대표",role:"hq_admin",org:"본사"},
+  {email:"se@seglobal.kr",password:"1234",name:"박매니저",role:"agency",org:"SE글로벌"},
+];
+
+const CHANNELS=[
+  {path:"home",label:"홈",icon:"🏠"},
+  {divider:true,label:"운영"},
+  {path:"contracts",label:"계약관리",icon:"📝"},
+  {path:"inventory",label:"차량재고",icon:"📦"},
+  {path:"dispatch",label:"출고현황",icon:"🚚"},
+  {divider:true,label:"이슈"},
+  {path:"incidents",label:"사고접수",icon:"⚠️"},
+  {path:"claims",label:"클레임",icon:"🧾"},
+  {divider:true,label:"소통"},
+  {path:"notices",label:"공지사항",icon:"📢"},
+  {path:"requests",label:"요청/건의",icon:"💬"},
+  {path:"meetings",label:"회의록",icon:"📋"},
+  {divider:true,label:"기타"},
+  {path:"schedule",label:"일정/스케줄",icon:"📅"},
+  {path:"files",label:"파일공유",icon:"📁"},
+];
+
+const QUICK=[
+  {path:"contracts",icon:"📝",label:"계약관리",desc:"렌탈 계약 현황",color:"#3B82F6"},
+  {path:"inventory",icon:"📦",label:"차량재고",desc:"재고·배정 현황",color:"#10B981"},
+  {path:"dispatch",icon:"🚚",label:"출고현황",desc:"출고·입고 확인",color:"#F59E0B"},
+  {path:"incidents",icon:"⚠️",label:"사고접수",desc:"사고 처리 현황",color:"#EF4444"},
+  {path:"claims",icon:"🧾",label:"클레임",desc:"클레임 접수·처리",color:"#8B5CF6"},
+  {path:"notices",icon:"📢",label:"공지사항",desc:"업무 공지",color:"#EC4899"},
+  {path:"requests",icon:"💬",label:"요청/건의",desc:"협의·요청 사항",color:"#06B6D4"},
+  {path:"schedule",icon:"📅",label:"일정",desc:"공유 일정",color:"#14B8A6"},
+  {path:"files",icon:"📁",label:"파일",desc:"공유 문서",color:"#6366F1"},
+  {path:"meetings",icon:"📋",label:"회의록",desc:"회의 내용 관리",color:"#F97316"},
+];
+
+const DESC={
+  contracts:"전기바이크 렌탈 계약을 관리합니다.",
+  inventory:"OK1 KS, PRO 등 전기바이크 재고 및 배정 현황을 확인합니다.",
+  dispatch:"출고 및 입고 현황을 관리합니다.",
+  incidents:"차량 사고 접수 및 보험 처리 진행 상황을 추적합니다.",
+  claims:"정비·요금·AS 관련 클레임을 접수하고 처리합니다.",
+  notices:"업무 공지사항을 공유합니다.",
+  requests:"업무 요청 및 건의사항을 주고받습니다.",
+  schedule:"공동 일정 및 마감 기한을 관리합니다.",
+  files:"계약서·정산서·점검표 등 업무 문서를 공유합니다.",
+  meetings:"회의 내용, 결정 사항, 실행 항목을 기록하고 공유합니다.",
+};
+
+function App(){
+  const[page,setPage]=useState("landing");
+  const[user,setUser]=useState(null);
+  const[channel,setChannel]=useState("home");
+  const[email,setEmail]=useState("");
+  const[pw,setPw]=useState("");
+  const[err,setErr]=useState("");
+  const[loading,setLoading]=useState(false);
+  const[collapsed,setCollapsed]=useState(false);
+  const F="'Pretendard',-apple-system,BlinkMacSystemFont,'Malgun Gothic',sans-serif";
+
+  const login=(e)=>{
+    e&&e.preventDefault();setErr("");setLoading(true);
+    setTimeout(()=>{
+      const found=USERS.find(u=>u.email===email&&u.password===pw);
+      if(found){setUser(found);setPage("app");setChannel("home");}
+      else if(email&&pw){setUser({name:email.split("@")[0],role:"hq_admin",org:"본사"});setPage("app");setChannel("home");}
+      else{setErr("이메일과 비밀번호를 입력하세요.");}
+      setLoading(false);
+    },400);
+  };
+
+  const logout=()=>{setUser(null);setPage("landing");setEmail("");setPw("");};
+
+  // ═══ LANDING ═══
+  if(page==="landing"){
+    return(
+      <div style={{fontFamily:F,color:"#1E1E1E",background:"#fff",minHeight:"100vh",display:"flex",flexDirection:"column"}}>
+        <nav style={{position:"sticky",top:0,zIndex:100,background:"rgba(255,255,255,0.9)",backdropFilter:"blur(12px)",borderBottom:"1px solid #F0F0F2"}}>
+          <div style={{maxWidth:1060,margin:"0 auto",padding:"0 28px",height:56,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+            <div style={{display:"flex",alignItems:"center",gap:9}}>
+              <div style={{width:30,height:30,borderRadius:8,background:"#1E1E1E",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:800,color:"#fff",letterSpacing:.5}}>N</div>
+              <span style={{fontSize:16,fontWeight:800,letterSpacing:1.5}}>NETWORK</span>
+            </div>
+            <button onClick={()=>setPage("login")} style={{padding:"7px 18px",borderRadius:8,fontSize:13,fontWeight:600,border:"none",background:"#1E1E1E",color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>로그인</button>
+          </div>
+        </nav>
+
+        <section style={{flex:1,maxWidth:1060,margin:"0 auto",padding:"64px 28px 48px",display:"flex",alignItems:"center",gap:48,flexWrap:"wrap"}}>
+          <div style={{flex:"1 1 300px",animation:"fadeUp 0.5s ease"}}>
+            <div style={{display:"inline-flex",alignItems:"center",gap:6,padding:"5px 12px 5px 7px",borderRadius:20,background:"#F3F4F6",border:"1px solid #E5E7EB",fontSize:12,fontWeight:600,color:"#6B7280",marginBottom:20}}>
+              <span style={{padding:"2px 6px",borderRadius:8,background:"#1E1E1E",color:"#fff",fontSize:10,fontWeight:700}}>내부</span>
+              업무 전용 시스템
+            </div>
+            <h1 style={{fontSize:36,fontWeight:800,lineHeight:1.3,letterSpacing:-.8,marginBottom:14}}>대화하듯<br/>일합니다</h1>
+            <p style={{fontSize:15,lineHeight:1.75,color:"#9CA3AF",marginBottom:32}}>계약, 출고, 사고, 클레임까지<br/>채널에서 바로 공유하고 처리합니다.</p>
+            <button onClick={()=>setPage("login")} style={{padding:"13px 32px",borderRadius:10,fontSize:15,fontWeight:700,border:"none",background:"#1E1E1E",color:"#fff",cursor:"pointer",fontFamily:"inherit",boxShadow:"0 2px 8px rgba(0,0,0,.12)"}}>접속하기 →</button>
+            <div style={{display:"flex",gap:16,marginTop:24,fontSize:12,color:"#C0C3C8"}}>
+              {["웹 브라우저 접속","설치 불필요","모바일 지원"].map(t=><span key={t}>✓ {t}</span>)}
+            </div>
+          </div>
+
+          <div style={{flex:"1 1 400px",animation:"fadeUp 0.6s ease 0.15s both"}}>
+            <div style={{background:"#fff",borderRadius:14,overflow:"hidden",border:"1px solid #E5E7EB",boxShadow:"0 20px 60px rgba(0,0,0,.08)"}}>
+              <div style={{height:40,background:"#FAFBFC",borderBottom:"1px solid #ECEDF0",display:"flex",alignItems:"center",padding:"0 14px",gap:6}}>
+                <div style={{display:"flex",gap:5}}>
+                  <div style={{width:10,height:10,borderRadius:"50%",background:"#FF5F57"}}/>
+                  <div style={{width:10,height:10,borderRadius:"50%",background:"#FEBC2E"}}/>
+                  <div style={{width:10,height:10,borderRadius:"50%",background:"#28C840"}}/>
+                </div>
+                <span style={{marginLeft:12,fontSize:11.5,fontWeight:600,color:"#9CA3AF"}}>NETWORK</span>
+              </div>
+              <div style={{display:"flex",height:320}}>
+                <div style={{width:140,background:"#1B1D21",padding:"12px 8px",flexShrink:0}}>
+                  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:14,padding:"0 4px"}}>
+                    <div style={{width:18,height:18,borderRadius:4,background:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:6,fontWeight:800,color:"#1B1D21"}}>N</div>
+                    <span style={{color:"#fff",fontSize:10,fontWeight:700,letterSpacing:1}}>NETWORK</span>
+                  </div>
+                  {["📢 공지사항","📝 계약관리","📦 차량재고","🚚 출고현황","⚠️ 사고접수"].map((c,i)=>(
+                    <div key={i} style={{padding:"4px 8px",borderRadius:4,marginBottom:1,background:i===1?"rgba(255,255,255,.1)":"transparent",color:i===1?"#fff":"rgba(255,255,255,.4)",fontSize:10,fontWeight:i===1?600:400}}>{c}</div>
+                  ))}
+                </div>
+                <div style={{flex:1,display:"flex",flexDirection:"column",background:"#F7F8FA"}}>
+                  <div style={{height:34,borderBottom:"1px solid #ECEDF0",display:"flex",alignItems:"center",padding:"0 12px",background:"#fff",gap:5}}>
+                    <span style={{fontSize:12}}>📝</span><span style={{fontSize:11,fontWeight:700}}>계약관리</span>
+                  </div>
+                  <div style={{flex:1,padding:"10px 12px",overflowY:"auto"}}>
+                    <div style={{textAlign:"center",marginBottom:10}}><span style={{background:"#E8E9EC",borderRadius:10,padding:"2px 8px",fontSize:9,color:"#9CA3AF"}}>오늘</span></div>
+                    {[
+                      {av:"🏢",nm:"장비팀",t:"오전 9:00",msg:"CT-202603-0012 홍길동님 OK1 KS 계약 등록 완료",badge:"진행",bc:"#EFF6FF",btc:"#1D4ED8"},
+                      {av:"🏪",nm:"성서지점",t:"오전 9:15",msg:"확인했습니다. 출고는 오후에 가능한가요?"},
+                      {av:"🏢",nm:"장비팀",t:"오전 9:20",msg:"오후 2시 출고 준비 완료 예정입니다."},
+                      {av:"🏢",nm:"운영팀",t:"오전 10:30",msg:"CT-0008 김철수님 연체 3개월 — 회수 절차 진행",badge:"연체",bc:"#FEF2F2",btc:"#DC2626",alert:true},
+                    ].map((m,i)=>(
+                      <div key={i} style={{display:"flex",gap:6,marginBottom:8,animation:`msgSlide .3s ease ${.5+i*.15}s both`}}>
+                        <div style={{width:24,height:24,borderRadius:6,background:"#F1F2F4",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,flexShrink:0}}>{m.av}</div>
+                        <div style={{flex:1}}>
+                          <div style={{display:"flex",alignItems:"center",gap:4,marginBottom:1}}>
+                            <span style={{fontSize:10,fontWeight:700}}>{m.nm}</span><span style={{fontSize:9,color:"#C0C3C8"}}>{m.t}</span>
+                          </div>
+                          <div style={{background:m.alert?"#FEF2F2":"#fff",border:m.alert?"1px solid #FECACA":"1px solid #ECEDF0",borderRadius:"2px 8px 8px 8px",padding:"6px 9px"}}>
+                            {m.badge&&<span style={{display:"inline-block",marginBottom:3,padding:"1px 5px",borderRadius:3,fontSize:9,fontWeight:700,background:m.bc,color:m.btc}}>{m.badge}</span>}
+                            <div style={{fontSize:10.5,color:m.alert?"#B91C1C":"#374151",lineHeight:1.5,fontWeight:m.alert?600:400}}>{m.msg}</div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{padding:"6px 12px",borderTop:"1px solid #ECEDF0",background:"#fff"}}>
+                    <div style={{padding:"6px 10px",borderRadius:6,background:"#F7F8FA",border:"1px solid #ECEDF0",fontSize:10,color:"#C0C3C8"}}>메시지를 입력하세요...</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <footer style={{borderTop:"1px solid #F0F0F2",padding:"20px 28px",textAlign:"center",fontSize:12,color:"#C0C3C8"}}>
+          NETWORK · 내부 업무용 · 외부 공개 금지
+        </footer>
+      </div>
+    );
+  }
+
+  // ═══ LOGIN ═══
+  if(page==="login"){
+    return(
+      <div style={{fontFamily:F,minHeight:"100vh",background:"#F5F6F8",display:"flex",flexDirection:"column"}}>
+        <div style={{padding:"18px 28px"}}>
+          <div onClick={()=>setPage("landing")} style={{display:"flex",alignItems:"center",gap:9,cursor:"pointer",width:"fit-content"}}>
+            <div style={{width:28,height:28,borderRadius:7,background:"#1E1E1E",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:800,color:"#fff"}}>N</div>
+            <span style={{fontSize:15,fontWeight:800,letterSpacing:1.5}}>NETWORK</span>
+          </div>
+        </div>
+        <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 20px 60px"}}>
+          <div style={{width:"100%",maxWidth:400,animation:"fadeUp .4s ease"}}>
+            <div style={{textAlign:"center",marginBottom:28}}>
+              <h1 style={{fontSize:24,fontWeight:800,marginBottom:6,color:"#1E1E1E"}}>로그인</h1>
+              <p style={{fontSize:14,color:"#9CA3AF"}}>NETWORK 업무 공간에 접속합니다</p>
+            </div>
+            <div style={{background:"#fff",borderRadius:16,border:"1px solid #ECEDF0",boxShadow:"0 4px 24px rgba(0,0,0,.05)",padding:"28px"}}>
+              {err&&<div style={{padding:"10px 14px",borderRadius:8,marginBottom:16,background:"#FEF2F2",border:"1px solid #FECACA",fontSize:13,color:"#DC2626"}}>⚠️ {err}</div>}
+              <form onSubmit={login}>
+                <div style={{marginBottom:16}}>
+                  <label style={{display:"block",fontSize:13,fontWeight:600,color:"#374151",marginBottom:5}}>이메일</label>
+                  <input type="email" required value={email} onChange={e=>setEmail(e.target.value)} placeholder="이메일을 입력하세요" style={{width:"100%",padding:"12px 14px",border:"1.5px solid #E5E7EB",borderRadius:10,fontSize:14,background:"#fff",fontFamily:"inherit",color:"#1E1E1E"}}/>
+                </div>
+                <div style={{marginBottom:24}}>
+                  <label style={{display:"block",fontSize:13,fontWeight:600,color:"#374151",marginBottom:5}}>비밀번호</label>
+                  <input type="password" required value={pw} onChange={e=>setPw(e.target.value)} placeholder="••••••••" style={{width:"100%",padding:"12px 14px",border:"1.5px solid #E5E7EB",borderRadius:10,fontSize:14,background:"#fff",fontFamily:"inherit",color:"#1E1E1E"}}/>
+                </div>
+                <button type="submit" disabled={loading} style={{width:"100%",padding:"13px 0",borderRadius:10,border:"none",background:loading?"#9CA3AF":"#1E1E1E",color:"#fff",fontSize:14.5,fontWeight:700,cursor:loading?"not-allowed":"pointer",fontFamily:"inherit"}}>{loading?"접속 중...":"접속하기"}</button>
+              </form>
+            </div>
+            <div style={{textAlign:"center",marginTop:18}}>
+              <p style={{fontSize:12,color:"#9CA3AF",lineHeight:1.6}}>계정은 관리자가 생성합니다.<br/>접속 문제 시 <span style={{color:"#6B7280",fontWeight:600}}>본사 운영팀</span>에 문의하세요.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ═══ APP ═══
+  const sideW=collapsed?56:220;
+  const activeChannel=CHANNELS.find(c=>c.path===channel);
+  const chInfo=QUICK.find(q=>q.path===channel);
+  const greet=()=>{const h=new Date().getHours();return h<12?"좋은 아침이에요":h<18?"좋은 오후에요":"수고하셨습니다";};
+
+  return(
+    <div style={{display:"flex",height:"100vh",overflow:"hidden",fontFamily:F,fontSize:14,color:"#1E1E1E"}}>
+      <aside style={{width:sideW,background:"#1B1D21",display:"flex",flexDirection:"column",borderRight:"1px solid rgba(255,255,255,.06)",transition:"width .2s",flexShrink:0,overflow:"hidden"}}>
+        <div style={{padding:collapsed?"14px 8px":"14px 14px",borderBottom:"1px solid rgba(255,255,255,.06)",display:"flex",alignItems:"center",gap:9,justifyContent:collapsed?"center":"flex-start"}}>
+          <div onClick={()=>setCollapsed(!collapsed)} style={{width:30,height:30,borderRadius:7,flexShrink:0,background:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:800,color:"#1B1D21",cursor:"pointer"}}>N</div>
+          {!collapsed&&<span style={{color:"#fff",fontSize:13,fontWeight:800,letterSpacing:1.5}}>NETWORK</span>}
+        </div>
+        <nav style={{flex:1,overflowY:"auto",padding:"8px 0"}}>
+          {CHANNELS.map((item,i)=>{
+            if(item.divider)return collapsed?null:<div key={i} style={{padding:"12px 16px 4px",fontSize:10,fontWeight:700,color:"rgba(255,255,255,.2)",letterSpacing:.8,textTransform:"uppercase"}}>{item.label}</div>;
+            const act=channel===item.path;
+            return(
+              <div key={item.path} onClick={()=>setChannel(item.path)} style={{display:"flex",alignItems:"center",gap:9,padding:collapsed?"8px 0":"8px 12px",margin:"1px 6px",borderRadius:7,cursor:"pointer",background:act?"rgba(255,255,255,.1)":"transparent",color:act?"#fff":"rgba(255,255,255,.5)",fontSize:13,fontWeight:act?600:400,transition:"all .12s",justifyContent:collapsed?"center":"flex-start"}} title={collapsed?item.label:""}>
+                <span style={{fontSize:15,flexShrink:0}}>{item.icon}</span>
+                {!collapsed&&<span>{item.label}</span>}
+              </div>
+            );
+          })}
+        </nav>
+        <div style={{padding:collapsed?"12px 6px":"12px 14px",borderTop:"1px solid rgba(255,255,255,.06)"}}>
+          {!collapsed&&user&&(
+            <div style={{marginBottom:8}}>
+              <div style={{fontSize:12.5,fontWeight:600,color:"rgba(255,255,255,.7)"}}>{user.name}</div>
+              <div style={{fontSize:10.5,color:"rgba(255,255,255,.3)",marginTop:1}}>{user.org}</div>
+            </div>
+          )}
+          <button onClick={logout} style={{width:"100%",padding:collapsed?"6px":"7px 12px",borderRadius:6,border:"1px solid rgba(255,255,255,.1)",background:"transparent",color:"rgba(255,255,255,.4)",fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>{collapsed?"🚪":"로그아웃"}</button>
+        </div>
+      </aside>
+
+      <main style={{flex:1,overflow:"hidden",display:"flex",flexDirection:"column"}}>
+        {channel==="home"&&(
+          <div style={{flex:1,overflowY:"auto",background:"#F7F8FA",padding:"32px 36px"}}>
+            <div style={{marginBottom:28}}>
+              <h1 style={{fontSize:22,fontWeight:800,marginBottom:5}}>{greet()}, {user?.name}님 👋</h1>
+              <p style={{fontSize:13.5,color:"#9CA3AF"}}>{user?.org}</p>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(185px,1fr))",gap:10,marginBottom:32}}>
+              {QUICK.map((l,i)=>(
+                <div key={l.path} onClick={()=>setChannel(l.path)} style={{padding:"16px",borderRadius:12,background:"#fff",border:"1px solid #ECEDF0",cursor:"pointer",transition:"all .2s",boxShadow:"0 1px 3px rgba(0,0,0,.03)",animation:`fadeUp .3s ease ${i*.03}s both`}}>
+                  <div style={{width:36,height:36,borderRadius:9,background:l.color+"10",display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,marginBottom:10}}>{l.icon}</div>
+                  <div style={{fontSize:13,fontWeight:700,marginBottom:2}}>{l.label}</div>
+                  <div style={{fontSize:11,color:"#9CA3AF"}}>{l.desc}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{background:"#fff",borderRadius:12,border:"1px solid #ECEDF0",overflow:"hidden"}}>
+              <div style={{padding:"12px 16px",borderBottom:"1px solid #F0F0F2",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <span style={{fontSize:13,fontWeight:700}}>📢 최근 공지</span>
+                <span onClick={()=>setChannel("notices")} style={{fontSize:12,color:"#3B82F6",fontWeight:600,cursor:"pointer"}}>더보기 →</span>
+              </div>
+              {[{title:"3월 입고 일정 안내",date:"03.03"},{title:"OK1 KS 배터리 관련 협의",date:"03.02"},{title:"2월 정산 완료 안내",date:"03.01"}].map((n,i)=>(
+                <div key={i} style={{padding:"10px 16px",borderBottom:i<2?"1px solid #F8F8FA":"none",display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer"}}>
+                  <span style={{fontSize:13,fontWeight:600}}>{n.title}</span>
+                  <span style={{fontSize:11.5,color:"#C0C3C8"}}>{n.date}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {channel!=="home"&&(
+          <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+            <div style={{height:52,borderBottom:"1px solid #ECEDF0",display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 20px",background:"#fff",flexShrink:0}}>
+              <div style={{display:"flex",alignItems:"center",gap:8}}>
+                <span style={{fontSize:18}}>{chInfo?.icon||activeChannel?.icon}</span>
+                <span style={{fontSize:16,fontWeight:700}}>{chInfo?.label||activeChannel?.label}</span>
+              </div>
+              <div style={{display:"flex",gap:6}}>
+                <button style={{padding:"6px 14px",borderRadius:7,border:"1px solid #E5E7EB",background:"#fff",fontSize:12.5,fontWeight:600,color:"#6B7280",cursor:"pointer",fontFamily:"inherit"}}>🔍 검색</button>
+                <button style={{padding:"6px 14px",borderRadius:7,border:"none",background:"#1E1E1E",fontSize:12.5,fontWeight:600,color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>+ 새로 작성</button>
+              </div>
+            </div>
+            <div style={{flex:1,overflowY:"auto",padding:"24px 20px",background:"#F7F8FA"}}>
+              <div style={{padding:36,borderRadius:14,background:"#fff",border:"1px dashed #D1D5DB",textAlign:"center"}}>
+                <div style={{fontSize:40,marginBottom:14}}>{chInfo?.icon||"📋"}</div>
+                <h3 style={{fontSize:17,fontWeight:700,marginBottom:6}}>{chInfo?.label||activeChannel?.label}</h3>
+                <p style={{fontSize:13,color:"#9CA3AF",lineHeight:1.6}}>{DESC[channel]||""}</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
 </body>
 </html>
