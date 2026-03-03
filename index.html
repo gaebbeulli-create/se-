@@ -14,6 +14,7 @@
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet"/>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -52,27 +53,17 @@ function Mdl({open,onClose,title,children,mob}){if(!open)return null;return(<div
 const CHS=[{p:"home",l:"홈",i:"🏠"},{d:1,l:"운영"},{p:"contracts",l:"계약관리",i:"📝"},{p:"inventory",l:"차량재고",i:"📦"},{p:"dispatch",l:"출고현황",i:"🚚"},{d:1,l:"이슈"},{p:"incidents",l:"사고접수",i:"⚠️"},{p:"claims",l:"클레임",i:"🧾"},{d:1,l:"소통"},{p:"notices",l:"공지사항",i:"📢"},{p:"requests",l:"요청/건의",i:"💬"},{p:"meetings",l:"회의록",i:"📋"},{d:1,l:"기타"},{p:"schedule",l:"일정/스케줄",i:"📅"},{p:"files",l:"파일공유",i:"📁"}];
 const QK=[{p:"contracts",i:"📝",l:"계약관리",d:"렌탈 계약 현황",c:"#3B82F6"},{p:"inventory",i:"📦",l:"차량재고",d:"재고·배정 현황",c:"#10B981"},{p:"dispatch",i:"🚚",l:"출고현황",d:"출고·입고 확인",c:"#F59E0B"},{p:"incidents",i:"⚠️",l:"사고접수",d:"사고 처리 현황",c:"#EF4444"},{p:"claims",i:"🧾",l:"클레임",d:"클레임 접수·처리",c:"#8B5CF6"},{p:"notices",i:"📢",l:"공지사항",d:"업무 공지",c:"#EC4899"},{p:"requests",i:"💬",l:"요청/건의",d:"협의·요청 사항",c:"#06B6D4"},{p:"schedule",i:"📅",l:"일정",d:"공유 일정",c:"#14B8A6"},{p:"files",i:"📁",l:"파일",d:"공유 문서",c:"#6366F1"},{p:"meetings",i:"📋",l:"회의록",d:"회의 내용 관리",c:"#F97316"}];
 
-const initUsers=[
-{id:1,email:"admin@teambro.kr",pw:"1234",name:"김대표",role:"관리자",org:"본사",phone:"010-0000-0000",active:true},
-{id:2,email:"se@seglobal.kr",pw:"1234",name:"박매니저",role:"유저",org:"SE글로벌",phone:"010-1234-5678",active:true},
-];
-
-const sC=[{id:1,no:"CT-0001",nm:"홍길동",ph:"010-1111-2222",md:"OK1 KS",vn:"대구1-1234",s:"2026-01-15",e:"2027-01-14",fee:180000,dep:200000,up:0,st:"진행",loc:"성서"},{id:2,no:"CT-0002",nm:"김철수",ph:"010-3333-4444",md:"OK1 PRO",vn:"대구2-5678",s:"2025-12-01",e:"2026-11-30",fee:220000,dep:200000,up:660000,st:"연체",loc:"달서"},{id:3,no:"CT-0003",nm:"이영희",ph:"010-5555-6666",md:"OK1 KS",vn:"대구3-9012",s:"2026-02-01",e:"2027-01-31",fee:180000,dep:200000,up:0,st:"진행",loc:"북구"},{id:4,no:"CT-0004",nm:"박민수",ph:"010-7777-8888",md:"OK1 PRO",vn:"대구4-3456",s:"2025-06-01",e:"2026-05-31",fee:220000,dep:200000,up:0,st:"만료",loc:"수성"},{id:5,no:"CT-0005",nm:"정수연",ph:"010-9999-0000",md:"OK1 KS",vn:"대구5-7890",s:"2026-03-01",e:"2027-02-28",fee:180000,dep:200000,up:0,st:"진행",loc:"성서"}];
-const sV=[{id:1,vn:"대구1-1234",md:"OK1 KS",st:"대여중",loc:"성서",ck:"2026-02-15"},{id:2,vn:"대구2-5678",md:"OK1 PRO",st:"대여중",loc:"달서",ck:"2026-01-20"},{id:3,vn:"대구3-9012",md:"OK1 KS",st:"대여중",loc:"북구",ck:"2026-02-28"},{id:4,vn:"대구4-3456",md:"OK1 PRO",st:"가용",loc:"본사",ck:"2026-03-01"},{id:5,vn:"대구5-7890",md:"OK1 KS",st:"대여중",loc:"성서",ck:"2026-02-20"},{id:6,vn:"대구6-1111",md:"OK1 KS",st:"정비중",loc:"본사",ck:"2026-02-10"},{id:7,vn:"대구7-2222",md:"OK1 PRO",st:"가용",loc:"본사",ck:"2026-03-02"}];
-const sD=[{id:1,no:"DP-001",dt:"2026-03-03",tg:"SE글로벌 성서",vh:"OK1 KS 1대",st:"출고완료",memo:"출고 시 외관 상태 양호, 배터리 100%",imgs:[]},{id:2,no:"DP-002",dt:"2026-03-05",tg:"SE글로벌 달서",vh:"OK1 PRO 2대",st:"준비",memo:"",imgs:[]},{id:3,no:"DP-003",dt:"2026-02-28",tg:"SE글로벌 북구",vh:"OK1 KS 1대",st:"출고완료",memo:"주행거리 확인 완료 (1,240km)",imgs:[]}];
-const sI=[{id:1,no:"IC-001",dt:"2026-03-02",vn:"대구1-1234",tp:"대물",sv:"보통",st:"보험진행",co:350000,ins:"삼성화재",ds:"주차 중 접촉사고"},{id:2,no:"IC-002",dt:"2026-02-20",vn:"대구2-5678",tp:"단독",sv:"긴급",st:"종결",co:1200000,ins:"현대해상",ds:"빗길 전도 사고"}];
-const sCL=[{id:1,no:"CL-001",ct:"정비",cu:"홍길동",pr:"보통",st:"처리중",ds:"브레이크 소음",dt:"2026-03-01"},{id:2,no:"CL-002",ct:"요금",cu:"김철수",pr:"긴급",st:"접수",ds:"연체 요금 이의",dt:"2026-03-02"},{id:3,no:"CL-003",ct:"CS",cu:"이영희",pr:"보통",st:"해결",ds:"앱 로그인 문제",dt:"2026-02-25"}];
-const sN=[{id:1,tt:"3월 입고 일정 안내",bd:"3월 10일 OK1 KS 5대, 3월 15일 OK1 PRO 3대 입고 예정입니다.\n각 지점별 배정은 추후 공지하겠습니다.",au:"김대표",dt:"2026-03-03",pn:true},{id:2,tt:"OK1 KS 배터리 관련 협의",bd:"최근 배터리 이슈가 보고되고 있어 SE글로벌과 협의 진행 중입니다.\n해당 차량 점검 부탁드립니다.",au:"김대표",dt:"2026-03-02",pn:false},{id:3,tt:"2월 정산 완료 안내",bd:"2월 정산이 완료되었습니다.\n각 지점별 정산서를 파일공유 채널에서 확인해주세요.",au:"김대표",dt:"2026-03-01",pn:false}];
-const sR=[{id:1,tt:"성서지점 추가 차량 요청",bd:"3월 중 OK1 KS 2대 추가 배정 요청드립니다.\n배달 수요 증가로 현재 차량이 부족합니다.",au:"박매니저",dt:"2026-03-02",st:"검토중"},{id:2,tt:"정비 일정 조율 건의",bd:"월 2회 정기 점검으로 변경 건의합니다.\n현재 월 1회로는 고장 예방이 어렵습니다.",au:"박매니저",dt:"2026-02-28",st:"승인"}];
-const sM=[{id:1,tt:"3월 정기 운영 회의",dt:"2026-03-03",lc:"본사 회의실",at:"김대표, 박매니저, 이과장",dc:"OK1 KS 추가 입고 5대 확정\n연체 회수 절차 강화",st:"확정"},{id:2,tt:"차량 정비 일정 협의",dt:"2026-02-28",lc:"온라인",at:"김대표, 정비팀장",dc:"매월 1회 전 차량 점검\n체크리스트 표준화",st:"공유완료"}];
-const sSc=[{id:1,tt:"OK1 KS 5대 입고",dt:"2026-03-10",tp:"입고"},{id:2,tt:"OK1 PRO 3대 입고",dt:"2026-03-15",tp:"입고"},{id:3,tt:"전 차량 정기점검",dt:"2026-03-20",tp:"정비"},{id:4,tt:"4월 정기 운영 회의",dt:"2026-04-01",tp:"회의"}];
-const sFl=[{id:1,nm:"2월_정산서_성서.xlsx",tp:"xlsx",sz:"245KB",au:"김대표",dt:"2026-03-01"},{id:2,nm:"OK1_KS_점검체크리스트.pdf",tp:"pdf",sz:"128KB",au:"박매니저",dt:"2026-02-28"},{id:3,nm:"렌탈계약서_양식_v3.docx",tp:"docx",sz:"89KB",au:"김대표",dt:"2026-02-15"}];
+/* Supabase 클라이언트 */
+const SB_URL="https://iknhixyfhwiovwtcexjn.supabase.co";
+const SB_KEY="sb_publishable_MK6m5fr8QfW7BW__Uc3nPQ_W6zTubKq";
+const sb=window.supabase.createClient(SB_URL,SB_KEY);
 
 function App(){
-const SS=window.localStorage;
-const _u=SS.getItem("nw_u")?JSON.parse(SS.getItem("nw_u")):null;
-const _ch=SS.getItem("nw_ch")||"home";
+const LS=window.localStorage;
+const _u=LS.getItem("nw_u")?JSON.parse(LS.getItem("nw_u")):null;
+const _ch=LS.getItem("nw_ch")||"home";
 const[pg,setPg]=useState(_u?"app":"land");const[u,setU]=useState(_u);const[ch,setCh]=useState(_u?_ch:"home");
+const[dbReady,setDbReady]=useState(false);
 const[em,setEm]=useState("");const[pw,setPw]=useState("");const[er,setEr]=useState("");const[ld,setLd]=useState(false);
 const[col,setCol]=useState(false);const[sideOpen,setSideOpen]=useState(false);
 const[mdl,setMdl]=useState(null);const[q,setQ]=useState("");const[fil,setFil]=useState("전체");const[det,setDet]=useState(null);
@@ -91,56 +82,70 @@ const X=()=>{setFm({});setMdl(null);setDet(null);setEditId(null);};
 const nid=a=>a.length?Math.max(...a.map(x=>x.id))+1:1;
 const $=n=>n?Number(n).toLocaleString()+"원":"";
 const td=new Date().toISOString().slice(0,10);
-const go=p=>{setCh(p);setQ("");setFil("전체");setDet(null);setEditId(null);setSideOpen(false);SS.setItem("nw_ch",p);};
+const go=p=>{setCh(p);setQ("");setFil("전체");setDet(null);setEditId(null);setSideOpen(false);LS.setItem("nw_ch",p);};
 const isAdmin=u&&u.role==="관리자";
 
-/* 데이터 영속성 - localStorage */
-const _load=(key,fb)=>{try{const v=SS.getItem("nw_"+key);return v?JSON.parse(v):fb;}catch(e){return fb;}};
+/* Supabase 데이터 연동 */
+const[contracts,setContracts]=useState([]);
+const[vehicles,setVehicles]=useState([]);
+const[dispatches,setDispatches]=useState([]);
+const[incidents,setIncidents]=useState([]);
+const[claims,setClaims]=useState([]);
+const[notices,setNotices]=useState([]);
+const[requests,setRequests]=useState([]);
+const[meetings,setMeetings]=useState([]);
+const[schedule,setSchedule]=useState([]);
+const[files,setFiles]=useState([]);
+const[users,setUsers]=useState([]);
 
-const[contracts,setContracts]=useState(()=>_load("ct",sC));
-const[vehicles,setVehicles]=useState(()=>_load("vh",sV));
-const[dispatches,setDispatches]=useState(()=>_load("dp",sD));
-const[incidents,setIncidents]=useState(()=>_load("ic",sI));
-const[claims,setClaims]=useState(()=>_load("cl",sCL));
-const[notices,setNotices]=useState(()=>_load("nt",sN));
-const[requests,setRequests]=useState(()=>_load("rq",sR));
-const[meetings,setMeetings]=useState(()=>_load("mt",sM));
-const[schedule,setSchedule]=useState(()=>_load("sc",sSc));
-const[files,setFiles]=useState(()=>_load("fl",sFl));
-const[users,setUsers]=useState(()=>_load("us",initUsers));
+/* DB에서 전체 데이터 로드 */
+const loadAll=async()=>{
+  const tbls=[
+    ["contracts",setContracts],["vehicles",setVehicles],["dispatches",setDispatches],
+    ["incidents",setIncidents],["claims",setClaims],["notices",setNotices],
+    ["requests",setRequests],["meetings",setMeetings],["schedule",setSchedule],
+    ["files",setFiles],["users",setUsers]
+  ];
+  for(const[tbl,setter]of tbls){
+    const{data}=await sb.from(tbl).select("*").order("id",{ascending:true});
+    if(data)setter(data);
+  }
+  setDbReady(true);
+};
+useEffect(()=>{loadAll();},[]);
 
-/* 변경 감지 → 자동 저장 */
-useEffect(()=>{SS.setItem("nw_ct",JSON.stringify(contracts));},[contracts]);
-useEffect(()=>{SS.setItem("nw_vh",JSON.stringify(vehicles));},[vehicles]);
-useEffect(()=>{SS.setItem("nw_dp",JSON.stringify(dispatches));},[dispatches]);
-useEffect(()=>{SS.setItem("nw_ic",JSON.stringify(incidents));},[incidents]);
-useEffect(()=>{SS.setItem("nw_cl",JSON.stringify(claims));},[claims]);
-useEffect(()=>{SS.setItem("nw_nt",JSON.stringify(notices));},[notices]);
-useEffect(()=>{SS.setItem("nw_rq",JSON.stringify(requests));},[requests]);
-useEffect(()=>{SS.setItem("nw_mt",JSON.stringify(meetings));},[meetings]);
-useEffect(()=>{SS.setItem("nw_sc",JSON.stringify(schedule));},[schedule]);
-useEffect(()=>{SS.setItem("nw_fl",JSON.stringify(files));},[files]);
-useEffect(()=>{SS.setItem("nw_us",JSON.stringify(users));},[users]);
+/* Supabase CRUD 헬퍼 */
+const dbInsert=async(tbl,row,setter)=>{const{data,error}=await sb.from(tbl).insert(row).select();if(data&&data[0]){setter(p=>[data[0],...p]);return data[0];}if(error)console.error(tbl,error);return null;};
+const dbUpdate=async(tbl,id,updates,setter)=>{const{data,error}=await sb.from(tbl).update(updates).eq("id",id).select();if(data&&data[0])setter(p=>p.map(x=>x.id===id?data[0]:x));if(error)console.error(tbl,error);};
+const dbDelete=async(tbl,id,setter)=>{await sb.from(tbl).delete().eq("id",id);setter(p=>p.filter(x=>x.id!==id));};
 
 /* 토스트 알림 시스템 */
 const[toasts,setToasts]=useState([]);
 /* 댓글 & 이모지 리액션 시스템 */
-const[comments,setComments]=useState(()=>_load("cmt",{}));/* {channelKey_id: [{id,au,txt,dt,ts}]} */
-const[reactions,setReactions]=useState(()=>_load("rxn",{}));/* {channelKey_id: {emoji: [userName,...]}} */
-useEffect(()=>{SS.setItem("nw_cmt",JSON.stringify(comments));},[comments]);
-useEffect(()=>{SS.setItem("nw_rxn",JSON.stringify(reactions));},[reactions]);
+const[comments,setComments]=useState({});/* {itemKey: [{id,au,txt,dt,ts}]} */
+const[reactions,setReactions]=useState({});/* {itemKey: {emoji: [userName,...]}} */
+
+/* 댓글/리액션 DB 로드 */
+useEffect(()=>{
+  (async()=>{
+    const{data:cmtData}=await sb.from("comments").select("*").order("id");
+    if(cmtData){const m={};cmtData.forEach(c=>{if(!m[c.item_key])m[c.item_key]=[];m[c.item_key].push(c);});setComments(m);}
+    const{data:rxnData}=await sb.from("reactions").select("*");
+    if(rxnData){const m={};rxnData.forEach(r=>{if(!m[r.item_key])m[r.item_key]={};if(!m[r.item_key][r.emoji])m[r.item_key][r.emoji]=[];m[r.item_key][r.emoji].push(r.user_name);});setReactions(m);}
+  })();
+},[]);
 
 const EMOJIS=["👍","❤️","🔥","👏","😊","✅","❓","👀","🎉","💯"];
 const ik=(ch,id)=>ch+"_"+id;/* item key */
 
-const toggleReaction=(key,emoji)=>{const name=u?.name||"익명";setReactions(p=>{const cur={...(p[key]||{})};const arr=[...(cur[emoji]||[])];const idx=arr.indexOf(name);if(idx>=0)arr.splice(idx,1);else arr.push(name);if(arr.length)cur[emoji]=arr;else delete cur[emoji];return{...p,[key]:cur};});setEmoP(null);};
+const toggleReaction=async(key,emoji)=>{const name=u?.name||"익명";const cur=reactions[key]||{};const arr=[...(cur[emoji]||[])];const has=arr.includes(name);if(has){await sb.from("reactions").delete().eq("item_key",key).eq("emoji",emoji).eq("user_name",name);setReactions(p=>{const c={...(p[key]||{})};c[emoji]=(c[emoji]||[]).filter(n=>n!==name);if(!c[emoji].length)delete c[emoji];return{...p,[key]:c};});}else{await sb.from("reactions").insert({item_key:key,emoji,user_name:name});setReactions(p=>{const c={...(p[key]||{})};c[emoji]=[...(c[emoji]||[]),name];return{...p,[key]:c};});}};
 /* 댓글 스레드 컴포넌트 */
 function Thread({itemKey}){
 const cmts=comments[itemKey]||[];
 const rxns=reactions[itemKey]||{};
 const[myTxt,setMyTxt]=useState("");
 const[showEP,setShowEP]=useState(false);
-const sendCmt=()=>{if(!myTxt.trim())return;const c={id:Date.now(),au:u?.name||"익명",txt:myTxt.trim(),dt:td,ts:new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"})};setComments(p=>({...p,[itemKey]:[...(p[itemKey]||[]),c]}));setMyTxt("");};
+const sendCmt=async()=>{if(!myTxt.trim())return;const row={item_key:itemKey,au:u?.name||"익명",txt:myTxt.trim(),dt:td,ts:new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"})};const{data}=await sb.from("comments").insert(row).select();if(data&&data[0]){setComments(p=>({...p,[itemKey]:[...(p[itemKey]||[]),data[0]]}));}setMyTxt("");};
 return(<div onClick={()=>setShowEP(false)} style={{marginTop:14,borderTop:"1px solid #F0F0F2",paddingTop:12}}>
 {/* 이모지 리액션 */}
 <div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:8}}>
@@ -176,14 +181,16 @@ const notify=(icon,channel,title,body)=>{
 /* 앱 시작 시 알림 권한 요청 */
 useEffect(()=>{if("Notification"in window&&Notification.permission==="default"){Notification.requestPermission();}},[]);
 
-const login=(e)=>{if(e&&e.preventDefault)e.preventDefault();setEr("");setLd(true);setTimeout(()=>{
+const login=async(e)=>{if(e&&e.preventDefault)e.preventDefault();setEr("");setLd(true);
   if(!em||!pw){setEr("이메일과 비밀번호를 입력하세요.");setLd(false);return;}
-  const found=users.find(x=>x.email===em);
+  const{data:ud}=await sb.from("users").select("*").eq("email",em).limit(1);
+  const found=ud&&ud[0];
   if(!found){setEr("등록되지 않은 이메일입니다.");setLd(false);return;}
   if(!found.active){setEr("비활성화된 계정입니다.");setLd(false);return;}
   if(found.pw&&found.pw!==pw){setEr("비밀번호가 일치하지 않습니다.");setLd(false);return;}
-  setU({name:found.name,role:found.role,org:found.org,email:found.email});SS.setItem("nw_u",JSON.stringify({name:found.name,role:found.role,org:found.org,email:found.email}));SS.setItem("nw_ch","home");setPg("app");setCh("home");setLd(false);},300);};
-const logout=()=>{setU(null);setPg("land");setEm("");setPw("");SS.removeItem("nw_u");SS.removeItem("nw_ch");};
+  const uInfo={name:found.name,role:found.role,org:found.org,email:found.email};
+  setU(uInfo);LS.setItem("nw_u",JSON.stringify(uInfo));LS.setItem("nw_ch","home");setPg("app");setCh("home");setLd(false);loadAll();};
+const logout=()=>{setU(null);setPg("land");setEm("");setPw("");LS.removeItem("nw_u");LS.removeItem("nw_ch");};
 const fbtn=s=>({padding:"5px 10px",borderRadius:6,border:fil===s?"none":"1px solid #E5E7EB",background:fil===s?"#1E1E1E":"#fff",color:fil===s?"#fff":"#6B7280",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"});
 const mm={contracts:"c",inventory:"v",dispatch:"d",incidents:"i",claims:"cl",notices:"n",requests:"r",meetings:"m",schedule:"s",files:"f",settings:"user"};
 const sq=q.toLowerCase();
@@ -230,7 +237,7 @@ const ss=["전체","진행","연체","만료","해지"];
 const fl=contracts.filter(c=>(fil==="전체"||c.st===fil)&&(!sq||c.nm.includes(sq)||c.no.includes(sq)||c.md.includes(sq)));
 /* 가용 차량 목록 (새 계약용) */
 const avail=vehicles.filter(v=>v.st==="가용");
-const save=()=>{
+const save=async()=>{
   if(editId){
     const old=contracts.find(c=>c.id===editId);
     const newSt=fm.st||old.st;
@@ -240,7 +247,7 @@ const save=()=>{
     if(old&&(newSt==="진행")&&(old.st==="해지"||old.st==="만료")){setVehicles(p=>p.map(v=>v.vn===old.vn?{...v,st:"대여중"}:v));}
   }else{
     const id=nid(contracts);const selVn=fm.vn||"";
-    setContracts(p=>[{id,no:"CT-"+String(id).padStart(4,"0"),nm:fm.nm||"",ph:fm.ph||"",md:fm.md||"",vn:selVn,s:fm.s||"",e:fm.e||"",fee:+fm.fee||0,dep:+fm.dep||0,up:0,st:"진행",loc:fm.loc||"",memo:fm.memo||""},...p]);
+    await dbInsert("contracts",{no:"CT-"+String(nid(contracts)).padStart(4,"0"),nm:fm.nm||"",ph:fm.ph||"",md:fm.md||"",vn:selVn,s:fm.s||"",e:fm.e||"",fee:+fm.fee||0,dep:+fm.dep||0,up:0,st:"진행",loc:fm.loc||"",memo:fm.memo||""},...p]);
     /* 선택한 차량 → 대여중 */
     if(selVn){setVehicles(p=>p.map(v=>v.vn===selVn?{...v,st:"대여중"}:v));}
     notify("📝","계약관리","새 계약 등록",(fm.nm||"")+" · "+(fm.md||"")+" · "+(selVn||"")+" · 월 "+((+fm.fee||0).toLocaleString())+"원");
@@ -260,8 +267,8 @@ return(<>
 if(ch==="inventory"){
 const ss=["전체","가용","대여중","정비중"];
 const fl=vehicles.filter(v=>(fil==="전체"||v.st===fil)&&(!sq||v.vn.includes(sq)||v.md.includes(sq)));
-const save=()=>{if(editId){setVehicles(p=>p.map(v=>v.id===editId?{...v,vn:fm.vn||v.vn,md:fm.md||v.md,st:fm.st||v.st,loc:fm.loc||v.loc}:v));}else{setVehicles(p=>[{id:nid(p),vn:fm.vn||"",md:fm.md||"",st:fm.st||"가용",loc:fm.loc||"",ck:td},...p]);notify("📦","차량재고","새 차량 등록",(fm.vn||"")+" · "+(fm.md||"")+" · "+(fm.loc||""));}X();};
-const del=id=>{if(confirmDel())setVehicles(p=>p.filter(v=>v.id!==id));};
+const save=async()=>{if(editId){await dbUpdate("vehicles",editId,{vn:fm.vn,md:fm.md,st:fm.st,loc:fm.loc},setVehicles);}else{await dbInsert("vehicles",{vn:fm.vn||"",md:fm.md||"",st:fm.st||"가용",loc:fm.loc||"",ck:td},setVehicles);notify("📦","차량재고","새 차량 등록",(fm.vn||"")+" · "+(fm.md||"")+" · "+(fm.loc||""));}X();};
+const del=async id=>{if(confirmDel())await dbDelete("vehicles",id,setVehicles);};
 return(<><div style={{display:"flex",gap:5,marginBottom:12,flexWrap:"wrap"}}>{ss.map(s=><button key={s} onClick={()=>setFil(s)} style={fbtn(s)}>{s}</button>)}<span style={{marginLeft:"auto",fontSize:11,color:"#9CA3AF",lineHeight:"26px"}}>총 {fl.length}대</span></div>
 <div style={{display:"grid",gridTemplateColumns:mob?"1fr":"repeat(auto-fill,minmax(210px,1fr))",gap:8}}>{fl.map(v=>{const ct=contracts.find(c=>c.vn===v.vn&&(c.st==="진행"||c.st==="연체"));return <div key={v.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:14}}>
 <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}><span style={{fontSize:13,fontWeight:700}}>{v.vn}</span><B t={v.st}/></div>
@@ -276,8 +283,8 @@ const ss=["전체","준비","출고완료","취소"];
 const fl=dispatches.filter(d=>(fil==="전체"||d.st===fil)&&(!sq||d.no.includes(sq)||d.tg.includes(sq)||d.memo?.includes(sq)));
 const handleImg=(e)=>{const files=Array.from(e.target.files||[]);files.forEach(f=>{const reader=new FileReader();reader.onload=(ev)=>{F2("imgs",[...(fm.imgs||[]),ev.target.result]);};reader.readAsDataURL(f);});};
 const removeImg=(idx)=>{F2("imgs",(fm.imgs||[]).filter((_,i)=>i!==idx));};
-const save=()=>{if(editId){setDispatches(p=>p.map(d=>d.id===editId?{...d,dt:fm.dt||d.dt,tg:fm.tg||d.tg,vh:fm.vh||d.vh,st:fm.st||d.st,memo:fm.memo!==undefined?fm.memo:d.memo,imgs:fm.imgs||d.imgs}:d));}else{const id=nid(dispatches);setDispatches(p=>[{id,no:"DP-"+String(id).padStart(3,"0"),dt:fm.dt||td,tg:fm.tg||"",vh:fm.vh||"",st:"준비",memo:fm.memo||"",imgs:fm.imgs||[]},...p]);notify("🚚","출고현황","새 출고 등록",(fm.tg||"")+" · "+(fm.vh||"")+(fm.memo?"\n"+fm.memo:""));}X();};
-const del=id=>{if(confirmDel())setDispatches(p=>p.filter(d=>d.id!==id));setDet(null);};
+const save=async()=>{if(editId){await dbUpdate("dispatches",editId,{dt:fm.dt,tg:fm.tg,vh:fm.vh,st:fm.st,memo:fm.memo!==undefined?fm.memo:undefined,imgs:fm.imgs},setDispatches);}else{await dbInsert("dispatches",{no:"DP-"+String(nid(dispatches)).padStart(3,"0"),dt:fm.dt||td,tg:fm.tg||"",vh:fm.vh||"",st:"준비",memo:fm.memo||"",imgs:fm.imgs||[]},setDispatches);notify("🚚","출고현황","새 출고 등록",(fm.tg||"")+" · "+(fm.vh||"")+(fm.memo?"\n"+fm.memo:""));}X();};
+const del=async id=>{if(confirmDel()){await dbDelete("dispatches",id,setDispatches);setDet(null);}};
 return(<><div style={{display:"flex",gap:5,marginBottom:12,flexWrap:"wrap"}}>{ss.map(s=><button key={s} onClick={()=>setFil(s)} style={fbtn(s)}>{s}</button>)}</div>
 <div style={{display:"flex",flexDirection:"column",gap:8}}>{fl.map(d=><div key={d.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:mob?12:16,cursor:"pointer"}} onClick={()=>setDet(d)}>
 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}><span style={{fontSize:13,fontWeight:700}}>{d.no}</span><B t={d.st}/></div>
@@ -309,8 +316,8 @@ return(<><div style={{display:"flex",gap:5,marginBottom:12,flexWrap:"wrap"}}>{ss
 /* == 사고접수 == */
 if(ch==="incidents"){
 const fl=incidents.filter(i=>!sq||i.no.includes(sq)||i.vn.includes(sq)||i.ds.includes(sq));
-const save=()=>{if(editId){setIncidents(p=>p.map(i=>i.id===editId?{...i,dt:fm.dt||i.dt,vn:fm.vn||i.vn,tp:fm.tp||i.tp,sv:fm.sv||i.sv,ds:fm.ds||i.ds,st:fm.st||i.st}:i));}else{const id=nid(incidents);setIncidents(p=>[{id,no:"IC-"+String(id).padStart(3,"0"),dt:fm.dt||td,vn:fm.vn||"",tp:fm.tp||"",sv:fm.sv||"보통",st:"접수",co:0,ins:"",ds:fm.ds||""},...p]);notify("⚠️","사고접수","새 사고 접수","["+(fm.sv||"보통")+"] "+(fm.vn||"")+" · "+(fm.tp||"")+(fm.ds?"\n"+fm.ds:""));}X();};
-const del=id=>{if(confirmDel())setIncidents(p=>p.filter(i=>i.id!==id));};
+const save=async()=>{if(editId){await dbUpdate("incidents",editId,{dt:fm.dt,vn:fm.vn,tp:fm.tp,sv:fm.sv,ds:fm.ds,st:fm.st},setIncidents);}else{const id=nid(incidents);await dbInsert("incidents",{no:"IC-"+String(nid(incidents)).padStart(3,"0"),dt:fm.dt||td,vn:fm.vn||"",tp:fm.tp||"",sv:fm.sv||"보통",st:"접수",co:0,ins:"",ds:fm.ds||""},setIncidents);notify("⚠️","사고접수","새 사고 접수","["+(fm.sv||"보통")+"] "+(fm.vn||"")+" · "+(fm.tp||"")+(fm.ds?"\n"+fm.ds:""));}X();};
+const del=async id=>{if(confirmDel())await dbDelete("incidents",id,setIncidents);};
 return(<>
 {mob?<div style={{display:"flex",flexDirection:"column",gap:8}}>{fl.map(i=><div key={i.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:14}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}><span style={{fontSize:13,fontWeight:700}}>{i.no}</span><div style={{display:"flex",gap:4}}><B t={i.sv}/><B t={i.st}/></div></div><CR label="사고일" val={i.dt}/><CR label="차량" val={i.vn}/><CR label="유형" val={i.tp}/><CR label="내용" val={i.ds}/><div style={{marginTop:8,display:"flex",gap:4,justifyContent:"flex-end"}}><button style={DB} onClick={()=>startEdit(i,"i")}>수정</button><button style={DBR} onClick={()=>del(i.id)}>삭제</button></div></div>)}</div>
 :<div style={{background:"#fff",borderRadius:12,border:"1px solid #ECEDF0",overflow:"hidden"}}>{fl.map(i=><div key={i.id} style={{display:"flex",padding:"10px 16px",borderBottom:"1px solid #F5F5F7",fontSize:13,alignItems:"center"}}><span style={{flex:"0 0 80px",fontWeight:600}}>{i.no}</span><span style={{flex:"0 0 80px"}}>{i.dt}</span><span style={{flex:"0 0 90px"}}>{i.vn}</span><span style={{flex:"0 0 50px"}}>{i.tp}</span><span style={{flex:"0 0 55px"}}><B t={i.sv}/></span><span style={{flex:1,color:"#6B7280"}}>{i.ds}</span><span style={{flex:"0 0 70px"}}><B t={i.st}/></span><span style={{flex:"0 0 80px",display:"flex",gap:4}}><button style={DB} onClick={()=>startEdit(i,"i")}>수정</button><button style={DBR} onClick={()=>del(i.id)}>삭제</button></span></div>)}</div>}
@@ -319,8 +326,8 @@ return(<>
 /* == 클레임 == */
 if(ch==="claims"){
 const fl=claims.filter(c=>!sq||c.no.includes(sq)||c.cu.includes(sq)||c.ds.includes(sq));
-const save=()=>{if(editId){setClaims(p=>p.map(c=>c.id===editId?{...c,ct:fm.ct||c.ct,cu:fm.cu||c.cu,pr:fm.pr||c.pr,ds:fm.ds||c.ds,st:fm.st||c.st}:c));}else{const id=nid(claims);setClaims(p=>[{id,no:"CL-"+String(id).padStart(3,"0"),ct:fm.ct||"기타",cu:fm.cu||"",pr:fm.pr||"보통",st:"접수",ds:fm.ds||"",dt:td},...p]);notify("🧾","클레임","새 클레임 접수","["+(fm.ct||"기타")+"] "+(fm.cu||"")+(fm.ds?"\n"+fm.ds:""));}X();};
-const del=id=>{if(confirmDel())setClaims(p=>p.filter(c=>c.id!==id));};
+const save=async()=>{if(editId){await dbUpdate("claims",editId,{ct:fm.ct,cu:fm.cu,pr:fm.pr,ds:fm.ds,st:fm.st},setClaims);}else{const id=nid(claims);await dbInsert("claims",{no:"CL-"+String(nid(claims)).padStart(3,"0"),ct:fm.ct||"기타",cu:fm.cu||"",pr:fm.pr||"보통",st:"접수",ds:fm.ds||"",dt:td},setClaims);notify("🧾","클레임","새 클레임 접수","["+(fm.ct||"기타")+"] "+(fm.cu||"")+(fm.ds?"\n"+fm.ds:""));}X();};
+const del=async id=>{if(confirmDel())await dbDelete("claims",id,setClaims);};
 return(<>
 {mob?<div style={{display:"flex",flexDirection:"column",gap:8}}>{fl.map(c=><div key={c.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:14}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}><span style={{fontSize:13,fontWeight:700}}>{c.no}</span><div style={{display:"flex",gap:4}}><B t={c.ct}/><B t={c.st}/></div></div><CR label="고객" val={c.cu}/><CR label="긴급도"><B t={c.pr}/></CR><CR label="내용" val={c.ds}/><div style={{marginTop:8,display:"flex",gap:4,justifyContent:"flex-end"}}><button style={DB} onClick={()=>startEdit(c,"cl")}>수정</button><button style={DBR} onClick={()=>del(c.id)}>삭제</button></div></div>)}</div>
 :<div style={{background:"#fff",borderRadius:12,border:"1px solid #ECEDF0",overflow:"hidden"}}>{fl.map(c=><div key={c.id} style={{display:"flex",padding:"10px 16px",borderBottom:"1px solid #F5F5F7",fontSize:13,alignItems:"center"}}><span style={{flex:"0 0 80px",fontWeight:600}}>{c.no}</span><span style={{flex:"0 0 55px"}}><B t={c.ct}/></span><span style={{flex:"0 0 70px"}}>{c.cu}</span><span style={{flex:"0 0 55px"}}><B t={c.pr}/></span><span style={{flex:1,color:"#6B7280"}}>{c.ds}</span><span style={{flex:"0 0 70px"}}><B t={c.st}/></span><span style={{flex:"0 0 80px",display:"flex",gap:4}}><button style={DB} onClick={()=>startEdit(c,"cl")}>수정</button><button style={DBR} onClick={()=>del(c.id)}>삭제</button></span></div>)}</div>}
@@ -329,8 +336,8 @@ return(<>
 /* == 공지사항 == */
 if(ch==="notices"){
 const fl=notices.filter(n=>!sq||n.tt.includes(sq)||n.bd.includes(sq));
-const save=()=>{if(editId){setNotices(p=>p.map(n=>n.id===editId?{...n,tt:fm.tt||n.tt,bd:fm.bd||n.bd,pn:fm.pn!==undefined?fm.pn:n.pn}:n));}else{setNotices(p=>[{id:nid(p),tt:fm.tt||"",bd:fm.bd||"",au:u?.name,dt:td,pn:!!fm.pn},...p]);notify("📢","공지사항",fm.tt||"새 공지",fm.bd||"");}X();};
-const del=id=>{if(confirmDel())setNotices(p=>p.filter(n=>n.id!==id));setDet(null);};
+const save=async()=>{if(editId){await dbUpdate("notices",editId,{tt:fm.tt,bd:fm.bd,pn:fm.pn!==undefined?fm.pn:undefined},setNotices);}else{await dbInsert("notices",{tt:fm.tt||"",bd:fm.bd||"",au:u?.name,dt:td,pn:!!fm.pn},setNotices);notify("📢","공지사항",fm.tt||"새 공지",fm.bd||"");}X();};
+const del=async id=>{if(confirmDel()){await dbDelete("notices",id,setNotices);setDet(null);}};
 return(<>
 <div style={{display:"flex",flexDirection:"column",gap:8}}>{fl.map(n=><div key={n.id} style={{background:"#fff",borderRadius:10,border:n.pn?"2px solid #3B82F6":"1px solid #ECEDF0",padding:mob?12:16,cursor:"pointer"}} onClick={()=>setDet(n)}>
 <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:5}}>{n.pn&&<span style={{padding:"1px 6px",borderRadius:4,fontSize:9,fontWeight:700,background:"#EFF6FF",color:"#1D4ED8"}}>📌</span>}<span style={{fontSize:13,fontWeight:700,flex:1}}>{n.tt}</span>
@@ -343,8 +350,8 @@ return(<>
 /* == 요청/건의 == */
 if(ch==="requests"){
 const fl=requests.filter(r=>!sq||r.tt.includes(sq)||r.bd.includes(sq));
-const save=()=>{if(editId){setRequests(p=>p.map(r=>r.id===editId?{...r,tt:fm.tt||r.tt,bd:fm.bd||r.bd,st:fm.st||r.st}:r));}else{setRequests(p=>[{id:nid(p),tt:fm.tt||"",bd:fm.bd||"",au:u?.name,dt:td,st:"검토중"},...p]);notify("💬","요청/건의",fm.tt||"새 요청",fm.bd||"");}X();};
-const del=id=>{if(confirmDel())setRequests(p=>p.filter(r=>r.id!==id));setDet(null);};
+const save=async()=>{if(editId){await dbUpdate("requests",editId,{tt:fm.tt,bd:fm.bd,st:fm.st},setRequests);}else{await dbInsert("requests",{tt:fm.tt||"",bd:fm.bd||"",au:u?.name,dt:td,st:"검토중"},setRequests);notify("💬","요청/건의",fm.tt||"새 요청",fm.bd||"");}X();};
+const del=async id=>{if(confirmDel()){await dbDelete("requests",id,setRequests);setDet(null);}};
 return(<>
 <div style={{display:"flex",flexDirection:"column",gap:8}}>{fl.map(r=><div key={r.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:mob?12:16,cursor:"pointer"}} onClick={()=>setDet(r)}>
 <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:5}}><span style={{fontSize:13,fontWeight:700,flex:1}}>{r.tt}</span><B t={r.st}/><span style={{display:"flex",gap:3}} onClick={e=>e.stopPropagation()}><button style={DB} onClick={()=>startEdit(r,"r")}>수정</button><button style={DBR} onClick={()=>del(r.id)}>삭제</button></span></div>
@@ -356,8 +363,8 @@ return(<>
 /* == 회의록 == */
 if(ch==="meetings"){
 const fl=meetings.filter(m=>!sq||m.tt.includes(sq)||m.dc.includes(sq));
-const save=()=>{if(editId){setMeetings(p=>p.map(m=>m.id===editId?{...m,tt:fm.tt||m.tt,dt:fm.dt||m.dt,lc:fm.lc||m.lc,at:fm.at||m.at,dc:fm.dc||m.dc,st:fm.st||m.st}:m));}else{setMeetings(p=>[{id:nid(p),tt:fm.tt||"",dt:fm.dt||td,lc:fm.lc||"",at:fm.at||"",dc:fm.dc||"",st:"작성중"},...p]);notify("📋","회의록",fm.tt||"새 회의록",fm.dc||"");}X();};
-const del=id=>{if(confirmDel())setMeetings(p=>p.filter(m=>m.id!==id));};
+const save=async()=>{if(editId){await dbUpdate("meetings",editId,{tt:fm.tt,dt:fm.dt,lc:fm.lc,at:fm.at,dc:fm.dc,st:fm.st},setMeetings);}else{await dbInsert("meetings",{tt:fm.tt||"",dt:fm.dt||td,lc:fm.lc||"",at:fm.at||"",dc:fm.dc||"",st:"작성중"},setMeetings);notify("📋","회의록",fm.tt||"새 회의록",fm.dc||"");}X();};
+const del=async id=>{if(confirmDel())await dbDelete("meetings",id,setMeetings);};
 return(<>
 <div style={{display:"flex",flexDirection:"column",gap:8}}>{fl.map(m=><div key={m.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:mob?12:16}}>
 <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6}}><span style={{fontSize:13,fontWeight:700,flex:1}}>{m.tt}</span><B t={m.st}/><span style={{display:"flex",gap:3}}><button style={DB} onClick={()=>startEdit(m,"m")}>수정</button><button style={DBR} onClick={()=>del(m.id)}>삭제</button></span></div>
@@ -370,8 +377,8 @@ return(<>
 if(ch==="schedule"){
 const tc={"입고":"#3B82F6","정비":"#F59E0B","회의":"#8B5CF6"};
 const fl=[...schedule].sort((a,b)=>a.dt.localeCompare(b.dt)).filter(s=>!sq||s.tt.includes(sq));
-const save=()=>{if(editId){setSchedule(p=>p.map(s=>s.id===editId?{...s,tt:fm.tt||s.tt,dt:fm.dt||s.dt,tp:fm.tp||s.tp}:s));}else{setSchedule(p=>[...p,{id:nid(p),tt:fm.tt||"",dt:fm.dt||td,tp:fm.tp||""}]);notify("📅","일정",fm.tt||"새 일정",(fm.dt||"")+" · "+(fm.tp||""));}X();};
-const del=id=>{if(confirmDel())setSchedule(p=>p.filter(s=>s.id!==id));};
+const save=async()=>{if(editId){await dbUpdate("schedule",editId,{tt:fm.tt,dt:fm.dt,tp:fm.tp},setSchedule);}else{await dbInsert("schedule",{tt:fm.tt||"",dt:fm.dt||td,tp:fm.tp||""},setSchedule);notify("📅","일정",fm.tt||"새 일정",(fm.dt||"")+" · "+(fm.tp||""));}X();};
+const del=async id=>{if(confirmDel())await dbDelete("schedule",id,setSchedule);};
 return(<>
 <div style={{display:"flex",flexDirection:"column",gap:6}}>{fl.map(s=><div key={s.id} style={{background:"#fff",borderRadius:8,border:"1px solid #ECEDF0",padding:"10px 14px",display:"flex",alignItems:"center",gap:10}}>
 <div style={{width:4,height:32,borderRadius:2,background:tc[s.tp]||"#6B7280",flexShrink:0}}/>
@@ -382,7 +389,7 @@ return(<>
 /* == 파일공유 == */
 if(ch==="files"){
 const ic={"xlsx":"#217346","pdf":"#DC2626","docx":"#2B579A"};
-const del=id=>{if(confirmDel())setFiles(p=>p.filter(f=>f.id!==id));};
+const del=async id=>{if(confirmDel())await dbDelete("files",id,setFiles);};
 return(<>
 <div style={{display:"flex",flexDirection:"column",gap:6}}>{files.map(f=><div key={f.id} style={{background:"#fff",borderRadius:8,border:"1px solid #ECEDF0",padding:"10px 14px",display:"flex",alignItems:"center",gap:10}}>
 <div style={{width:32,height:32,borderRadius:6,background:ic[f.tp]||"#6B7280",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:800,textTransform:"uppercase",flexShrink:0}}>{f.tp}</div>
@@ -392,9 +399,9 @@ return(<>
 
 /* == 설정 == */
 if(ch==="settings"){
-const saveUser=()=>{if(editId){setUsers(p=>p.map(x=>x.id===editId?{...x,name:fm.name||x.name,email:fm.email||x.email,role:fm.role||x.role,org:fm.org||x.org,phone:fm.phone||x.phone,pw:fm.pw||x.pw,active:x.active}:x));}else{if(!fm.email||!fm.name){alert("이메일과 이름은 필수입니다.");return;}if(users.find(x=>x.email===fm.email)){alert("이미 등록된 이메일입니다.");return;}setUsers(p=>[...p,{id:nid(p),email:fm.email||"",name:fm.name||"",pw:fm.pw||"1234",role:fm.role||"유저",org:fm.org||"본사",phone:fm.phone||"",active:true}]);}X();};
-const delUser=id=>{if(confirmDel("이 사용자를 삭제하시겠습니까?"))setUsers(p=>p.filter(x=>x.id!==id));};
-const toggleActive=id=>{setUsers(p=>p.map(x=>x.id===id?{...x,active:!x.active}:x));};
+const saveUser=async()=>{if(editId){await dbUpdate("users",editId,{name:fm.name,email:fm.email,role:fm.role,org:fm.org,phone:fm.phone,pw:fm.pw||undefined},setUsers);}else{if(!fm.email||!fm.name){alert("이메일과 이름은 필수입니다.");return;}const{data:ex}=await sb.from("users").select("id").eq("email",fm.email);if(ex&&ex.length){alert("이미 등록된 이메일입니다.");return;}await dbInsert("users",{email:fm.email||"",name:fm.name||"",pw:fm.pw||"1234",role:fm.role||"유저",org:fm.org||"본사",phone:fm.phone||"",active:true},setUsers);}X();};
+const delUser=async id=>{if(confirmDel("이 사용자를 삭제하시겠습니까?"))await dbDelete("users",id,setUsers);};
+const toggleActive=async id=>{const usr=users.find(x=>x.id===id);if(usr)await dbUpdate("users",id,{active:!usr.active},setUsers);};
 return(<>
 <div style={{marginBottom:16}}><h2 style={{fontSize:17,fontWeight:800,marginBottom:3}}>⚙️ 설정</h2><p style={{fontSize:12,color:"#9CA3AF"}}>사용자 관리</p></div>
 <div style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",overflow:"hidden"}}>
