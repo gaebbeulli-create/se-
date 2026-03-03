@@ -69,7 +69,7 @@ const sSc=[{id:1,tt:"OK1 KS 5대 입고",dt:"2026-03-10",tp:"입고"},{id:2,tt:"
 const sFl=[{id:1,nm:"2월_정산서_성서.xlsx",tp:"xlsx",sz:"245KB",au:"김대표",dt:"2026-03-01"},{id:2,nm:"OK1_KS_점검체크리스트.pdf",tp:"pdf",sz:"128KB",au:"박매니저",dt:"2026-02-28"},{id:3,nm:"렌탈계약서_양식_v3.docx",tp:"docx",sz:"89KB",au:"김대표",dt:"2026-02-15"}];
 
 function App(){
-const SS=window.sessionStorage;
+const SS=window.localStorage;
 const _u=SS.getItem("nw_u")?JSON.parse(SS.getItem("nw_u")):null;
 const _ch=SS.getItem("nw_ch")||"home";
 const[pg,setPg]=useState(_u?"app":"land");const[u,setU]=useState(_u);const[ch,setCh]=useState(_u?_ch:"home");
@@ -94,7 +94,7 @@ const td=new Date().toISOString().slice(0,10);
 const go=p=>{setCh(p);setQ("");setFil("전체");setDet(null);setEditId(null);setSideOpen(false);SS.setItem("nw_ch",p);};
 const isAdmin=u&&u.role==="관리자";
 
-/* 데이터 영속성 - sessionStorage */
+/* 데이터 영속성 - localStorage */
 const _load=(key,fb)=>{try{const v=SS.getItem("nw_"+key);return v?JSON.parse(v):fb;}catch(e){return fb;}};
 
 const[contracts,setContracts]=useState(()=>_load("ct",sC));
@@ -417,7 +417,18 @@ return(<>
 <div><label style={LS}>소속</label><input style={IS} value={fm.org||""} onChange={e=>F2("org",e.target.value)} placeholder="본사 / SE글로벌"/></div>
 <div><label style={LS}>연락처</label><input style={IS} value={fm.phone||""} onChange={e=>F2("phone",e.target.value)} placeholder="010-0000-0000"/></div>
 <div><label style={LS}>비밀번호</label><input style={IS} value={fm.pw||""} onChange={e=>F2("pw",e.target.value)} placeholder="미입력시 1234"/></div>
-</div><button onClick={saveUser} style={SB}>{editId?"저장":"등록하기"}</button></Mdl>}</>);}
+</div><button onClick={saveUser} style={SB}>{editId?"저장":"등록하기"}</button></Mdl>}
+
+{/* 데이터 동기화 */}
+{isAdmin&&<div style={{marginTop:16,background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:mob?12:16}}>
+<div style={{fontSize:13,fontWeight:700,marginBottom:10}}>📦 데이터 동기화</div>
+<p style={{fontSize:11.5,color:"#6B7280",lineHeight:1.5,marginBottom:12}}>PC에서 등록한 데이터를 모바일에서도 사용하려면, PC에서 내보내기 후 모바일에서 가져오기 하세요.</p>
+<div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+<button onClick={()=>{const d={ct:contracts,vh:vehicles,dp:dispatches,ic:incidents,cl:claims,nt:notices,rq:requests,mt:meetings,sc:schedule,fl:files,us:users,cmt:comments,rxn:reactions};const b=new Blob([JSON.stringify(d)],{type:"application/json"});const url=URL.createObjectURL(b);const a=document.createElement("a");a.href=url;a.download="network_backup.json";a.click();}} style={{padding:"8px 14px",borderRadius:7,border:"1px solid #E5E7EB",background:"#fff",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>📤 내보내기</button>
+<button onClick={()=>{const inp=document.createElement("input");inp.type="file";inp.accept=".json";inp.onchange=ev=>{const f=ev.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=re=>{try{const d=JSON.parse(re.target.result);if(d.us){setContracts(d.ct||sC);setVehicles(d.vh||sV);setDispatches(d.dp||sD);setIncidents(d.ic||sI);setClaims(d.cl||sCL);setNotices(d.nt||sN);setRequests(d.rq||sR);setMeetings(d.mt||sM);setSchedule(d.sc||sSc);setFiles(d.fl||sFl);setUsers(d.us);setComments(d.cmt||{});setReactions(d.rxn||{});alert("가져오기 완료! (사용자 "+d.us.length+"명)");}else{alert("올바른 백업 파일이 아닙니다.");}}catch(err){alert("파일 읽기 실패: "+err.message);}};rd.readAsText(f);};inp.click();}} style={{padding:"8px 14px",borderRadius:7,border:"1px solid #E5E7EB",background:"#fff",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>📥 가져오기</button>
+<button onClick={()=>{if(window.confirm("모든 데이터를 초기화하시겠습니까?")){Object.keys(localStorage).filter(k=>k.startsWith("nw_")).forEach(k=>localStorage.removeItem(k));window.location.reload();}}} style={{padding:"8px 14px",borderRadius:7,border:"1px solid #FECACA",background:"#FEF2F2",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",color:"#DC2626"}}>🗑 초기화</button>
+</div></div>}
+</>);}
 
 return <div style={{textAlign:"center",color:"#9CA3AF",padding:40}}>준비 중</div>;
 }
