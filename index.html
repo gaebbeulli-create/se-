@@ -8,8 +8,8 @@
 <meta name="apple-mobile-web-app-title" content="NETWORK"/>
 <meta name="theme-color" content="#1B1D21"/>
 <meta name="mobile-web-app-capable" content="yes"/>
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231E1E1E'/><text x='50' y='68' text-anchor='middle' fill='white' font-size='48' font-weight='900' font-family='system-ui'>N</text></svg>"/>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231E1E1E'/><text x='50' y='68' text-anchor='middle' fill='white' font-size='48' font-weight='900' font-family='system-ui'>N</text></svg>"/>
+<link rel="apple-touch-icon" href="./icon-192.png"/>
+<link rel="icon" type="image/png" href="./icon-192.png"/>
 <title>NETWORK</title>
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet"/>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
@@ -27,11 +27,11 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#1E1E1E!import
 </style>
 <script>
 /* PWA Manifest 인라인 생성 */
-const mf={name:"NETWORK",short_name:"NETWORK",description:"전기바이크 렌탈 업무 플랫폼",start_url:"./",display:"standalone",background_color:"#F7F8FA",theme_color:"#1B1D21",icons:[{src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='90' fill='%231E1E1E'/><text x='256' y='340' text-anchor='middle' fill='white' font-size='280' font-weight='900' font-family='system-ui'>N</text></svg>",sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}]};
+const mf={name:"NETWORK",short_name:"NETWORK",description:"전기바이크 렌탈 업무 플랫폼",start_url:"./",display:"standalone",background_color:"#F7F8FA",theme_color:"#1B1D21",icons:[{src:"./icon-192.png",sizes:"192x192",type:"image/png",purpose:"any maskable"},{src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='90' fill='%231E1E1E'/><text x='256' y='340' text-anchor='middle' fill='white' font-size='280' font-weight='900' font-family='system-ui'>N</text></svg>",sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}]};
 const blob=new Blob([JSON.stringify(mf)],{type:"application/json"});
 const link=document.createElement("link");link.rel="manifest";link.href=URL.createObjectURL(blob);document.head.appendChild(link);
-/* Service Worker 등록 (오프라인 캐시 기본) */
-if("serviceWorker"in navigator){navigator.serviceWorker.register("data:text/javascript,self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('activate',e=>self.clients.claim());self.addEventListener('fetch',e=>e.respondWith(fetch(e.request).catch(()=>new Response('오프라인'))));").catch(()=>{});}
+/* Service Worker 등록 - 별도 파일 */
+if("serviceWorker"in navigator){navigator.serviceWorker.register("./sw.js").catch(()=>{});}
 </script>
 </head>
 <body>
@@ -78,7 +78,14 @@ const[col,setCol]=useState(false);const[sideOpen,setSideOpen]=useState(false);
 const[mdl,setMdl]=useState(null);const[q,setQ]=useState("");const[fil,setFil]=useState("전체");const[det,setDet]=useState(null);
 const[fm,setFm]=useState({});const[editId,setEditId]=useState(null);
 const[mob,setMob]=useState(window.innerWidth<768);
+const[installEvt,setInstallEvt]=useState(null);
+const[showIosGuide,setShowIosGuide]=useState(false);
 useEffect(()=>{const h=()=>setMob(window.innerWidth<768);window.addEventListener("resize",h);return()=>window.removeEventListener("resize",h);},[]);
+useEffect(()=>{const h=(e)=>{e.preventDefault();setInstallEvt(e);};window.addEventListener("beforeinstallprompt",h);return()=>window.removeEventListener("beforeinstallprompt",h);},[]);
+const isIos=/iPad|iPhone|iPod/.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&"ontouchend"in document);
+const isStandalone=window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone;
+const doInstall=async()=>{if(installEvt){installEvt.prompt();const r=await installEvt.userChoice;if(r.outcome==="accepted")setInstallEvt(null);}else if(isIos){setShowIosGuide(true);}else{alert("브라우저 메뉴에서 '홈 화면에 추가'를 선택해주세요.");}
+};
 const F2=(k,v)=>setFm(p=>({...p,[k]:v}));
 const X=()=>{setFm({});setMdl(null);setDet(null);setEditId(null);};
 const nid=a=>a.length?Math.max(...a.map(x=>x.id))+1:1;
@@ -91,6 +98,42 @@ const[contracts,setContracts]=useState(sC);const[vehicles,setVehicles]=useState(
 
 /* 토스트 알림 시스템 */
 const[toasts,setToasts]=useState([]);
+/* 댓글 & 이모지 리액션 시스템 */
+const[comments,setComments]=useState({});/* {channelKey_id: [{id,au,txt,dt,ts}]} */
+const[reactions,setReactions]=useState({});/* {channelKey_id: {emoji: [userName,...]}} */
+
+const EMOJIS=["👍","❤️","🔥","👏","😊","✅","❓","👀","🎉","💯"];
+const ik=(ch,id)=>ch+"_"+id;/* item key */
+
+const toggleReaction=(key,emoji)=>{const name=u?.name||"익명";setReactions(p=>{const cur={...(p[key]||{})};const arr=[...(cur[emoji]||[])];const idx=arr.indexOf(name);if(idx>=0)arr.splice(idx,1);else arr.push(name);if(arr.length)cur[emoji]=arr;else delete cur[emoji];return{...p,[key]:cur};});setEmoP(null);};
+/* 댓글 스레드 컴포넌트 */
+function Thread({itemKey}){
+const cmts=comments[itemKey]||[];
+const rxns=reactions[itemKey]||{};
+const[myTxt,setMyTxt]=useState("");
+const[showEP,setShowEP]=useState(false);
+const sendCmt=()=>{if(!myTxt.trim())return;const c={id:Date.now(),au:u?.name||"익명",txt:myTxt.trim(),dt:td,ts:new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"})};setComments(p=>({...p,[itemKey]:[...(p[itemKey]||[]),c]}));setMyTxt("");};
+return(<div onClick={()=>setShowEP(false)} style={{marginTop:14,borderTop:"1px solid #F0F0F2",paddingTop:12}}>
+{/* 이모지 리액션 */}
+<div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:8}}>
+{Object.entries(rxns).filter(([em,arr])=>arr.length>0).map(([em,arr])=><button key={em} onClick={(e)=>{e.stopPropagation();toggleReaction(itemKey,em);}} style={{padding:"3px 8px",borderRadius:12,border:arr.includes(u?.name)?"1.5px solid #3B82F6":"1px solid #E5E7EB",background:arr.includes(u?.name)?"#EFF6FF":"#fff",fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",gap:3,fontFamily:"inherit"}}><span>{em}</span><span style={{fontSize:10,fontWeight:600,color:"#6B7280"}}>{arr.length}</span></button>)}
+<div style={{position:"relative"}} onClick={e=>e.stopPropagation()}><button onClick={()=>setShowEP(!showEP)} style={{padding:"3px 8px",borderRadius:12,border:"1px dashed #D1D5DB",background:"#fff",fontSize:12,cursor:"pointer",color:"#9CA3AF",fontFamily:"inherit"}}>😀+</button>
+{showEP&&<div style={{position:"absolute",bottom:"100%",left:0,marginBottom:4,background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",boxShadow:"0 4px 16px rgba(0,0,0,.1)",padding:6,display:"flex",flexWrap:"wrap",gap:2,width:200,zIndex:100}}>{EMOJIS.map(e2=><button key={e2} onClick={()=>{toggleReaction(itemKey,e2);setShowEP(false);}} style={{width:32,height:32,borderRadius:6,border:"none",background:"transparent",fontSize:18,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}} onMouseEnter={ev=>ev.currentTarget.style.background="#F3F4F6"} onMouseLeave={ev=>ev.currentTarget.style.background="transparent"}>{e2}</button>)}</div>}
+</div></div>
+{/* 댓글 목록 */}
+{cmts.length>0&&<div style={{fontSize:12,fontWeight:600,color:"#6B7280",marginBottom:6}}>💬 댓글 {cmts.length}</div>}
+<div style={{display:"flex",flexDirection:"column",gap:6}}>
+{cmts.map(c=><div key={c.id} style={{display:"flex",gap:8,alignItems:"flex-start"}}>
+<div style={{width:26,height:26,borderRadius:"50%",background:"#1E1E1E",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,flexShrink:0}}>{c.au[0]}</div>
+<div style={{flex:1,minWidth:0}}><div style={{display:"flex",alignItems:"center",gap:5}}><span style={{fontSize:12,fontWeight:700}}>{c.au}</span><span style={{fontSize:10,color:"#9CA3AF"}}>{c.dt} {c.ts}</span></div><div style={{fontSize:12.5,color:"#374151",lineHeight:1.5,marginTop:2,whiteSpace:"pre-wrap"}}>{c.txt}</div></div>
+</div>)}
+</div>
+{/* 댓글 입력 */}
+<div style={{display:"flex",gap:6,marginTop:8}} onClick={e=>e.stopPropagation()}>
+<div style={{width:26,height:26,borderRadius:"50%",background:"#3B82F6",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,flexShrink:0}}>{(u?.name||"?")[0]}</div>
+<div style={{flex:1,display:"flex",gap:4}}><input value={myTxt} onChange={e=>setMyTxt(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendCmt();}}} placeholder="댓글 작성..." style={{...IS,padding:"7px 10px",fontSize:12,flex:1}}/><button onClick={sendCmt} style={{padding:"6px 12px",borderRadius:7,border:"none",background:"#1E1E1E",color:"#fff",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}}>전송</button></div>
+</div></div>);}
+
 const notify=(icon,channel,title,body)=>{
   const id=Date.now()+Math.random();
   setToasts(p=>[{id,icon,channel,title,body,fade:false},...p].slice(0,5));
@@ -138,7 +181,19 @@ if(pg==="login")return(
 <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 16px 40px"}}><div style={{width:"100%",maxWidth:380,animation:"fadeUp .4s ease"}}><div style={{textAlign:"center",marginBottom:24}}><h1 style={{fontSize:22,fontWeight:800,marginBottom:5}}>로그인</h1><p style={{fontSize:13,color:"#9CA3AF"}}>NETWORK 업무 공간에 접속합니다</p></div>
 <div style={{background:"#fff",borderRadius:14,border:"1px solid #ECEDF0",boxShadow:"0 4px 20px rgba(0,0,0,.05)",padding:mob?20:24}}>
 {er&&<div style={{padding:"9px 12px",borderRadius:7,marginBottom:14,background:"#FEF2F2",border:"1px solid #FECACA",fontSize:12,color:"#DC2626"}}>⚠️ {er}</div>}
-<form onSubmit={login}><div style={{marginBottom:14}}><label style={LS}>이메일</label><input type="email" required value={em} onChange={e=>setEm(e.target.value)} placeholder="이메일" style={IS}/></div><div style={{marginBottom:20}}><label style={LS}>비밀번호</label><input type="password" required value={pw} onChange={e=>setPw(e.target.value)} placeholder="••••••••" style={IS}/></div><button type="submit" style={{width:"100%",padding:"12px",borderRadius:10,border:"none",background:ld?"#9CA3AF":"#1E1E1E",color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer"}}>{ld?"접속 중...":"접속하기"}</button></form></div></div></div></div>);
+<form onSubmit={login}><div style={{marginBottom:14}}><label style={LS}>이메일</label><input type="email" required value={em} onChange={e=>setEm(e.target.value)} placeholder="이메일" style={IS}/></div><div style={{marginBottom:20}}><label style={LS}>비밀번호</label><input type="password" required value={pw} onChange={e=>setPw(e.target.value)} placeholder="••••••••" style={IS}/></div><button type="submit" style={{width:"100%",padding:"12px",borderRadius:10,border:"none",background:ld?"#9CA3AF":"#1E1E1E",color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer"}}>{ld?"접속 중...":"접속하기"}</button></form>
+{!isStandalone&&<button onClick={doInstall} style={{width:"100%",marginTop:10,padding:"11px",borderRadius:10,border:"1.5px solid #1E1E1E",background:"#fff",color:"#1E1E1E",fontSize:13,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontFamily:"inherit"}}><span style={{fontSize:18}}>📲</span>앱 설치하기</button>}
+</div>
+{showIosGuide&&<div style={{marginTop:16,background:"#fff",borderRadius:14,border:"1px solid #ECEDF0",boxShadow:"0 4px 20px rgba(0,0,0,.05)",padding:mob?16:20}}>
+<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}><span style={{fontSize:14,fontWeight:800}}>📲 홈 화면에 추가하기</span><button onClick={()=>setShowIosGuide(false)} style={{width:24,height:24,borderRadius:6,border:"none",background:"#F3F4F6",cursor:"pointer",fontSize:12}}>✕</button></div>
+<div style={{fontSize:13,lineHeight:2,color:"#374151"}}>
+<div><b>1.</b> 하단 Safari 메뉴에서 <span style={{display:"inline-flex",alignItems:"center",padding:"2px 8px",background:"#EFF6FF",borderRadius:4,fontSize:12,fontWeight:600,color:"#1D4ED8"}}>⬆ 공유 버튼</span> 터치</div>
+<div><b>2.</b> 아래로 스크롤하여 <span style={{display:"inline-flex",alignItems:"center",padding:"2px 8px",background:"#F3F4F6",borderRadius:4,fontSize:12,fontWeight:600}}>➕ 홈 화면에 추가</span> 터치</div>
+<div><b>3.</b> 우측 상단 <span style={{display:"inline-flex",alignItems:"center",padding:"2px 8px",background:"#EFF6FF",borderRadius:4,fontSize:12,fontWeight:600,color:"#1D4ED8"}}>추가</span> 터치</div>
+</div>
+<div style={{marginTop:10,padding:"8px 12px",background:"#F0FDF4",borderRadius:8,fontSize:11.5,color:"#15803D",lineHeight:1.5}}>✅ 홈 화면에 NETWORK 아이콘이 생기고, 앱처럼 전체화면으로 실행됩니다!</div>
+</div>}
+</div></div></div>);
 
 function RC(){
 /* == 계약관리 == */
@@ -253,9 +308,9 @@ return(<>
 <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:5}}>{n.pn&&<span style={{padding:"1px 6px",borderRadius:4,fontSize:9,fontWeight:700,background:"#EFF6FF",color:"#1D4ED8"}}>📌</span>}<span style={{fontSize:13,fontWeight:700,flex:1}}>{n.tt}</span>
 <span style={{display:"flex",gap:3}} onClick={e=>e.stopPropagation()}><button style={DB} onClick={()=>startEdit(n,"n")}>수정</button><button style={DBR} onClick={()=>del(n.id)}>삭제</button></span></div>
 <p style={{fontSize:12,color:"#6B7280",lineHeight:1.5}}>{n.bd.length>80?n.bd.slice(0,80)+"...":n.bd}</p>
-<div style={{fontSize:11,color:"#9CA3AF",marginTop:6}}>{n.au} · {n.dt}</div></div>)}</div>
+<div style={{fontSize:11,color:"#9CA3AF",marginTop:6}}>{n.au} · {n.dt}{(comments[ik("notices",n.id)]||[]).length>0&&<span style={{marginLeft:8,color:"#3B82F6",fontWeight:600}}>💬 {(comments[ik("notices",n.id)]||[]).length}</span>}{Object.keys(reactions[ik("notices",n.id)]||{}).length>0&&<span style={{marginLeft:4}}>{Object.entries(reactions[ik("notices",n.id)]||{}).map(([em,arr])=>arr.length>0?em:"").join("")}</span>}</div></div>)}</div>
 <Mdl open={mdl==="n"} onClose={X} title={editId?"공지 수정":"공지 작성"} mob={mob}><div><label style={LS}>제목</label><input style={IS} value={fm.tt||""} onChange={e=>F2("tt",e.target.value)}/></div><div style={{marginTop:10}}><label style={LS}>내용</label><textarea style={{...IS,height:120}} value={fm.bd||""} onChange={e=>F2("bd",e.target.value)}/></div><div style={{marginTop:8}}><label style={{fontSize:12,color:"#6B7280"}}><input type="checkbox" checked={!!fm.pn} onChange={e=>F2("pn",e.target.checked)} style={{marginRight:6}}/>상단 고정</label></div><button onClick={save} style={SB}>{editId?"저장":"게시하기"}</button></Mdl>
-<Mdl open={!!det&&ch==="notices"} onClose={X} title={det?.tt||""} mob={mob}>{det&&<div><p style={{fontSize:13,lineHeight:1.8,color:"#374151",whiteSpace:"pre-wrap"}}>{det.bd}</p><div style={{fontSize:11,color:"#9CA3AF",marginTop:14,paddingTop:10,borderTop:"1px solid #F0F0F2"}}>{det.au} · {det.dt}</div><div style={{marginTop:10,display:"flex",gap:6}}><button style={DB} onClick={()=>startEdit(det,"n")}>수정</button><button style={DBR} onClick={()=>del(det.id)}>삭제</button></div></div>}</Mdl></>);}
+<Mdl open={!!det&&ch==="notices"} onClose={X} title={det?.tt||""} mob={mob}>{det&&<div><p style={{fontSize:13,lineHeight:1.8,color:"#374151",whiteSpace:"pre-wrap"}}>{det.bd}</p><div style={{fontSize:11,color:"#9CA3AF",marginTop:14,paddingTop:10,borderTop:"1px solid #F0F0F2"}}>{det.au} · {det.dt}</div><div style={{marginTop:10,display:"flex",gap:6}}><button style={DB} onClick={()=>startEdit(det,"n")}>수정</button><button style={DBR} onClick={()=>del(det.id)}>삭제</button></div><Thread itemKey={ik("notices",det.id)}/></div>}</Mdl></>);}
 
 /* == 요청/건의 == */
 if(ch==="requests"){
@@ -266,9 +321,9 @@ return(<>
 <div style={{display:"flex",flexDirection:"column",gap:8}}>{fl.map(r=><div key={r.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:mob?12:16,cursor:"pointer"}} onClick={()=>setDet(r)}>
 <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:5}}><span style={{fontSize:13,fontWeight:700,flex:1}}>{r.tt}</span><B t={r.st}/><span style={{display:"flex",gap:3}} onClick={e=>e.stopPropagation()}><button style={DB} onClick={()=>startEdit(r,"r")}>수정</button><button style={DBR} onClick={()=>del(r.id)}>삭제</button></span></div>
 <p style={{fontSize:12,color:"#6B7280",lineHeight:1.5}}>{r.bd.length>80?r.bd.slice(0,80)+"...":r.bd}</p>
-<div style={{fontSize:11,color:"#9CA3AF",marginTop:6}}>{r.au} · {r.dt}</div></div>)}</div>
+<div style={{fontSize:11,color:"#9CA3AF",marginTop:6}}>{r.au} · {r.dt}{(comments[ik("requests",r.id)]||[]).length>0&&<span style={{marginLeft:8,color:"#3B82F6",fontWeight:600}}>💬 {(comments[ik("requests",r.id)]||[]).length}</span>}{Object.keys(reactions[ik("requests",r.id)]||{}).length>0&&<span style={{marginLeft:4}}>{Object.entries(reactions[ik("requests",r.id)]||{}).map(([em,arr])=>arr.length>0?em:"").join("")}</span>}</div></div>)}</div>
 <Mdl open={mdl==="r"} onClose={X} title={editId?"요청 수정":"요청/건의 작성"} mob={mob}><div><label style={LS}>제목</label><input style={IS} value={fm.tt||""} onChange={e=>F2("tt",e.target.value)}/></div><div style={{marginTop:10}}><label style={LS}>내용</label><textarea style={{...IS,height:120}} value={fm.bd||""} onChange={e=>F2("bd",e.target.value)}/></div>{editId&&<div style={{marginTop:10}}><label style={LS}>상태</label><select style={IS} value={fm.st||""} onChange={e=>F2("st",e.target.value)}><option>검토중</option><option>승인</option><option>반려</option></select></div>}<button onClick={save} style={SB}>{editId?"저장":"등록하기"}</button></Mdl>
-<Mdl open={!!det&&ch==="requests"} onClose={X} title={det?.tt||""} mob={mob}>{det&&<div><div style={{marginBottom:8}}><B t={det.st}/></div><p style={{fontSize:13,lineHeight:1.8,color:"#374151",whiteSpace:"pre-wrap"}}>{det.bd}</p><div style={{fontSize:11,color:"#9CA3AF",marginTop:14,paddingTop:10,borderTop:"1px solid #F0F0F2"}}>{det.au} · {det.dt}</div><div style={{marginTop:10,display:"flex",gap:6}}><button style={DB} onClick={()=>startEdit(det,"r")}>수정</button><button style={DBR} onClick={()=>del(det.id)}>삭제</button></div></div>}</Mdl></>);}
+<Mdl open={!!det&&ch==="requests"} onClose={X} title={det?.tt||""} mob={mob}>{det&&<div><div style={{marginBottom:8}}><B t={det.st}/></div><p style={{fontSize:13,lineHeight:1.8,color:"#374151",whiteSpace:"pre-wrap"}}>{det.bd}</p><div style={{fontSize:11,color:"#9CA3AF",marginTop:14,paddingTop:10,borderTop:"1px solid #F0F0F2"}}>{det.au} · {det.dt}</div><div style={{marginTop:10,display:"flex",gap:6}}><button style={DB} onClick={()=>startEdit(det,"r")}>수정</button><button style={DBR} onClick={()=>del(det.id)}>삭제</button></div><Thread itemKey={ik("requests",det.id)}/></div>}</Mdl></>);}
 
 /* == 회의록 == */
 if(ch==="meetings"){
@@ -280,7 +335,7 @@ return(<>
 <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6}}><span style={{fontSize:13,fontWeight:700,flex:1}}>{m.tt}</span><B t={m.st}/><span style={{display:"flex",gap:3}}><button style={DB} onClick={()=>startEdit(m,"m")}>수정</button><button style={DBR} onClick={()=>del(m.id)}>삭제</button></span></div>
 <div style={{fontSize:11.5,color:"#6B7280",marginBottom:6}}>📅 {m.dt} · 📍 {m.lc}</div>
 {!mob&&<div style={{fontSize:11.5,color:"#6B7280",marginBottom:6}}>👥 {m.at}</div>}
-<div style={{padding:"8px 12px",background:"#F7F8FA",borderRadius:7,fontSize:12,color:"#374151",lineHeight:1.5,whiteSpace:"pre-wrap"}}><b>결정:</b> {m.dc}</div></div>)}</div>
+<div style={{padding:"8px 12px",background:"#F7F8FA",borderRadius:7,fontSize:12,color:"#374151",lineHeight:1.5,whiteSpace:"pre-wrap"}}><b>결정:</b> {m.dc}</div><Thread itemKey={ik("meetings",m.id)}/></div>)}</div>
 <Mdl open={mdl==="m"} onClose={X} title={editId?"회의록 수정":"회의록 작성"} mob={mob}><div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:10}}><div><label style={LS}>제목</label><input style={IS} value={fm.tt||""} onChange={e=>F2("tt",e.target.value)}/></div><div><label style={LS}>일시</label><input type="date" style={IS} value={fm.dt||""} onChange={e=>F2("dt",e.target.value)}/></div><div><label style={LS}>장소</label><input style={IS} value={fm.lc||""} onChange={e=>F2("lc",e.target.value)}/></div><div><label style={LS}>참석자</label><input style={IS} value={fm.at||""} onChange={e=>F2("at",e.target.value)}/></div>{editId&&<div><label style={LS}>상태</label><select style={IS} value={fm.st||""} onChange={e=>F2("st",e.target.value)}><option>작성중</option><option>확정</option><option>공유완료</option></select></div>}</div><div style={{marginTop:10}}><label style={LS}>결정사항</label><textarea style={{...IS,height:70}} value={fm.dc||""} onChange={e=>F2("dc",e.target.value)}/></div><button onClick={save} style={SB}>{editId?"저장":"저장하기"}</button></Mdl></>);}
 
 /* == 일정 == */
