@@ -95,6 +95,7 @@ const[fm,setFm]=useState({});const[editId,setEditId]=useState(null);
 const[mob,setMob]=useState(window.innerWidth<768);
 const[installEvt,setInstallEvt]=useState(null);
 const[showIosGuide,setShowIosGuide]=useState(false);
+const[uploading,setUploading]=useState(false);
 useEffect(()=>{const h=()=>setMob(window.innerWidth<768);window.addEventListener("resize",h);return()=>window.removeEventListener("resize",h);},[]);
 useEffect(()=>{const h=(e)=>{e.preventDefault();setInstallEvt(e);};window.addEventListener("beforeinstallprompt",h);return()=>window.removeEventListener("beforeinstallprompt",h);},[]);
 const isIos=/iPad|iPhone|iPod/.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&"ontouchend"in document);
@@ -410,7 +411,6 @@ return(<>
 if(ch==="files"){
 const ic={"xlsx":"#217346","pdf":"#DC2626","docx":"#2B579A","png":"#F59E0B","jpg":"#F59E0B","jpeg":"#F59E0B","zip":"#6B7280","hwp":"#2563EB","pptx":"#D97706","csv":"#15803D"};
 const del=async id=>{const f=files.find(x=>x.id===id);if(confirmDel()){if(f&&f.url){try{const path=f.url.split("/storage/v1/object/public/files/")[1];if(path)await sb.storage.from("files").remove([decodeURIComponent(path)]);}catch(e){}}await delRow("files",id,setFiles);}};
-const[uploading,setUploading]=useState(false);
 const handleFileUpload=async(e)=>{const fileList=Array.from(e.target.files||[]);if(!fileList.length)return;setUploading(true);
 for(const file of fileList){
 const ext=file.name.split(".").pop().toLowerCase();
