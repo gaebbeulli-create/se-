@@ -201,12 +201,12 @@ const notify=(icon,channel,title,body)=>{
 useEffect(()=>{if("Notification"in window&&Notification.permission==="default"){Notification.requestPermission();}},[]);
 
 const login=async(e)=>{if(e&&e.preventDefault)e.preventDefault();setEr("");setLd(true);
-  if(!em||!pw){setEr("이메일과 비밀번호를 입력하세요.");setLd(false);return;}
-  const{data,error}=await sb.from("users").select("*").eq("email",em).single();
-  if(error||!data){setEr("등록되지 않은 이메일입니다.");setLd(false);return;}
+  if(!em||!pw){setEr("아이디와 비밀번호를 입력하세요.");setLd(false);return;}
+  const{data,error}=await sb.from("users").select("*").eq("uid",em).single();
+  if(error||!data){setEr("등록되지 않은 아이디입니다.");setLd(false);return;}
   if(!data.active){setEr("비활성화된 계정입니다.");setLd(false);return;}
   if(data.pw&&data.pw!==pw){setEr("비밀번호가 일치하지 않습니다.");setLd(false);return;}
-  setU({name:data.name,role:data.role,org:data.org,email:data.email});SS.setItem("nw_u",JSON.stringify({name:data.name,role:data.role,org:data.org,email:data.email}));SS.setItem("nw_ch","home");setPg("app");setCh("home");setLd(false);};
+  setU({name:data.name,role:data.role,org:data.org,email:data.email,uid:data.uid});SS.setItem("nw_u",JSON.stringify({name:data.name,role:data.role,org:data.org,email:data.email,uid:data.uid}));SS.setItem("nw_ch","home");setPg("app");setCh("home");setLd(false);};
 const logout=()=>{setU(null);setPg("land");setEm("");setPw("");SS.removeItem("nw_u");SS.removeItem("nw_ch");};
 const fbtn=s=>({padding:"5px 10px",borderRadius:6,border:fil===s?"none":"1px solid #E5E7EB",background:fil===s?"#1E1E1E":"#fff",color:fil===s?"#fff":"#6B7280",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"});
 const mm={contracts:"c",inventory:"v",dispatch:"d",incidents:"i",claims:"cl",notices:"n",requests:"r",meetings:"m",schedule:"s",files:"f",settings:"user"};
@@ -236,7 +236,7 @@ if(pg==="login")return(
 <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 16px 40px"}}><div style={{width:"100%",maxWidth:380,animation:"fadeUp .4s ease"}}><div style={{textAlign:"center",marginBottom:24}}><h1 style={{fontSize:22,fontWeight:800,marginBottom:5}}>로그인</h1><p style={{fontSize:13,color:"#9CA3AF"}}>NETWORK 업무 공간에 접속합니다</p></div>
 <div style={{background:"#fff",borderRadius:14,border:"1px solid #ECEDF0",boxShadow:"0 4px 20px rgba(0,0,0,.05)",padding:mob?20:24}}>
 {er&&<div style={{padding:"9px 12px",borderRadius:7,marginBottom:14,background:"#FEF2F2",border:"1px solid #FECACA",fontSize:12,color:"#DC2626"}}>⚠️ {er}</div>}
-<form onSubmit={e=>{e.preventDefault();login();}}><div style={{marginBottom:14}}><label style={LS}>이메일</label><input type="email" autoComplete="email" value={em} onChange={e=>setEm(e.target.value)} placeholder="이메일" style={IS}/></div><div style={{marginBottom:20}}><label style={LS}>비밀번호</label><input type="password" autoComplete="current-password" value={pw} onChange={e=>setPw(e.target.value)} placeholder="••••••••" style={IS} onKeyDown={e=>{if(e.key==="Enter")login();}}/></div><button type="button" onClick={()=>login()} style={{width:"100%",padding:"12px",borderRadius:10,border:"none",background:ld?"#9CA3AF":"#1E1E1E",color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit",WebkitAppearance:"none"}}>{ld?"접속 중...":"접속하기"}</button></form>
+<form onSubmit={e=>{e.preventDefault();login();}}><div style={{marginBottom:14}}><label style={LS}>아이디</label><input type="text" autoComplete="username" value={em} onChange={e=>setEm(e.target.value)} placeholder="아이디 입력" style={IS}/></div><div style={{marginBottom:20}}><label style={LS}>비밀번호</label><input type="password" autoComplete="current-password" value={pw} onChange={e=>setPw(e.target.value)} placeholder="••••••••" style={IS} onKeyDown={e=>{if(e.key==="Enter")login();}}/></div><button type="button" onClick={()=>login()} style={{width:"100%",padding:"12px",borderRadius:10,border:"none",background:ld?"#9CA3AF":"#1E1E1E",color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit",WebkitAppearance:"none"}}>{ld?"접속 중...":"접속하기"}</button></form>
 {!isStandalone&&<button onClick={doInstall} style={{width:"100%",marginTop:10,padding:"11px",borderRadius:10,border:"1.5px solid #1E1E1E",background:"#fff",color:"#1E1E1E",fontSize:13,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontFamily:"inherit"}}><span style={{fontSize:18}}>📲</span>앱 설치하기</button>}
 </div>
 {showIosGuide&&<div style={{marginTop:16,background:"#fff",borderRadius:14,border:"1px solid #ECEDF0",boxShadow:"0 4px 20px rgba(0,0,0,.05)",padding:mob?16:20}}>
@@ -419,9 +419,9 @@ return(<>
 
 /* == 설정 == */
 if(ch==="settings"){
-const saveUser=()=>{if(editId){setUsers(p=>p.map(x=>x.id===editId?{...x,name:fm.name||x.name,email:fm.email||x.email,role:fm.role||x.role,org:fm.org||x.org,phone:fm.phone||x.phone,pw:fm.pw||x.pw,active:x.active}:x));}else{if(!fm.email||!fm.name){alert("이메일과 이름은 필수입니다.");return;}if(users.find(x=>x.email===fm.email)){alert("이미 등록된 이메일입니다.");return;}setUsers(p=>[...p,{id:nid(p),email:fm.email||"",name:fm.name||"",pw:fm.pw||"1234",role:fm.role||"유저",org:fm.org||"본사",phone:fm.phone||"",active:true}]);}X();};
+const saveUser=async()=>{if(editId){const upd={name:fm.name,uid:fm.uid,email:fm.email||"",role:fm.role,org:fm.org,phone:fm.phone,pw:fm.pw};await dbU("users",editId,upd);setUsers(p=>p.map(x=>x.id===editId?{...x,...upd}:x));}else{if(!fm.uid||!fm.name){alert("아이디와 이름은 필수입니다.");return;}if(users.find(x=>x.uid===fm.uid)){alert("이미 등록된 아이디입니다.");return;}const row={uid:fm.uid||"",email:fm.email||"",name:fm.name||"",pw:fm.pw||"1234",role:fm.role||"유저",org:fm.org||"본사",phone:fm.phone||"",active:true};const saved=await dbI("users",row);if(saved)setUsers(p=>[...p,saved]);}X();};
 const delUser=async id=>{if(confirmDel("이 사용자를 삭제하시겠습니까?")){await delRow("users",id,setUsers);}};
-const toggleActive=id=>{setUsers(p=>p.map(x=>x.id===id?{...x,active:!x.active}:x));};
+const toggleActive=async id=>{const u2=users.find(x=>x.id===id);if(u2){await dbU("users",id,{active:!u2.active});setUsers(p=>p.map(x=>x.id===id?{...x,active:!x.active}:x));}};
 return(<>
 <div style={{marginBottom:16}}><h2 style={{fontSize:17,fontWeight:800,marginBottom:3}}>⚙️ 설정</h2><p style={{fontSize:12,color:"#9CA3AF"}}>사용자 관리</p></div>
 <div style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",overflow:"hidden"}}>
@@ -429,16 +429,16 @@ return(<>
 {isAdmin&&<button onClick={()=>{setFm({});setEditId(null);setMdl("user");}} style={{padding:"5px 12px",borderRadius:6,border:"none",background:"#1E1E1E",fontSize:11,fontWeight:600,color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>+ 등록</button>}</div>
 {!isAdmin&&<div style={{padding:12,background:"#FFFBEB",borderBottom:"1px solid #FDE68A",fontSize:12,color:"#92400E"}}>⚠️ 사용자 관리는 관리자만 가능합니다.</div>}
 {mob?<div>{users.map(x=><div key={x.id} style={{padding:12,borderBottom:"1px solid #F5F5F7"}}>
-<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}><span style={{fontSize:12.5,fontWeight:600,color:"#3B82F6"}}>{x.email}</span><span style={{display:"inline-block",width:7,height:7,borderRadius:"50%",background:x.active?"#22C55E":"#D1D5DB"}}></span></div>
+<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}><span style={{fontSize:12.5,fontWeight:600,color:"#3B82F6"}}>{x.uid||x.email}</span><span style={{display:"inline-block",width:7,height:7,borderRadius:"50%",background:x.active?"#22C55E":"#D1D5DB"}}></span></div>
 <CR label="이름" val={x.name}/><CR label="역할"><B t={x.role}/></CR><CR label="소속" val={x.org}/><CR label="연락처" val={x.phone}/>
 {isAdmin&&<div style={{marginTop:8,display:"flex",gap:4,justifyContent:"flex-end"}}><button style={DB} onClick={()=>startEdit(x,"user")}>수정</button><button style={{...DB,color:x.active?"#EA580C":"#15803D",borderColor:x.active?"#FDBA74":"#86EFAC"}} onClick={()=>toggleActive(x.id)}>{x.active?"비활성":"활성"}</button><button style={DBR} onClick={()=>delUser(x.id)}>삭제</button></div>}</div>)}</div>
-:<div><div style={{display:"flex",padding:"8px 14px",borderBottom:"1px solid #ECEDF0",fontSize:10.5,fontWeight:700,color:"#9CA3AF"}}><span style={{flex:"0 0 160px"}}>이메일</span><span style={{flex:"0 0 70px"}}>이름</span><span style={{flex:"0 0 60px"}}>역할</span><span style={{flex:"0 0 80px"}}>소속</span><span style={{flex:"0 0 110px"}}>연락처</span><span style={{flex:"0 0 50px"}}>상태</span>{isAdmin&&<span style={{flex:"0 0 110px"}}></span>}</div>
+:<div><div style={{display:"flex",padding:"8px 14px",borderBottom:"1px solid #ECEDF0",fontSize:10.5,fontWeight:700,color:"#9CA3AF"}}><span style={{flex:"0 0 120px"}}>아이디</span><span style={{flex:"0 0 70px"}}>이름</span><span style={{flex:"0 0 60px"}}>역할</span><span style={{flex:"0 0 80px"}}>소속</span><span style={{flex:"0 0 110px"}}>연락처</span><span style={{flex:"0 0 50px"}}>상태</span>{isAdmin&&<span style={{flex:"0 0 110px"}}></span>}</div>
 {users.map(x=><div key={x.id} style={{display:"flex",padding:"8px 14px",borderBottom:"1px solid #F5F5F7",fontSize:12.5,alignItems:"center"}} onMouseEnter={e=>e.currentTarget.style.background="#FAFBFC"} onMouseLeave={e=>e.currentTarget.style.background=""}>
-<span style={{flex:"0 0 160px",color:"#3B82F6",fontWeight:600}}>{x.email}</span><span style={{flex:"0 0 70px"}}>{x.name}</span><span style={{flex:"0 0 60px"}}><B t={x.role}/></span><span style={{flex:"0 0 80px",color:"#6B7280"}}>{x.org}</span><span style={{flex:"0 0 110px",color:"#6B7280"}}>{x.phone}</span>
+<span style={{flex:"0 0 120px",color:"#3B82F6",fontWeight:600}}>{x.uid||x.email}</span><span style={{flex:"0 0 70px"}}>{x.name}</span><span style={{flex:"0 0 60px"}}><B t={x.role}/></span><span style={{flex:"0 0 80px",color:"#6B7280"}}>{x.org}</span><span style={{flex:"0 0 110px",color:"#6B7280"}}>{x.phone}</span>
 <span style={{flex:"0 0 50px"}}><span style={{display:"inline-block",width:7,height:7,borderRadius:"50%",background:x.active?"#22C55E":"#D1D5DB",marginRight:3}}></span><span style={{fontSize:10.5,color:x.active?"#15803D":"#9CA3AF"}}>{x.active?"활성":"비활성"}</span></span>
 {isAdmin&&<span style={{flex:"0 0 110px",display:"flex",gap:3}}><button style={DB} onClick={()=>startEdit(x,"user")}>수정</button><button style={{...DB,color:x.active?"#EA580C":"#15803D",borderColor:x.active?"#FDBA74":"#86EFAC"}} onClick={()=>toggleActive(x.id)}>{x.active?"비활성":"활성"}</button><button style={DBR} onClick={()=>delUser(x.id)}>삭제</button></span>}</div>)}</div>}</div>
 {isAdmin&&<Mdl open={mdl==="user"} onClose={X} title={editId?"사용자 수정":"사용자 등록"} mob={mob}><div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:10}}>
-<div><label style={LS}>이메일</label><input type="email" style={IS} value={fm.email||""} onChange={e=>F2("email",e.target.value)}/></div>
+<div><label style={LS}>아이디 (한글 가능)</label><input type="text" style={IS} value={fm.uid||""} onChange={e=>F2("uid",e.target.value)} placeholder="아이디 입력"/></div>
 <div><label style={LS}>이름</label><input style={IS} value={fm.name||""} onChange={e=>F2("name",e.target.value)}/></div>
 <div><label style={LS}>역할</label><select style={IS} value={fm.role||"유저"} onChange={e=>F2("role",e.target.value)}><option>관리자</option><option>유저</option></select></div>
 <div><label style={LS}>소속</label><input style={IS} value={fm.org||""} onChange={e=>F2("org",e.target.value)} placeholder="본사 / SE글로벌"/></div>
