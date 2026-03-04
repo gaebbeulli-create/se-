@@ -468,7 +468,7 @@ const saved=await dbI("files",row);
 if(saved)setFiles(p=>[saved,...p]);
 }
 setUploading(false);e.target.value="";};
-const downloadFile=(f)=>{if(f.url){window.open(f.url,"_blank");}else{alert("다운로드 URL이 없습니다.");}};
+const downloadFile=(f)=>{if(f.url){const a=document.createElement("a");a.href=f.url;a.download=f.nm||"download";a.target="_blank";a.rel="noopener";document.body.appendChild(a);a.click();document.body.removeChild(a);}else{alert("다운로드 URL이 없습니다.");}};
 return(<>
 <div style={{display:"flex",flexDirection:"column",gap:6}}>{files.map(f=><div key={f.id} style={{background:"#fff",borderRadius:8,border:"1px solid #ECEDF0",padding:"10px 14px",display:"flex",alignItems:"center",gap:10}}>
 <div style={{width:32,height:32,borderRadius:6,background:ic[f.tp]||"#6B7280",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:800,textTransform:"uppercase",flexShrink:0}}>{f.tp}</div>
