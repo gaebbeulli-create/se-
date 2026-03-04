@@ -589,27 +589,26 @@ return <div key={item.p} onClick={()=>go(item.p)} style={{display:"flex",alignIt
 </div></div></div>}
 
 {/* DESKTOP SIDEBAR */}
-{!mob&&<aside style={{width:sideOpen?220:0,background:"#1B1D21",display:"flex",flexDirection:"column",borderRight:sideOpen?"1px solid rgba(255,255,255,.06)":"none",transition:"width .25s",flexShrink:0,overflow:"hidden",position:"fixed",top:0,left:0,bottom:0,zIndex:9998}}>
-<div style={{padding:"14px 14px",borderBottom:"1px solid rgba(255,255,255,.06)",display:"flex",alignItems:"center",gap:9,justifyContent:"space-between"}}>
-<div onClick={()=>{go("home");setSideOpen(false);}} style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer"}}><div style={{width:30,height:30,borderRadius:7,flexShrink:0,background:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:800,color:"#1B1D21"}}>N</div>
+{!mob&&<aside style={{width:sideOpen?220:0,minWidth:sideOpen?220:0,background:"#1B1D21",display:"flex",flexDirection:"column",borderRight:sideOpen?"1px solid rgba(255,255,255,.06)":"none",transition:"all .25s ease",flexShrink:0,overflow:"hidden"}}>
+<div style={{padding:"14px 14px",borderBottom:"1px solid rgba(255,255,255,.06)",display:"flex",alignItems:"center",gap:9,justifyContent:"space-between",minWidth:220}}>
+<div onClick={()=>{go("home");}} style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer"}}><div style={{width:30,height:30,borderRadius:7,flexShrink:0,background:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:800,color:"#1B1D21"}}>N</div>
 <span style={{color:"#fff",fontSize:13,fontWeight:800,letterSpacing:1.5}}>NETWORK</span></div>
 <button onClick={()=>setSideOpen(false)} style={{background:"none",border:"none",color:"rgba(255,255,255,.5)",fontSize:18,cursor:"pointer"}}>✕</button>
 </div>
-<nav style={{flex:1,overflowY:"auto",padding:"8px 0"}}>
+<nav style={{flex:1,overflowY:"auto",padding:"8px 0",minWidth:220}}>
 {CHS.map((item,idx)=>{
 if(item.d)return <div key={idx} style={{padding:"12px 16px 4px",fontSize:10,fontWeight:700,color:"rgba(255,255,255,.2)",letterSpacing:.8,textTransform:"uppercase"}}>{item.l}</div>;
 const act=ch===item.p;
-return <div key={item.p} onClick={()=>{go(item.p);setSideOpen(false);}} style={{display:"flex",alignItems:"center",gap:9,padding:"8px 12px",margin:"1px 6px",borderRadius:7,cursor:"pointer",background:act?"rgba(255,255,255,.1)":"transparent",color:act?"#fff":"rgba(255,255,255,.5)",fontSize:13,fontWeight:act?600:400,transition:"all .12s"}}><span style={{fontSize:15,flexShrink:0}}>{item.i}</span><span>{item.l}</span></div>;
+return <div key={item.p} onClick={()=>go(item.p)} style={{display:"flex",alignItems:"center",gap:9,padding:"8px 12px",margin:"1px 6px",borderRadius:7,cursor:"pointer",background:act?"rgba(255,255,255,.1)":"transparent",color:act?"#fff":"rgba(255,255,255,.5)",fontSize:13,fontWeight:act?600:400,transition:"all .12s"}}><span style={{fontSize:15,flexShrink:0}}>{item.i}</span><span>{item.l}</span></div>;
 })}
 <div style={{padding:"12px 16px 4px",fontSize:10,fontWeight:700,color:"rgba(255,255,255,.2)",letterSpacing:.8,textTransform:"uppercase"}}>시스템</div>
-<div onClick={()=>{go("settings");setSideOpen(false);}} style={{display:"flex",alignItems:"center",gap:9,padding:"8px 12px",margin:"1px 6px",borderRadius:7,cursor:"pointer",background:ch==="settings"?"rgba(255,255,255,.1)":"transparent",color:ch==="settings"?"#fff":"rgba(255,255,255,.5)",fontSize:13,fontWeight:ch==="settings"?600:400}}><span style={{fontSize:15,flexShrink:0}}>⚙️</span><span>설정</span></div>
+<div onClick={()=>go("settings")} style={{display:"flex",alignItems:"center",gap:9,padding:"8px 12px",margin:"1px 6px",borderRadius:7,cursor:"pointer",background:ch==="settings"?"rgba(255,255,255,.1)":"transparent",color:ch==="settings"?"#fff":"rgba(255,255,255,.5)",fontSize:13,fontWeight:ch==="settings"?600:400}}><span style={{fontSize:15,flexShrink:0}}>⚙️</span><span>설정</span></div>
 </nav>
-<div style={{padding:"12px 14px",borderTop:"1px solid rgba(255,255,255,.06)"}}>
+<div style={{padding:"12px 14px",borderTop:"1px solid rgba(255,255,255,.06)",minWidth:220}}>
 {u&&<div style={{marginBottom:8}}><div style={{display:"flex",alignItems:"center",gap:6}}><div style={{fontSize:12.5,fontWeight:600,color:"rgba(255,255,255,.7)"}}>{u.name}</div><span style={{padding:"1px 6px",borderRadius:3,fontSize:9,fontWeight:700,background:u.role==="관리자"?"#FEF3C7":"#DBEAFE",color:u.role==="관리자"?"#D97706":"#1D4ED8"}}>{u.role}</span></div><div style={{fontSize:10.5,color:"rgba(255,255,255,.3)",marginTop:1}}>{u.org}</div></div>}
 <button onClick={logout} style={{width:"100%",padding:"7px 12px",borderRadius:6,border:"1px solid rgba(255,255,255,.1)",background:"transparent",color:"rgba(255,255,255,.4)",fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>로그아웃</button>
 </div></aside>}
-{/* DESKTOP OVERLAY */}
-{!mob&&sideOpen&&<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.3)",zIndex:9997}} onClick={()=>setSideOpen(false)}/>}
+{/* end desktop sidebar */}
 
 {/* MAIN */}
 <main style={{flex:1,overflow:"hidden",display:"flex",flexDirection:"column",paddingBottom:mob?56:0}}>
