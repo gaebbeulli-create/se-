@@ -109,7 +109,7 @@ const doInstall=async()=>{if(installEvt){installEvt.prompt();const r=await insta
 };
 const F2=(k,v)=>setFm(p=>({...p,[k]:v}));
 const X=()=>{setFm({});setMdl(null);setDet(null);setEditId(null);};
-const syncToDB=async(tbl,items)=>{const{data:ex}=await sb.from(tbl).select("id");const eids=new Set((ex||[]).map(r=>r.id));const cids=new Set(items.map(r=>r.id));for(const it of items){const r={...it};delete r.created_at;if(!eids.has(it.id)){await sb.from(tbl).insert(r).select();}else{await sb.from(tbl).update(r).eq("id",it.id);}}for(const eid of eids){if(!cids.has(eid))await sb.from(tbl).delete().eq("id",eid);}};
+const syncToDB=async(tbl,items)=>{const{data:ex}=await sb.from(tbl).select("id");const eids=new Set((ex||[]).map(r=>r.id));const cids=new Set(items.map(r=>r.id));for(const it of items){const r={...it};delete r.created_at;await sb.from(tbl).upsert(r,{onConflict:"id"});}for(const eid of eids){if(!cids.has(eid))await sb.from(tbl).delete().eq("id",eid);}};
 const syncRef=React.useRef(null);
 const qSync=()=>{if(syncRef.current)clearTimeout(syncRef.current);syncRef.current=setTimeout(async()=>{if(!dbReady)return;await Promise.all([syncToDB("contracts",contracts),syncToDB("vehicles",vehicles),syncToDB("dispatches",dispatches),syncToDB("incidents",incidents),syncToDB("claims",claims),syncToDB("notices",notices),syncToDB("requests",requests),syncToDB("meetings",meetings),syncToDB("schedule",schedule),syncToDB("files",files),syncToDB("users",users)]);},1500);};
 useEffect(()=>{if(dbReady)qSync();},[contracts,vehicles,dispatches,incidents,claims,notices,requests,meetings,schedule,files,users]);
