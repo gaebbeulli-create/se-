@@ -288,7 +288,7 @@ if(ch==="inventory"){
 const ss=["전체","가용","대여중","정비중"];
 const fl=vehicles.filter(v=>(fil==="전체"||v.st===fil)&&(!sq||v.vn.includes(sq)||v.md.includes(sq)));
 const save=()=>{if(editId){setVehicles(p=>p.map(v=>v.id===editId?{...v,vn:fm.vn||v.vn,md:fm.md||v.md,st:fm.st||v.st,loc:fm.loc||v.loc}:v));}else{setVehicles(p=>[{id:nid(p),vn:fm.vn||"",md:fm.md||"",st:fm.st||"가용",loc:fm.loc||"",ck:td},...p]);notify("📦","차량재고","새 차량 등록",(fm.vn||"")+" · "+(fm.md||"")+" · "+(fm.loc||""));}X();};
-const del=async id=>{if(confirmDel()){await delRow("vehicles",id,setVehicles);}};};
+const del=async id=>{if(confirmDel()){await delRow("vehicles",id,setVehicles);}};
 return(<><div style={{display:"flex",gap:5,marginBottom:12,flexWrap:"wrap"}}>{ss.map(s=><button key={s} onClick={()=>setFil(s)} style={fbtn(s)}>{s}</button>)}<span style={{marginLeft:"auto",fontSize:11,color:"#9CA3AF",lineHeight:"26px"}}>총 {fl.length}대</span></div>
 <div style={{display:"grid",gridTemplateColumns:mob?"1fr":"repeat(auto-fill,minmax(210px,1fr))",gap:8}}>{fl.map(v=>{const ct=contracts.find(c=>c.vn===v.vn&&(c.st==="진행"||c.st==="연체"));return <div key={v.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:14}}>
 <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}><span style={{fontSize:13,fontWeight:700}}>{v.vn}</span><B t={v.st}/></div>
@@ -337,7 +337,7 @@ return(<><div style={{display:"flex",gap:5,marginBottom:12,flexWrap:"wrap"}}>{ss
 if(ch==="incidents"){
 const fl=incidents.filter(i=>!sq||i.no.includes(sq)||i.vn.includes(sq)||i.ds.includes(sq));
 const save=()=>{if(editId){setIncidents(p=>p.map(i=>i.id===editId?{...i,dt:fm.dt||i.dt,vn:fm.vn||i.vn,tp:fm.tp||i.tp,sv:fm.sv||i.sv,ds:fm.ds||i.ds,st:fm.st||i.st}:i));}else{const id=nid(incidents);setIncidents(p=>[{id,no:"IC-"+String(id).padStart(3,"0"),dt:fm.dt||td,vn:fm.vn||"",tp:fm.tp||"",sv:fm.sv||"보통",st:"접수",co:0,ins:"",ds:fm.ds||""},...p]);notify("⚠️","사고접수","새 사고 접수","["+(fm.sv||"보통")+"] "+(fm.vn||"")+" · "+(fm.tp||"")+(fm.ds?"\n"+fm.ds:""));}X();};
-const del=async id=>{if(confirmDel()){await delRow("incidents",id,setIncidents)(p=>p.filter(i=>i.id!==id));};
+const del=async id=>{if(confirmDel()){await delRow("incidents",id,setIncidents);}};
 return(<>
 {mob?<div style={{display:"flex",flexDirection:"column",gap:8}}>{fl.map(i=><div key={i.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:14}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}><span style={{fontSize:13,fontWeight:700}}>{i.no}</span><div style={{display:"flex",gap:4}}><B t={i.sv}/><B t={i.st}/></div></div><CR label="사고일" val={i.dt}/><CR label="차량" val={i.vn}/><CR label="유형" val={i.tp}/><CR label="내용" val={i.ds}/><div style={{marginTop:8,display:"flex",gap:4,justifyContent:"flex-end"}}><button style={DB} onClick={()=>startEdit(i,"i")}>수정</button><button style={DBR} onClick={()=>del(i.id)}>삭제</button></div></div>)}</div>
 :<div style={{background:"#fff",borderRadius:12,border:"1px solid #ECEDF0",overflow:"hidden"}}>{fl.map(i=><div key={i.id} style={{display:"flex",padding:"10px 16px",borderBottom:"1px solid #F5F5F7",fontSize:13,alignItems:"center"}}><span style={{flex:"0 0 80px",fontWeight:600}}>{i.no}</span><span style={{flex:"0 0 80px"}}>{i.dt}</span><span style={{flex:"0 0 90px"}}>{i.vn}</span><span style={{flex:"0 0 50px"}}>{i.tp}</span><span style={{flex:"0 0 55px"}}><B t={i.sv}/></span><span style={{flex:1,color:"#6B7280"}}>{i.ds}</span><span style={{flex:"0 0 70px"}}><B t={i.st}/></span><span style={{flex:"0 0 80px",display:"flex",gap:4}}><button style={DB} onClick={()=>startEdit(i,"i")}>수정</button><button style={DBR} onClick={()=>del(i.id)}>삭제</button></span></div>)}</div>}
@@ -347,7 +347,7 @@ return(<>
 if(ch==="claims"){
 const fl=claims.filter(c=>!sq||c.no.includes(sq)||c.cu.includes(sq)||c.ds.includes(sq));
 const save=()=>{if(editId){setClaims(p=>p.map(c=>c.id===editId?{...c,ct:fm.ct||c.ct,cu:fm.cu||c.cu,pr:fm.pr||c.pr,ds:fm.ds||c.ds,st:fm.st||c.st}:c));}else{const id=nid(claims);setClaims(p=>[{id,no:"CL-"+String(id).padStart(3,"0"),ct:fm.ct||"기타",cu:fm.cu||"",pr:fm.pr||"보통",st:"접수",ds:fm.ds||"",dt:td},...p]);notify("🧾","클레임","새 클레임 접수","["+(fm.ct||"기타")+"] "+(fm.cu||"")+(fm.ds?"\n"+fm.ds:""));}X();};
-const del=async id=>{if(confirmDel()){await delRow("claims",id,setClaims)(p=>p.filter(c=>c.id!==id));};
+const del=async id=>{if(confirmDel()){await delRow("claims",id,setClaims);}};
 return(<>
 {mob?<div style={{display:"flex",flexDirection:"column",gap:8}}>{fl.map(c=><div key={c.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:14}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}><span style={{fontSize:13,fontWeight:700}}>{c.no}</span><div style={{display:"flex",gap:4}}><B t={c.ct}/><B t={c.st}/></div></div><CR label="고객" val={c.cu}/><CR label="긴급도"><B t={c.pr}/></CR><CR label="내용" val={c.ds}/><div style={{marginTop:8,display:"flex",gap:4,justifyContent:"flex-end"}}><button style={DB} onClick={()=>startEdit(c,"cl")}>수정</button><button style={DBR} onClick={()=>del(c.id)}>삭제</button></div></div>)}</div>
 :<div style={{background:"#fff",borderRadius:12,border:"1px solid #ECEDF0",overflow:"hidden"}}>{fl.map(c=><div key={c.id} style={{display:"flex",padding:"10px 16px",borderBottom:"1px solid #F5F5F7",fontSize:13,alignItems:"center"}}><span style={{flex:"0 0 80px",fontWeight:600}}>{c.no}</span><span style={{flex:"0 0 55px"}}><B t={c.ct}/></span><span style={{flex:"0 0 70px"}}>{c.cu}</span><span style={{flex:"0 0 55px"}}><B t={c.pr}/></span><span style={{flex:1,color:"#6B7280"}}>{c.ds}</span><span style={{flex:"0 0 70px"}}><B t={c.st}/></span><span style={{flex:"0 0 80px",display:"flex",gap:4}}><button style={DB} onClick={()=>startEdit(c,"cl")}>수정</button><button style={DBR} onClick={()=>del(c.id)}>삭제</button></span></div>)}</div>}
@@ -357,7 +357,7 @@ return(<>
 if(ch==="notices"){
 const fl=notices.filter(n=>!sq||n.tt.includes(sq)||n.bd.includes(sq));
 const save=()=>{if(editId){setNotices(p=>p.map(n=>n.id===editId?{...n,tt:fm.tt||n.tt,bd:fm.bd||n.bd,pn:fm.pn!==undefined?fm.pn:n.pn}:n));}else{setNotices(p=>[{id:nid(p),tt:fm.tt||"",bd:fm.bd||"",au:u?.name,dt:td,pn:!!fm.pn},...p]);notify("📢","공지사항",fm.tt||"새 공지",fm.bd||"");}X();};
-const del=async id=>{if(confirmDel()){await delRow("notices",id,setNotices)(p=>p.filter(n=>n.id!==id));setDet(null);};
+const del=async id=>{if(confirmDel()){await delRow("notices",id,setNotices);setDet(null);}};
 return(<>
 <div style={{display:"flex",flexDirection:"column",gap:8}}>{fl.map(n=><div key={n.id} style={{background:"#fff",borderRadius:10,border:n.pn?"2px solid #3B82F6":"1px solid #ECEDF0",padding:mob?12:16,cursor:"pointer"}} onClick={()=>setDet(n)}>
 <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:5}}>{n.pn&&<span style={{padding:"1px 6px",borderRadius:4,fontSize:9,fontWeight:700,background:"#EFF6FF",color:"#1D4ED8"}}>📌</span>}<span style={{fontSize:13,fontWeight:700,flex:1}}>{n.tt}</span>
@@ -371,7 +371,7 @@ return(<>
 if(ch==="requests"){
 const fl=requests.filter(r=>!sq||r.tt.includes(sq)||r.bd.includes(sq));
 const save=()=>{if(editId){setRequests(p=>p.map(r=>r.id===editId?{...r,tt:fm.tt||r.tt,bd:fm.bd||r.bd,st:fm.st||r.st}:r));}else{setRequests(p=>[{id:nid(p),tt:fm.tt||"",bd:fm.bd||"",au:u?.name,dt:td,st:"검토중"},...p]);notify("💬","요청/건의",fm.tt||"새 요청",fm.bd||"");}X();};
-const del=async id=>{if(confirmDel()){await delRow("requests",id,setRequests)(p=>p.filter(r=>r.id!==id));setDet(null);};
+const del=async id=>{if(confirmDel()){await delRow("requests",id,setRequests);setDet(null);}};
 return(<>
 <div style={{display:"flex",flexDirection:"column",gap:8}}>{fl.map(r=><div key={r.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:mob?12:16,cursor:"pointer"}} onClick={()=>setDet(r)}>
 <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:5}}><span style={{fontSize:13,fontWeight:700,flex:1}}>{r.tt}</span><B t={r.st}/><span style={{display:"flex",gap:3}} onClick={e=>e.stopPropagation()}><button style={DB} onClick={()=>startEdit(r,"r")}>수정</button><button style={DBR} onClick={()=>del(r.id)}>삭제</button></span></div>
@@ -384,7 +384,7 @@ return(<>
 if(ch==="meetings"){
 const fl=meetings.filter(m=>!sq||m.tt.includes(sq)||m.dc.includes(sq));
 const save=()=>{if(editId){setMeetings(p=>p.map(m=>m.id===editId?{...m,tt:fm.tt||m.tt,dt:fm.dt||m.dt,lc:fm.lc||m.lc,at:fm.at||m.at,dc:fm.dc||m.dc,st:fm.st||m.st}:m));}else{setMeetings(p=>[{id:nid(p),tt:fm.tt||"",dt:fm.dt||td,lc:fm.lc||"",at:fm.at||"",dc:fm.dc||"",st:"작성중"},...p]);notify("📋","회의록",fm.tt||"새 회의록",fm.dc||"");}X();};
-const del=async id=>{if(confirmDel()){await delRow("meetings",id,setMeetings)};};
+const del=async id=>{if(confirmDel()){await delRow("meetings",id,setMeetings);}};
 return(<>
 <div style={{display:"flex",flexDirection:"column",gap:8}}>{fl.map(m=><div key={m.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:mob?12:16}}>
 <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6}}><span style={{fontSize:13,fontWeight:700,flex:1}}>{m.tt}</span><B t={m.st}/><span style={{display:"flex",gap:3}}><button style={DB} onClick={()=>startEdit(m,"m")}>수정</button><button style={DBR} onClick={()=>del(m.id)}>삭제</button></span></div>
@@ -398,7 +398,7 @@ if(ch==="schedule"){
 const tc={"입고":"#3B82F6","정비":"#F59E0B","회의":"#8B5CF6"};
 const fl=[...schedule].sort((a,b)=>a.dt.localeCompare(b.dt)).filter(s=>!sq||s.tt.includes(sq));
 const save=()=>{if(editId){setSchedule(p=>p.map(s=>s.id===editId?{...s,tt:fm.tt||s.tt,dt:fm.dt||s.dt,tp:fm.tp||s.tp}:s));}else{setSchedule(p=>[...p,{id:nid(p),tt:fm.tt||"",dt:fm.dt||td,tp:fm.tp||""}]);notify("📅","일정",fm.tt||"새 일정",(fm.dt||"")+" · "+(fm.tp||""));}X();};
-const del=async id=>{if(confirmDel()){await delRow("schedule",id,setSchedule)};};
+const del=async id=>{if(confirmDel()){await delRow("schedule",id,setSchedule);}};
 return(<>
 <div style={{display:"flex",flexDirection:"column",gap:6}}>{fl.map(s=><div key={s.id} style={{background:"#fff",borderRadius:8,border:"1px solid #ECEDF0",padding:"10px 14px",display:"flex",alignItems:"center",gap:10}}>
 <div style={{width:4,height:32,borderRadius:2,background:tc[s.tp]||"#6B7280",flexShrink:0}}/>
@@ -409,7 +409,7 @@ return(<>
 /* == 파일공유 == */
 if(ch==="files"){
 const ic={"xlsx":"#217346","pdf":"#DC2626","docx":"#2B579A"};
-const del=async id=>{if(confirmDel()){await delRow("files",id,setFiles)};};
+const del=async id=>{if(confirmDel()){await delRow("files",id,setFiles);}};
 return(<>
 <div style={{display:"flex",flexDirection:"column",gap:6}}>{files.map(f=><div key={f.id} style={{background:"#fff",borderRadius:8,border:"1px solid #ECEDF0",padding:"10px 14px",display:"flex",alignItems:"center",gap:10}}>
 <div style={{width:32,height:32,borderRadius:6,background:ic[f.tp]||"#6B7280",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:800,textTransform:"uppercase",flexShrink:0}}>{f.tp}</div>
@@ -420,7 +420,7 @@ return(<>
 /* == 설정 == */
 if(ch==="settings"){
 const saveUser=()=>{if(editId){setUsers(p=>p.map(x=>x.id===editId?{...x,name:fm.name||x.name,email:fm.email||x.email,role:fm.role||x.role,org:fm.org||x.org,phone:fm.phone||x.phone,pw:fm.pw||x.pw,active:x.active}:x));}else{if(!fm.email||!fm.name){alert("이메일과 이름은 필수입니다.");return;}if(users.find(x=>x.email===fm.email)){alert("이미 등록된 이메일입니다.");return;}setUsers(p=>[...p,{id:nid(p),email:fm.email||"",name:fm.name||"",pw:fm.pw||"1234",role:fm.role||"유저",org:fm.org||"본사",phone:fm.phone||"",active:true}]);}X();};
-const delUser=id=>{if(confirmDel("이 사용자를 삭제하시겠습니까?"))setUsers};};
+const delUser=async id=>{if(confirmDel("이 사용자를 삭제하시겠습니까?")){await delRow("users",id,setUsers);}};
 const toggleActive=id=>{setUsers(p=>p.map(x=>x.id===id?{...x,active:!x.active}:x));};
 return(<>
 <div style={{marginBottom:16}}><h2 style={{fontSize:17,fontWeight:800,marginBottom:3}}>⚙️ 설정</h2><p style={{fontSize:12,color:"#9CA3AF"}}>사용자 관리</p></div>
