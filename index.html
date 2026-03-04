@@ -408,14 +408,37 @@ return(<>
 
 /* == 파일공유 == */
 if(ch==="files"){
-const ic={"xlsx":"#217346","pdf":"#DC2626","docx":"#2B579A"};
-const del=async id=>{if(confirmDel()){await delRow("files",id,setFiles);}};
+const ic={"xlsx":"#217346","pdf":"#DC2626","docx":"#2B579A","png":"#F59E0B","jpg":"#F59E0B","jpeg":"#F59E0B","zip":"#6B7280","hwp":"#2563EB","pptx":"#D97706","csv":"#15803D"};
+const del=async id=>{const f=files.find(x=>x.id===id);if(confirmDel()){if(f&&f.url){try{const path=f.url.split("/storage/v1/object/public/files/")[1];if(path)await sb.storage.from("files").remove([decodeURIComponent(path)]);}catch(e){}}await delRow("files",id,setFiles);}};
+const[uploading,setUploading]=useState(false);
+const handleFileUpload=async(e)=>{const fileList=Array.from(e.target.files||[]);if(!fileList.length)return;setUploading(true);
+for(const file of fileList){
+const ext=file.name.split(".").pop().toLowerCase();
+const sz=file.size<1024?(file.size+"B"):file.size<1048576?((file.size/1024).toFixed(0)+"KB"):((file.size/1048576).toFixed(1)+"MB");
+const safeName=Date.now()+"_"+file.name.replace(/[^a-zA-Z0-9가-힣._-]/g,"_");
+const{data:upData,error:upErr}=await sb.storage.from("files").upload(safeName,file);
+let fileUrl="";
+if(!upErr&&upData){const{data:urlData}=sb.storage.from("files").getPublicUrl(safeName);fileUrl=urlData?.publicUrl||"";}
+const row={nm:file.name,tp:ext,sz:sz,au:u?.name||"",dt:td,url:fileUrl};
+const saved=await dbI("files",row);
+if(saved)setFiles(p=>[saved,...p]);
+}
+setUploading(false);e.target.value="";};
+const downloadFile=(f)=>{if(f.url){window.open(f.url,"_blank");}else{alert("다운로드 URL이 없습니다.");}};
 return(<>
 <div style={{display:"flex",flexDirection:"column",gap:6}}>{files.map(f=><div key={f.id} style={{background:"#fff",borderRadius:8,border:"1px solid #ECEDF0",padding:"10px 14px",display:"flex",alignItems:"center",gap:10}}>
 <div style={{width:32,height:32,borderRadius:6,background:ic[f.tp]||"#6B7280",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:800,textTransform:"uppercase",flexShrink:0}}>{f.tp}</div>
-<div style={{flex:1,minWidth:0}}><div style={{fontSize:12.5,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{f.nm}</div><div style={{fontSize:10.5,color:"#9CA3AF"}}>{f.sz} · {f.au} · {f.dt}</div></div>
-<button style={DBR} onClick={()=>del(f.id)}>삭제</button></div>)}</div>
-<Mdl open={mdl==="f"} onClose={X} title="파일 등록" mob={mob}><div><label style={LS}>파일명</label><input style={IS} value={fm.nm||""} onChange={e=>F2("nm",e.target.value)} placeholder="파일명.xlsx"/></div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginTop:10}}><div><label style={LS}>형식</label><select style={IS} value={fm.tp||""} onChange={e=>F2("tp",e.target.value)}><option value="">선택</option><option>xlsx</option><option>pdf</option><option>docx</option></select></div><div><label style={LS}>크기</label><input style={IS} value={fm.sz||""} onChange={e=>F2("sz",e.target.value)} placeholder="128KB"/></div></div><button onClick={()=>{setFiles(p=>[{id:nid(p),nm:fm.nm||"새파일",tp:fm.tp||"pdf",sz:fm.sz||"-",au:u?.name,dt:td},...p]);X();}} style={SB}>등록하기</button></Mdl></>);}
+<div style={{flex:1,minWidth:0,cursor:f.url?"pointer":"default"}} onClick={()=>f.url&&downloadFile(f)}><div style={{fontSize:12.5,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",color:f.url?"#1D4ED8":"#1E1E1E"}}>{f.nm}</div><div style={{fontSize:10.5,color:"#9CA3AF"}}>{f.sz} · {f.au} · {f.dt}</div></div>
+<div style={{display:"flex",gap:4,flexShrink:0}}>{f.url&&<button style={DB} onClick={()=>downloadFile(f)}>다운로드</button>}<button style={DBR} onClick={()=>del(f.id)}>삭제</button></div></div>)}{!files.length&&<div style={{padding:20,textAlign:"center",color:"#9CA3AF"}}>등록된 파일이 없습니다</div>}</div>
+<Mdl open={mdl==="f"} onClose={X} title="파일 업로드" mob={mob}>
+<div style={{border:"2px dashed #E5E7EB",borderRadius:10,padding:24,textAlign:"center",cursor:"pointer",position:"relative",background:uploading?"#F9FAFB":"#fff"}} onClick={()=>!uploading&&document.getElementById("file-upload-input")?.click()}>
+<input id="file-upload-input" type="file" multiple style={{display:"none"}} onChange={handleFileUpload}/>
+<div style={{fontSize:32,marginBottom:8}}>{uploading?"⏳":"📁"}</div>
+<div style={{fontSize:14,fontWeight:700,color:uploading?"#9CA3AF":"#1E1E1E",marginBottom:4}}>{uploading?"업로드 중...":"클릭하여 파일 선택"}</div>
+<div style={{fontSize:11,color:"#9CA3AF"}}>여러 파일을 한번에 선택할 수 있습니다</div>
+<div style={{fontSize:10,color:"#D1D5DB",marginTop:8}}>xlsx, pdf, docx, hwp, pptx, png, jpg, zip 등</div>
+</div>
+</Mdl></>);}
 
 /* == 설정 == */
 if(ch==="settings"){
