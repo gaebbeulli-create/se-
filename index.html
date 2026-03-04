@@ -96,8 +96,13 @@ const[mob,setMob]=useState(window.innerWidth<768);
 const[installEvt,setInstallEvt]=useState(null);
 const[showIosGuide,setShowIosGuide]=useState(false);
 const[uploading,setUploading]=useState(false);
+const[viewMode,setViewMode]=useState("tile");
+const[fMd,setFMd]=useState("전체");
+const[fLoc,setFLoc]=useState("전체");
 useEffect(()=>{const h=()=>setMob(window.innerWidth<768);window.addEventListener("resize",h);return()=>window.removeEventListener("resize",h);},[]);
 useEffect(()=>{const h=(e)=>{e.preventDefault();setInstallEvt(e);};window.addEventListener("beforeinstallprompt",h);return()=>window.removeEventListener("beforeinstallprompt",h);},[]);
+/* 브라우저 뒤로가기 지원 */
+useEffect(()=>{const onPop=(e)=>{const st=e.state;if(st&&st.ch){setCh(st.ch);setQ("");setFil("전체");setDet(null);setEditId(null);SS.setItem("nw_ch",st.ch);}};window.addEventListener("popstate",onPop);return()=>window.removeEventListener("popstate",onPop);},[]);
 const isIos=/iPad|iPhone|iPod/.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&"ontouchend"in document);
 const isStandalone=window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone;
 const doInstall=async()=>{if(installEvt){installEvt.prompt();const r=await installEvt.userChoice;if(r.outcome==="accepted")setInstallEvt(null);}else if(isIos){setShowIosGuide(true);}else{alert("브라우저 메뉴에서 '홈 화면에 추가'를 선택해주세요.");}
@@ -111,7 +116,7 @@ useEffect(()=>{if(dbReady)qSync();},[contracts,vehicles,dispatches,incidents,cla
 const nid=a=>a.length?Math.max(...a.map(x=>x.id))+1:1;
 const $=n=>n?Number(n).toLocaleString()+"원":"";
 const td=new Date().toISOString().slice(0,10);
-const go=p=>{setCh(p);setQ("");setFil("전체");setDet(null);setEditId(null);setSideOpen(false);SS.setItem("nw_ch",p);};
+const go=p=>{setCh(p);setQ("");setFil("전체");setDet(null);setEditId(null);setSideOpen(false);SS.setItem("nw_ch",p);history.pushState({ch:p},"","#"+p);};
 const isAdmin=u&&u.role==="관리자";
 
 /* 데이터 영속성 - sessionStorage */
@@ -286,16 +291,44 @@ return(<>
 
 /* == 차량재고 == */
 if(ch==="inventory"){
-const ss=["전체","가용","대여중","정비중"];
-const fl=vehicles.filter(v=>(fil==="전체"||v.st===fil)&&(!sq||v.vn.includes(sq)||v.md.includes(sq)));
+const ss=["전체","가용","대여중","정비중","폐기"];
+const models=[...new Set(vehicles.map(v=>v.md))].filter(Boolean);
+const locs=[...new Set(vehicles.map(v=>v.loc))].filter(Boolean);
+const fl=vehicles.filter(v=>(fil==="전체"||v.st===fil)&&(fMd==="전체"||v.md===fMd)&&(fLoc==="전체"||v.loc===fLoc)&&(!sq||v.vn.includes(sq)||v.md.includes(sq)||v.loc.includes(sq)));
 const save=()=>{if(editId){setVehicles(p=>p.map(v=>v.id===editId?{...v,vn:fm.vn||v.vn,md:fm.md||v.md,st:fm.st||v.st,loc:fm.loc||v.loc}:v));}else{setVehicles(p=>[{id:nid(p),vn:fm.vn||"",md:fm.md||"",st:fm.st||"가용",loc:fm.loc||"",ck:td},...p]);notify("📦","차량재고","새 차량 등록",(fm.vn||"")+" · "+(fm.md||"")+" · "+(fm.loc||""));}X();};
 const del=async id=>{if(confirmDel()){await delRow("vehicles",id,setVehicles);}};
-return(<><div style={{display:"flex",gap:5,marginBottom:12,flexWrap:"wrap"}}>{ss.map(s=><button key={s} onClick={()=>setFil(s)} style={fbtn(s)}>{s}</button>)}<span style={{marginLeft:"auto",fontSize:11,color:"#9CA3AF",lineHeight:"26px"}}>총 {fl.length}대</span></div>
+return(<>
+<div style={{display:"flex",gap:5,marginBottom:8,flexWrap:"wrap",alignItems:"center"}}>
+{ss.map(s=><button key={s} onClick={()=>setFil(s)} style={fbtn(s)}>{s}{s!=="전체"?" ("+vehicles.filter(v=>v.st===s).length+")":""}</button>)}
+<span style={{marginLeft:"auto",fontSize:11,color:"#9CA3AF",lineHeight:"26px"}}>총 {fl.length}대</span>
+</div>
+<div style={{display:"flex",gap:5,marginBottom:12,flexWrap:"wrap",alignItems:"center"}}>
+<select style={{...IS,padding:"4px 8px",fontSize:11,width:"auto",flex:"none"}} value={fMd} onChange={e=>setFMd(e.target.value)}><option value="전체">차종 전체</option>{models.map(m=><option key={m}>{m}</option>)}</select>
+<select style={{...IS,padding:"4px 8px",fontSize:11,width:"auto",flex:"none"}} value={fLoc} onChange={e=>setFLoc(e.target.value)}><option value="전체">지역 전체</option>{locs.map(l=><option key={l}>{l}</option>)}</select>
+<div style={{marginLeft:"auto",display:"flex",gap:2}}>
+<button onClick={()=>setViewMode("tile")} style={{padding:"4px 8px",borderRadius:5,border:viewMode==="tile"?"1.5px solid #1E1E1E":"1px solid #E5E7EB",background:viewMode==="tile"?"#1E1E1E":"#fff",color:viewMode==="tile"?"#fff":"#6B7280",fontSize:11,cursor:"pointer",fontFamily:"inherit"}}>타일</button>
+<button onClick={()=>setViewMode("list")} style={{padding:"4px 8px",borderRadius:5,border:viewMode==="list"?"1.5px solid #1E1E1E":"1px solid #E5E7EB",background:viewMode==="list"?"#1E1E1E":"#fff",color:viewMode==="list"?"#fff":"#6B7280",fontSize:11,cursor:"pointer",fontFamily:"inherit"}}>리스트</button>
+</div>
+</div>
+{viewMode==="tile"?
 <div style={{display:"grid",gridTemplateColumns:mob?"1fr":"repeat(auto-fill,minmax(210px,1fr))",gap:8}}>{fl.map(v=>{const ct=contracts.find(c=>c.vn===v.vn&&(c.st==="진행"||c.st==="연체"));return <div key={v.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:14}}>
 <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}><span style={{fontSize:13,fontWeight:700}}>{v.vn}</span><B t={v.st}/></div>
 <div style={{fontSize:12,color:"#6B7280"}}>{v.md} · 📍 {v.loc}</div><div style={{fontSize:11,color:"#9CA3AF",marginTop:3}}>점검 {v.ck}</div>
 {ct&&<div style={{marginTop:5,padding:"4px 8px",background:"#EFF6FF",borderRadius:5,fontSize:11,color:"#1D4ED8"}}>👤 {ct.nm} ({ct.no})</div>}
 <div style={{marginTop:8,display:"flex",gap:4,justifyContent:"flex-end"}}><button style={DB} onClick={()=>startEdit(v,"v")}>수정</button><button style={DBR} onClick={()=>del(v.id)}>삭제</button></div></div>;})}</div>
+:<div style={{background:"#fff",borderRadius:12,border:"1px solid #ECEDF0",overflow:"auto"}}>
+<div style={{display:"flex",padding:"10px 16px",borderBottom:"1px solid #ECEDF0",fontSize:11,fontWeight:700,color:"#9CA3AF",minWidth:600}}><span style={{flex:"0 0 100px"}}>차량번호</span><span style={{flex:"0 0 80px"}}>차종</span><span style={{flex:"0 0 70px"}}>상태</span><span style={{flex:"0 0 70px"}}>위치</span><span style={{flex:"0 0 90px"}}>최근점검</span><span style={{flex:"0 0 100px"}}>계약자</span><span style={{flex:"0 0 80px"}}></span></div>
+{fl.map(v=>{const ct=contracts.find(c=>c.vn===v.vn&&(c.st==="진행"||c.st==="연체"));return <div key={v.id} style={{display:"flex",padding:"10px 16px",borderBottom:"1px solid #F5F5F7",fontSize:13,minWidth:600,alignItems:"center"}} onMouseEnter={e=>e.currentTarget.style.background="#FAFBFC"} onMouseLeave={e=>e.currentTarget.style.background=""}>
+<span style={{flex:"0 0 100px",fontWeight:600}}>{v.vn}</span>
+<span style={{flex:"0 0 80px",color:"#6B7280"}}>{v.md}</span>
+<span style={{flex:"0 0 70px"}}><B t={v.st}/></span>
+<span style={{flex:"0 0 70px",color:"#6B7280"}}>{v.loc}</span>
+<span style={{flex:"0 0 90px",fontSize:11,color:"#9CA3AF"}}>{v.ck}</span>
+<span style={{flex:"0 0 100px",fontSize:11,color:ct?"#1D4ED8":"#D1D5DB"}}>{ct?ct.nm+" ("+ct.no+")":"-"}</span>
+<span style={{flex:"0 0 80px",display:"flex",gap:4}}><button style={DB} onClick={()=>startEdit(v,"v")}>수정</button><button style={DBR} onClick={()=>del(v.id)}>삭제</button></span>
+</div>;})}
+{!fl.length&&<div style={{padding:24,textAlign:"center",color:"#9CA3AF"}}>데이터 없음</div>}
+</div>}
 <Mdl open={mdl==="v"} onClose={X} title={editId?"차량 수정":"차량 등록"} mob={mob}><div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:10}}><div><label style={LS}>차량번호</label><input style={IS} value={fm.vn||""} onChange={e=>F2("vn",e.target.value)}/></div><div><label style={LS}>차종</label><select style={IS} value={fm.md||""} onChange={e=>F2("md",e.target.value)}><option value="">선택</option><option>OK1 KS</option><option>OK1 PRO</option></select></div><div><label style={LS}>위치</label><input style={IS} value={fm.loc||""} onChange={e=>F2("loc",e.target.value)}/></div><div><label style={LS}>상태</label><select style={IS} value={fm.st||"가용"} onChange={e=>F2("st",e.target.value)}><option>가용</option><option>대여중</option><option>정비중</option><option>폐기</option></select></div></div><button onClick={save} style={SB}>{editId?"저장":"등록하기"}</button></Mdl></>);}
 
 /* == 출고현황 == */
@@ -415,8 +448,8 @@ const handleFileUpload=async(e)=>{const fileList=Array.from(e.target.files||[]);
 for(const file of fileList){
 const ext=file.name.split(".").pop().toLowerCase();
 const sz=file.size<1024?(file.size+"B"):file.size<1048576?((file.size/1024).toFixed(0)+"KB"):((file.size/1048576).toFixed(1)+"MB");
-const safeName=Date.now()+"_"+file.name.replace(/[^a-zA-Z0-9가-힣._-]/g,"_");
-const{data:upData,error:upErr}=await sb.storage.from("files").upload(safeName,file);
+const safeName=Date.now()+"_"+Math.random().toString(36).slice(2,8)+"."+ext;
+const{data:upData,error:upErr}=await sb.storage.from("files").upload(safeName,file,{contentType:file.type,upsert:false});
 let fileUrl="";
 if(!upErr&&upData){const{data:urlData}=sb.storage.from("files").getPublicUrl(safeName);fileUrl=urlData?.publicUrl||"";}
 const row={nm:file.name,tp:ext,sz:sz,au:u?.name||"",dt:td,url:fileUrl};
