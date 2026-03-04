@@ -157,7 +157,7 @@ const[reactions,setReactions]=useState({});/* {channelKey_id: {emoji: [userName,
 const EMOJIS=["👍","❤️","🔥","👏","😊","✅","❓","👀","🎉","💯"];
 const ik=(ch,id)=>ch+"_"+id;/* item key */
 
-const toggleReaction=async(key,emoji)=>{const name=u?.name||"익명";setReactions(p=>{const cur={...(p[key]||{})};const arr=[...(cur[emoji]||[])];const idx=arr.indexOf(name);if(idx>=0){arr.splice(idx,1);sb.from("reactions").delete().match({item_key:key,emoji,user_name:name}).then(()=>{});}else{arr.push(name);sb.from("reactions").upsert({item_key:key,emoji,user_name:name},{onConflict:"item_key,emoji,user_name"}).then(()=>{});}if(arr.length)cur[emoji]=arr;else delete cur[emoji];return{...p,[key]:cur};});setEmoP(null);};
+const toggleReaction=async(key,emoji)=>{const name=u?.name||"익명";setReactions(p=>{const cur={...(p[key]||{})};const arr=[...(cur[emoji]||[])];const idx=arr.indexOf(name);if(idx>=0){arr.splice(idx,1);sb.from("reactions").delete().match({item_key:key,emoji,user_name:name}).then(()=>{});}else{arr.push(name);sb.from("reactions").upsert({item_key:key,emoji,user_name:name},{onConflict:"item_key,emoji,user_name"}).then(()=>{});}if(arr.length)cur[emoji]=arr;else delete cur[emoji];return{...p,[key]:cur};});};
 /* 댓글 스레드 컴포넌트 */
 function Thread({itemKey}){
 const cmts=comments[itemKey]||[];
