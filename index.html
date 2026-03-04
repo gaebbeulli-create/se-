@@ -51,7 +51,7 @@ const dbU=async(t,id,row)=>{const r={...row};delete r.id;delete r.created_at;con
 const dbD=async(t,id)=>{await sb.from(t).delete().eq("id",id);};
 const addRow=async(tbl,row,setter)=>{const saved=await dbI(tbl,row);if(saved){setter(p=>[saved,...p]);return saved;}return null;};
 const updRow=async(tbl,id,upd,setter)=>{const clean={};Object.entries(upd).forEach(([k,v])=>{if(v!==undefined)clean[k]=v;});await dbU(tbl,id,clean);setter(p=>p.map(r=>r.id===id?{...r,...clean}:r));};
-const delRow=async(tbl,id,setter)=>{await dbD(tbl,id);setter(p=>p.filter(r=>r.id!==id));const key=tbl+"_"+id;await sb.from("comments").delete().eq("item_key",key);await sb.from("reactions").delete().eq("item_key",key);setComments(p=>{const n={...p};delete n[key];return n;});setReactions(p=>{const n={...p};delete n[key];return n;});};
+const delRow=async(tbl,id,setter)=>{await dbD(tbl,id);setter(p=>p.filter(r=>r.id!==id));};
 
 const IS={width:"100%",padding:"10px 12px",border:"1.5px solid #E5E7EB",borderRadius:8,fontSize:13,background:"#fff",fontFamily:"inherit",color:"#1E1E1E"};
 const LS={display:"block",fontSize:12,fontWeight:600,color:"#374151",marginBottom:4};
@@ -134,6 +134,9 @@ const[schedule,setSchedule]=useState([]);
 const[files,setFiles]=useState([]);
 const[users,setUsers]=useState([]);
 const[dbReady,setDbReady]=useState(false);
+/* 댓글 & 이모지 리액션 시스템 */
+const[comments,setComments]=useState({});/* {channelKey_id: [{id,au,txt,dt,ts}]} */
+const[reactions,setReactions]=useState({});/* {channelKey_id: {emoji: [userName,...]}} */
 /* DB에서 전체 데이터 로드 */
 useEffect(()=>{(async()=>{
 const[ct,vh,dp,ic,cl,nt,rq,mt,sc,fl,us,cmt,rxn]=await Promise.all([
@@ -155,9 +158,7 @@ setDbReady(true);
 
 /* 토스트 알림 시스템 */
 const[toasts,setToasts]=useState([]);
-/* 댓글 & 이모지 리액션 시스템 */
-const[comments,setComments]=useState({});/* {channelKey_id: [{id,au,txt,dt,ts}]} */
-const[reactions,setReactions]=useState({});/* {channelKey_id: {emoji: [userName,...]}} */
+const cleanThread=async(tbl,id)=>{const key=tbl+"_"+id;try{await sb.from("comments").delete().eq("item_key",key);await sb.from("reactions").delete().eq("item_key",key);}catch(e){}setComments(p=>{const n={...p};delete n[key];return n;});setReactions(p=>{const n={...p};delete n[key];return n;});};
 /* 댓글/리액션 sessionStorage 저장 제거 - Supabase DB 사용 */
 
 const EMOJIS=["👍","❤️","🔥","👏","😊","✅","❓","👀","🎉","💯"];
@@ -289,7 +290,7 @@ const save=async()=>{
     if(selVn){const vv=vehicles.find(v=>v.vn===selVn);if(vv){await dbU("vehicles",vv.id,{st:"대여중"});setVehicles(p=>p.map(v=>v.vn===selVn?{...v,st:"대여중"}:v));}}
     notify("📝","계약관리","새 계약 등록",(fm.nm||"")+" · "+(fm.md||"")+" · "+(selVn||"")+" · 월 "+((+fm.fee||0).toLocaleString())+"원");
   }X();};
-const del=async id=>{const ct=contracts.find(c=>c.id===id);if(confirmDel()){await delRow("contracts",id,setContracts);if(ct&&(ct.st==="진행"||ct.st==="연체")){const vv=vehicles.find(v=>v.vn===ct.vn);if(vv){await updRow("vehicles",vv.id,{st:"가용"},setVehicles);}}setDet(null);}};
+const del=async id=>{const ct=contracts.find(c=>c.id===id);if(confirmDel()){await delRow("contracts",id,setContracts);cleanThread("contracts",id);if(ct&&(ct.st==="진행"||ct.st==="연체")){const vv=vehicles.find(v=>v.vn===ct.vn);if(vv){await updRow("vehicles",vv.id,{st:"가용"},setVehicles);}}setDet(null);}};
 return(<>
 <div style={{display:"flex",gap:5,marginBottom:12,flexWrap:"wrap"}}>{ss.map(s=><button key={s} onClick={()=>setFil(s)} style={fbtn(s)}>{s}</button>)}</div>
 {mob?<div style={{display:"flex",flexDirection:"column",gap:8}}>{fl.map(c=><div key={c.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:14}}>
@@ -349,7 +350,7 @@ const fl=dispatches.filter(d=>(fil==="전체"||d.st===fil)&&(!sq||d.no.includes(
 const handleImg=(e)=>{const files=Array.from(e.target.files||[]);files.forEach(f=>{const reader=new FileReader();reader.onload=(ev)=>{F2("imgs",[...(fm.imgs||[]),ev.target.result]);};reader.readAsDataURL(f);});};
 const removeImg=(idx)=>{F2("imgs",(fm.imgs||[]).filter((_,i)=>i!==idx));};
 const save=async()=>{if(editId){const upd={dt:fm.dt,tg:fm.tg,vh:fm.vh,st:fm.st,memo:fm.memo!==undefined?fm.memo:undefined,imgs:fm.imgs};await dbU("dispatches",editId,upd);setDispatches(p=>p.map(d=>d.id===editId?{...d,...upd}:d));}else{const row={no:"DP-"+String(Date.now()).slice(-6),dt:fm.dt||td,tg:fm.tg||"",vh:fm.vh||"",st:"준비",memo:fm.memo||"",imgs:fm.imgs||[]};const saved=await dbI("dispatches",row);if(saved)setDispatches(p=>[saved,...p]);notify("🚚","출고현황","새 출고 등록",(fm.tg||"")+" · "+(fm.vh||""));}X();};
-const del=async id=>{if(confirmDel()){await delRow("dispatches",id,setDispatches);setDet(null);}};
+const del=async id=>{if(confirmDel()){await delRow("dispatches",id,setDispatches);cleanThread("dispatches",id);setDet(null);}};
 return(<><div style={{display:"flex",gap:5,marginBottom:12,flexWrap:"wrap"}}>{ss.map(s=><button key={s} onClick={()=>setFil(s)} style={fbtn(s)}>{s}</button>)}</div>
 <div style={{display:"flex",flexDirection:"column",gap:8}}>{fl.map(d=><div key={d.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:mob?12:16,cursor:"pointer"}} onClick={()=>setDet(d)}>
 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}><span style={{fontSize:13,fontWeight:700}}>{d.no}</span><B t={d.st}/></div>
@@ -382,7 +383,7 @@ return(<><div style={{display:"flex",gap:5,marginBottom:12,flexWrap:"wrap"}}>{ss
 if(ch==="incidents"){
 const fl=incidents.filter(i=>!sq||i.no.includes(sq)||i.vn.includes(sq)||i.ds.includes(sq));
 const save=async()=>{if(editId){const upd={dt:fm.dt,vn:fm.vn,tp:fm.tp,sv:fm.sv,ds:fm.ds,st:fm.st,co:+fm.co||0,ins:fm.ins||""};await dbU("incidents",editId,upd);setIncidents(p=>p.map(i=>i.id===editId?{...i,...upd}:i));}else{const row={no:"IC-"+String(Date.now()).slice(-6),dt:fm.dt||td,vn:fm.vn||"",tp:fm.tp||"",sv:fm.sv||"보통",st:"접수",co:+fm.co||0,ins:fm.ins||"",ds:fm.ds||""};const saved=await dbI("incidents",row);if(saved)setIncidents(p=>[saved,...p]);notify("⚠️","사고접수","새 사고 접수","["+(fm.sv||"보통")+"] "+(fm.vn||"")+" · "+(fm.tp||""));}X();};
-const del=async id=>{if(confirmDel()){await delRow("incidents",id,setIncidents);}};
+const del=async id=>{if(confirmDel()){await delRow("incidents",id,setIncidents);cleanThread("incidents",id);}};
 return(<>
 {mob?<div style={{display:"flex",flexDirection:"column",gap:8}}>{fl.map(i=><div key={i.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:14}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}><span style={{fontSize:13,fontWeight:700}}>{i.no}</span><div style={{display:"flex",gap:4}}><B t={i.sv}/><B t={i.st}/></div></div><CR label="사고일" val={i.dt}/><CR label="차량" val={i.vn}/><CR label="유형" val={i.tp}/><CR label="내용" val={i.ds}/><div style={{marginTop:8,display:"flex",gap:4,justifyContent:"flex-end"}}><button style={DB} onClick={()=>startEdit(i,"i")}>수정</button><button style={DBR} onClick={()=>del(i.id)}>삭제</button></div></div>)}</div>
 :<div style={{background:"#fff",borderRadius:12,border:"1px solid #ECEDF0",overflow:"hidden"}}>{fl.map(i=><div key={i.id} style={{display:"flex",padding:"10px 16px",borderBottom:"1px solid #F5F5F7",fontSize:13,alignItems:"center"}}><span style={{flex:"0 0 80px",fontWeight:600}}>{i.no}</span><span style={{flex:"0 0 80px"}}>{i.dt}</span><span style={{flex:"0 0 90px"}}>{i.vn}</span><span style={{flex:"0 0 50px"}}>{i.tp}</span><span style={{flex:"0 0 55px"}}><B t={i.sv}/></span><span style={{flex:1,color:"#6B7280"}}>{i.ds}</span><span style={{flex:"0 0 70px"}}><B t={i.st}/></span><span style={{flex:"0 0 80px",display:"flex",gap:4}}><button style={DB} onClick={()=>startEdit(i,"i")}>수정</button><button style={DBR} onClick={()=>del(i.id)}>삭제</button></span></div>)}</div>}
@@ -392,7 +393,7 @@ return(<>
 if(ch==="claims"){
 const fl=claims.filter(c=>!sq||c.no.includes(sq)||c.cu.includes(sq)||c.ds.includes(sq));
 const save=async()=>{if(editId){const upd={ct:fm.ct,cu:fm.cu,pr:fm.pr,ds:fm.ds,st:fm.st};await dbU("claims",editId,upd);setClaims(p=>p.map(c=>c.id===editId?{...c,...upd}:c));}else{const row={no:"CL-"+String(Date.now()).slice(-6),ct:fm.ct||"기타",cu:fm.cu||"",pr:fm.pr||"보통",st:"접수",ds:fm.ds||"",dt:td};const saved=await dbI("claims",row);if(saved)setClaims(p=>[saved,...p]);notify("🧾","클레임","새 클레임 접수","["+(fm.ct||"기타")+"] "+(fm.cu||""));}X();};
-const del=async id=>{if(confirmDel()){await delRow("claims",id,setClaims);}};
+const del=async id=>{if(confirmDel()){await delRow("claims",id,setClaims);cleanThread("claims",id);}};
 return(<>
 {mob?<div style={{display:"flex",flexDirection:"column",gap:8}}>{fl.map(c=><div key={c.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:14}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}><span style={{fontSize:13,fontWeight:700}}>{c.no}</span><div style={{display:"flex",gap:4}}><B t={c.ct}/><B t={c.st}/></div></div><CR label="고객" val={c.cu}/><CR label="긴급도"><B t={c.pr}/></CR><CR label="내용" val={c.ds}/><div style={{marginTop:8,display:"flex",gap:4,justifyContent:"flex-end"}}><button style={DB} onClick={()=>startEdit(c,"cl")}>수정</button><button style={DBR} onClick={()=>del(c.id)}>삭제</button></div></div>)}</div>
 :<div style={{background:"#fff",borderRadius:12,border:"1px solid #ECEDF0",overflow:"hidden"}}>{fl.map(c=><div key={c.id} style={{display:"flex",padding:"10px 16px",borderBottom:"1px solid #F5F5F7",fontSize:13,alignItems:"center"}}><span style={{flex:"0 0 80px",fontWeight:600}}>{c.no}</span><span style={{flex:"0 0 55px"}}><B t={c.ct}/></span><span style={{flex:"0 0 70px"}}>{c.cu}</span><span style={{flex:"0 0 55px"}}><B t={c.pr}/></span><span style={{flex:1,color:"#6B7280"}}>{c.ds}</span><span style={{flex:"0 0 70px"}}><B t={c.st}/></span><span style={{flex:"0 0 80px",display:"flex",gap:4}}><button style={DB} onClick={()=>startEdit(c,"cl")}>수정</button><button style={DBR} onClick={()=>del(c.id)}>삭제</button></span></div>)}</div>}
@@ -402,7 +403,7 @@ return(<>
 if(ch==="notices"){
 const fl=notices.filter(n=>!sq||n.tt.includes(sq)||n.bd.includes(sq));
 const save=async()=>{if(editId){const upd={tt:fm.tt,bd:fm.bd,pn:fm.pn};await dbU("notices",editId,upd);setNotices(p=>p.map(n=>n.id===editId?{...n,...upd}:n));}else{const row={tt:fm.tt||"",bd:fm.bd||"",au:u?.name,dt:td,pn:!!fm.pn};const saved=await dbI("notices",row);if(saved)setNotices(p=>[saved,...p]);notify("📢","공지사항",fm.tt||"새 공지",fm.bd||"");}X();};
-const del=async id=>{if(confirmDel()){await delRow("notices",id,setNotices);setDet(null);}};
+const del=async id=>{if(confirmDel()){await delRow("notices",id,setNotices);cleanThread("notices",id);setDet(null);}};
 return(<>
 <div style={{display:"flex",flexDirection:"column",gap:8}}>{fl.map(n=><div key={n.id} style={{background:"#fff",borderRadius:10,border:n.pn?"2px solid #3B82F6":"1px solid #ECEDF0",padding:mob?12:16,cursor:"pointer"}} onClick={()=>setDet(n)}>
 <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:5}}>{n.pn&&<span style={{padding:"1px 6px",borderRadius:4,fontSize:9,fontWeight:700,background:"#EFF6FF",color:"#1D4ED8"}}>📌</span>}<span style={{fontSize:13,fontWeight:700,flex:1}}>{n.tt}</span>
@@ -416,7 +417,7 @@ return(<>
 if(ch==="requests"){
 const fl=requests.filter(r=>!sq||r.tt.includes(sq)||r.bd.includes(sq));
 const save=async()=>{if(editId){const upd={tt:fm.tt,bd:fm.bd,st:fm.st};await dbU("requests",editId,upd);setRequests(p=>p.map(r=>r.id===editId?{...r,...upd}:r));}else{const row={tt:fm.tt||"",bd:fm.bd||"",au:u?.name,dt:td,st:"검토중"};const saved=await dbI("requests",row);if(saved)setRequests(p=>[saved,...p]);notify("💬","요청/건의",fm.tt||"새 요청",fm.bd||"");}X();};
-const del=async id=>{if(confirmDel()){await delRow("requests",id,setRequests);setDet(null);}};
+const del=async id=>{if(confirmDel()){await delRow("requests",id,setRequests);cleanThread("requests",id);setDet(null);}};
 return(<>
 <div style={{display:"flex",flexDirection:"column",gap:8}}>{fl.map(r=><div key={r.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:mob?12:16,cursor:"pointer"}} onClick={()=>setDet(r)}>
 <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:5}}><span style={{fontSize:13,fontWeight:700,flex:1}}>{r.tt}</span><B t={r.st}/><span style={{display:"flex",gap:3}} onClick={e=>e.stopPropagation()}><button style={DB} onClick={()=>startEdit(r,"r")}>수정</button><button style={DBR} onClick={()=>del(r.id)}>삭제</button></span></div>
@@ -429,7 +430,7 @@ return(<>
 if(ch==="meetings"){
 const fl=meetings.filter(m=>!sq||m.tt.includes(sq)||m.dc.includes(sq));
 const save=async()=>{if(editId){const upd={tt:fm.tt,dt:fm.dt,lc:fm.lc,at:fm.at,dc:fm.dc,st:fm.st};await dbU("meetings",editId,upd);setMeetings(p=>p.map(m=>m.id===editId?{...m,...upd}:m));}else{const row={tt:fm.tt||"",dt:fm.dt||td,lc:fm.lc||"",at:fm.at||"",dc:fm.dc||"",st:"작성중"};const saved=await dbI("meetings",row);if(saved)setMeetings(p=>[saved,...p]);notify("📋","회의록",fm.tt||"새 회의록",fm.dc||"");}X();};
-const del=async id=>{if(confirmDel()){await delRow("meetings",id,setMeetings);}};
+const del=async id=>{if(confirmDel()){await delRow("meetings",id,setMeetings);cleanThread("meetings",id);}};
 return(<>
 <div style={{display:"flex",flexDirection:"column",gap:8}}>{fl.map(m=><div key={m.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:mob?12:16}}>
 <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6}}><span style={{fontSize:13,fontWeight:700,flex:1}}>{m.tt}</span><B t={m.st}/><span style={{display:"flex",gap:3}}><button style={DB} onClick={()=>startEdit(m,"m")}>수정</button><button style={DBR} onClick={()=>del(m.id)}>삭제</button></span></div>
@@ -472,7 +473,7 @@ const downloadFile=(f)=>{if(f.url){const a=document.createElement("a");a.href=f.
 return(<>
 <div style={{display:"flex",flexDirection:"column",gap:6}}>{files.map(f=><div key={f.id} style={{background:"#fff",borderRadius:8,border:"1px solid #ECEDF0",padding:"10px 14px",display:"flex",alignItems:"center",gap:10}}>
 <div style={{width:32,height:32,borderRadius:6,background:ic[f.tp]||"#6B7280",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:800,textTransform:"uppercase",flexShrink:0}}>{f.tp}</div>
-<div style={{flex:1,minWidth:0,cursor:f.url?"pointer":"default"}} onClick={()=>f.url&&downloadFile(f)}><div style={{fontSize:12.5,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",color:f.url?"#1D4ED8":"#1E1E1E"}}>{f.nm}</div><div style={{fontSize:10.5,color:"#9CA3AF"}}>{f.sz} · {f.au} · {f.dt}</div></div>
+<div style={{flex:1,minWidth:0,cursor:f.url?"pointer":"default"}} onClick={()=>f.url?downloadFile(f):alert("이 파일은 샘플 데이터입니다. 삭제 후 실제 파일을 업로드해주세요.")}><div style={{fontSize:12.5,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",color:f.url?"#1D4ED8":"#1E1E1E"}}>{f.nm}{!f.url&&<span style={{fontSize:10,color:"#D1D5DB",marginLeft:4}}>(URL 없음)</span>}</div><div style={{fontSize:10.5,color:"#9CA3AF"}}>{f.sz} · {f.au} · {f.dt}</div></div>
 <div style={{display:"flex",gap:4,flexShrink:0}}>{f.url&&<button style={DB} onClick={()=>downloadFile(f)}>다운로드</button>}<button style={DBR} onClick={()=>del(f.id)}>삭제</button></div></div>)}{!files.length&&<div style={{padding:20,textAlign:"center",color:"#9CA3AF"}}>등록된 파일이 없습니다</div>}</div>
 <Mdl open={mdl==="f"} onClose={X} title="파일 업로드" mob={mob}>
 <div style={{border:"2px dashed #E5E7EB",borderRadius:10,padding:24,textAlign:"center",cursor:"pointer",position:"relative",background:uploading?"#F9FAFB":"#fff"}} onClick={()=>!uploading&&document.getElementById("file-upload-input")?.click()}>
