@@ -89,7 +89,7 @@ const _u=SS.getItem("nw_u")?JSON.parse(SS.getItem("nw_u")):null;
 const _ch=SS.getItem("nw_ch")||"home";
 const[pg,setPg]=useState(_u?"app":"land");const[u,setU]=useState(_u);const[ch,setCh]=useState(_u?_ch:"home");
 const[em,setEm]=useState("");const[pw,setPw]=useState("");const[er,setEr]=useState("");const[ld,setLd]=useState(false);
-const[col,setCol]=useState(false);const[sideOpen,setSideOpen]=useState(false);
+const[col,setCol]=useState(false);const[sideOpen,setSideOpen]=useState(true);
 const[mdl,setMdl]=useState(null);const[q,setQ]=useState("");const[fil,setFil]=useState("전체");const[det,setDet]=useState(null);
 const[fm,setFm]=useState({});const[editId,setEditId]=useState(null);
 const[mob,setMob]=useState(window.innerWidth<768);
@@ -589,7 +589,7 @@ return <div key={item.p} onClick={()=>go(item.p)} style={{display:"flex",alignIt
 </div></div></div>}
 
 {/* DESKTOP SIDEBAR */}
-{!mob&&<aside style={{width:220,minWidth:220,background:"#1B1D21",display:"flex",flexDirection:"column",borderRight:"1px solid rgba(255,255,255,.06)",flexShrink:0,overflow:"hidden"}}>
+{!mob&&<aside style={{width:sideOpen?220:0,minWidth:sideOpen?220:0,background:"#1B1D21",display:"flex",flexDirection:"column",borderRight:sideOpen?"1px solid rgba(255,255,255,.06)":"none",transition:"all .25s ease",flexShrink:0,overflow:"hidden"}}>
 <div style={{padding:"14px 14px",borderBottom:"1px solid rgba(255,255,255,.06)",display:"flex",alignItems:"center",gap:9,minWidth:220}}>
 <div onClick={()=>{go("home");}} style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer"}}><div style={{width:30,height:30,borderRadius:7,flexShrink:0,background:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:800,color:"#1B1D21"}}>N</div>
 <span style={{color:"#fff",fontSize:13,fontWeight:800,letterSpacing:1.5}}>NETWORK</span></div>
@@ -613,9 +613,9 @@ return <div key={item.p} onClick={()=>go(item.p)} style={{display:"flex",alignIt
 <main style={{flex:1,overflow:"hidden",display:"flex",flexDirection:"column",paddingBottom:mob?56:0}}>
 {/* GLOBAL HEADER BAR */}
 <div style={{height:48,flexShrink:0,background:"#fff",borderBottom:"1px solid #ECEDF0",display:"flex",alignItems:"center",padding:"0 16px",gap:10}}>
-{mob&&<button onClick={()=>setSideOpen(true)} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",padding:"2px 4px",color:"#1E1E1E"}}>☰</button>}
-{mob&&<div onClick={()=>go("home")} style={{display:"flex",alignItems:"center",gap:7,cursor:"pointer"}}><div style={{width:26,height:26,borderRadius:6,background:"#1E1E1E",display:"flex",alignItems:"center",justifyContent:"center",fontSize:7,fontWeight:800,color:"#fff"}}>N</div><span style={{fontSize:14,fontWeight:800,letterSpacing:1.2}}>NETWORK</span></div>}
-{ch!=="home"&&<><span style={{color:"#D1D5DB"}}>{mob?"/":""}</span><span style={{fontSize:13,fontWeight:600,color:"#6B7280"}}>{(CHS.find(x=>x.p===ch)||{l:ch==="settings"?"설정":ch}).l}</span></>}
+<button onClick={()=>setSideOpen(p=>!p)} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",padding:"2px 4px",color:"#1E1E1E"}}>☰</button>
+{!sideOpen&&<div onClick={()=>go("home")} style={{display:"flex",alignItems:"center",gap:7,cursor:"pointer"}}><div style={{width:26,height:26,borderRadius:6,background:"#1E1E1E",display:"flex",alignItems:"center",justifyContent:"center",fontSize:7,fontWeight:800,color:"#fff"}}>N</div><span style={{fontSize:14,fontWeight:800,letterSpacing:1.2}}>NETWORK</span></div>}
+{ch!=="home"&&<><span style={{color:"#D1D5DB"}}>/</span><span style={{fontSize:13,fontWeight:600,color:"#6B7280"}}>{(CHS.find(x=>x.p===ch)||{l:ch==="settings"?"설정":ch}).l}</span></>}
 </div>
 {ch==="home"?(
 <div style={{flex:1,overflowY:"auto",background:"#F7F8FA",padding:mob?"16px 12px":"24px 28px"}}>
