@@ -89,7 +89,7 @@ const _u=SS.getItem("nw_u")?JSON.parse(SS.getItem("nw_u")):null;
 const _ch=SS.getItem("nw_ch")||"home";
 const[pg,setPg]=useState(_u?"app":"land");const[u,setU]=useState(_u);const[ch,setCh]=useState(_u?_ch:"home");
 const[em,setEm]=useState("");const[pw,setPw]=useState("");const[er,setEr]=useState("");const[ld,setLd]=useState(false);
-const[col,setCol]=useState(false);const[sideOpen,setSideOpen]=useState(true);
+const[col,setCol]=useState(false);const[sideOpen,setSideOpen]=useState(window.innerWidth>=768);
 const[mdl,setMdl]=useState(null);const[q,setQ]=useState("");const[fil,setFil]=useState("전체");const[det,setDet]=useState(null);
 const[fm,setFm]=useState({});const[editId,setEditId]=useState(null);
 const[mob,setMob]=useState(window.innerWidth<768);
@@ -116,7 +116,7 @@ useEffect(()=>{if(dbReady)qSync();},[contracts,vehicles,dispatches,incidents,cla
 const nid=a=>a.length?Math.max(...a.map(x=>x.id))+1:1;
 const $=n=>n?Number(n).toLocaleString()+"원":"";
 const td=new Date().toISOString().slice(0,10);
-const go=p=>{setCh(p);setQ("");setFil("전체");setDet(null);setEditId(null);if(mob)setSideOpen(false);SS.setItem("nw_ch",p);history.pushState({ch:p},"","#"+p);};
+const go=p=>{setCh(p);setQ("");setFil("전체");setDet(null);setEditId(null);if(mob)setSideOpen(false);SS.setItem("nw_ch",p);history.pushState({ch:p},"","#"+p);setTimeout(()=>{const el=document.querySelector('[data-scroll]');if(el)el.scrollTop=0;},0);};
 const isAdmin=u&&u.role==="관리자";
 
 /* 데이터 영속성 - sessionStorage */
@@ -606,6 +606,7 @@ return <div key={item.p} onClick={()=>go(item.p)} style={{display:"flex",alignIt
 <div style={{padding:"12px 14px",borderTop:"1px solid rgba(255,255,255,.06)",minWidth:220}}>
 {u&&<div style={{marginBottom:8}}><div style={{display:"flex",alignItems:"center",gap:6}}><div style={{fontSize:12.5,fontWeight:600,color:"rgba(255,255,255,.7)"}}>{u.name}</div><span style={{padding:"1px 6px",borderRadius:3,fontSize:9,fontWeight:700,background:u.role==="관리자"?"#FEF3C7":"#DBEAFE",color:u.role==="관리자"?"#D97706":"#1D4ED8"}}>{u.role}</span></div><div style={{fontSize:10.5,color:"rgba(255,255,255,.3)",marginTop:1}}>{u.org}</div></div>}
 <button onClick={logout} style={{width:"100%",padding:"7px 12px",borderRadius:6,border:"1px solid rgba(255,255,255,.1)",background:"transparent",color:"rgba(255,255,255,.4)",fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>로그아웃</button>
+<button onClick={()=>setSideOpen(false)} style={{width:"100%",marginTop:6,padding:"7px 12px",borderRadius:6,border:"1px solid rgba(255,255,255,.08)",background:"rgba(255,255,255,.04)",color:"rgba(255,255,255,.35)",fontSize:11,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>◀ 사이드바 접기</button>
 </div></aside>}
 {/* end desktop sidebar */}
 
@@ -613,12 +614,13 @@ return <div key={item.p} onClick={()=>go(item.p)} style={{display:"flex",alignIt
 <main style={{flex:1,overflow:"hidden",display:"flex",flexDirection:"column",paddingBottom:mob?56:0}}>
 {/* GLOBAL HEADER BAR */}
 <div style={{height:48,flexShrink:0,background:"#fff",borderBottom:"1px solid #ECEDF0",display:"flex",alignItems:"center",padding:"0 16px",gap:10}}>
-<button onClick={()=>setSideOpen(p=>!p)} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",padding:"2px 4px",color:"#1E1E1E"}}>☰</button>
-{!sideOpen&&<div onClick={()=>go("home")} style={{display:"flex",alignItems:"center",gap:7,cursor:"pointer"}}><div style={{width:26,height:26,borderRadius:6,background:"#1E1E1E",display:"flex",alignItems:"center",justifyContent:"center",fontSize:7,fontWeight:800,color:"#fff"}}>N</div><span style={{fontSize:14,fontWeight:800,letterSpacing:1.2}}>NETWORK</span></div>}
+{mob&&<button onClick={()=>setSideOpen(p=>!p)} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",padding:"2px 4px",color:"#1E1E1E"}}>☰</button>}
+{!sideOpen&&!mob&&<><button onClick={()=>setSideOpen(true)} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",padding:"2px 4px",color:"#1E1E1E"}}>☰</button><div onClick={()=>go("home")} style={{display:"flex",alignItems:"center",gap:7,cursor:"pointer"}}><div style={{width:26,height:26,borderRadius:6,background:"#1E1E1E",display:"flex",alignItems:"center",justifyContent:"center",fontSize:7,fontWeight:800,color:"#fff"}}>N</div><span style={{fontSize:14,fontWeight:800,letterSpacing:1.2}}>NETWORK</span></div></>}
+{mob&&<div onClick={()=>go("home")} style={{display:"flex",alignItems:"center",gap:7,cursor:"pointer"}}><div style={{width:26,height:26,borderRadius:6,background:"#1E1E1E",display:"flex",alignItems:"center",justifyContent:"center",fontSize:7,fontWeight:800,color:"#fff"}}>N</div></div>}
 {ch!=="home"&&<><span style={{color:"#D1D5DB"}}>/</span><span style={{fontSize:13,fontWeight:600,color:"#6B7280"}}>{(CHS.find(x=>x.p===ch)||{l:ch==="settings"?"설정":ch}).l}</span></>}
 </div>
 {ch==="home"?(
-<div style={{flex:1,overflowY:"auto",background:"#F7F8FA",padding:mob?"16px 12px":"24px 28px"}}>
+<div data-scroll style={{flex:1,overflowY:"auto",background:"#F7F8FA",padding:mob?"16px 12px":"24px 28px"}}>
 <div style={{marginBottom:mob?12:20,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}}>
 <div><h1 style={{fontSize:mob?18:22,fontWeight:800,marginBottom:2}}>{gr()}, {u?.name}님 👋</h1><p style={{fontSize:12,color:"#9CA3AF"}}>{u?.org} · <B t={u?.role||"유저"}/> · {td}</p></div>
 </div>
@@ -704,7 +706,7 @@ return <div key={item.p} onClick={()=>go(item.p)} style={{display:"flex",alignIt
 </div>
 </div>
 ):ch==="settings"?(
-<div style={{flex:1,overflowY:"auto",background:"#F7F8FA",padding:mob?"16px 12px":"24px 20px"}}>{RC()}</div>
+<div data-scroll style={{flex:1,overflowY:"auto",background:"#F7F8FA",padding:mob?"16px 12px":"24px 20px"}}>{RC()}</div>
 ):(
 <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
 {/* CHANNEL HEADER */}
@@ -715,7 +717,7 @@ return <div key={item.p} onClick={()=>go(item.p)} style={{display:"flex",alignIt
 <input value={q} onChange={e=>setQ(e.target.value)} placeholder="🔍 검색..." style={{padding:"6px 10px",borderRadius:7,border:"1px solid #E5E7EB",fontSize:12,flex:mob?1:"none",width:mob?"auto":150,fontFamily:"inherit"}}/>
 {(ch!=="settings"||(ch==="settings"&&isAdmin))&&<button onClick={()=>{setFm({});setEditId(null);setMdl(mm[ch]);}} style={{padding:"6px 12px",borderRadius:7,border:"none",background:"#1E1E1E",fontSize:11.5,fontWeight:600,color:"#fff",cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}}>{ch==="settings"?"+ 사용자 등록":"+ 작성"}</button>}
 </div></div>
-<div style={{flex:1,overflowY:"auto",padding:mob?12:16,background:"#F7F8FA"}}>{RC()}</div>
+<div data-scroll style={{flex:1,overflowY:"auto",padding:mob?12:16,background:"#F7F8FA"}}>{RC()}</div>
 </div>
 )}
 </main>
