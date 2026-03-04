@@ -116,7 +116,7 @@ useEffect(()=>{if(dbReady)qSync();},[contracts,vehicles,dispatches,incidents,cla
 const nid=a=>a.length?Math.max(...a.map(x=>x.id))+1:1;
 const $=n=>n?Number(n).toLocaleString()+"원":"";
 const td=new Date().toISOString().slice(0,10);
-const go=p=>{setCh(p);setQ("");setFil("전체");setDet(null);setEditId(null);setSideOpen(false);SS.setItem("nw_ch",p);history.pushState({ch:p},"","#"+p);};
+const go=p=>{setCh(p);setQ("");setFil("전체");setDet(null);setEditId(null);if(mob)setSideOpen(false);SS.setItem("nw_ch",p);history.pushState({ch:p},"","#"+p);};
 const isAdmin=u&&u.role==="관리자";
 
 /* 데이터 영속성 - sessionStorage */
@@ -589,11 +589,10 @@ return <div key={item.p} onClick={()=>go(item.p)} style={{display:"flex",alignIt
 </div></div></div>}
 
 {/* DESKTOP SIDEBAR */}
-{!mob&&<aside style={{width:sideOpen?220:0,minWidth:sideOpen?220:0,background:"#1B1D21",display:"flex",flexDirection:"column",borderRight:sideOpen?"1px solid rgba(255,255,255,.06)":"none",transition:"all .25s ease",flexShrink:0,overflow:"hidden"}}>
-<div style={{padding:"14px 14px",borderBottom:"1px solid rgba(255,255,255,.06)",display:"flex",alignItems:"center",gap:9,justifyContent:"space-between",minWidth:220}}>
+{!mob&&<aside style={{width:220,minWidth:220,background:"#1B1D21",display:"flex",flexDirection:"column",borderRight:"1px solid rgba(255,255,255,.06)",flexShrink:0,overflow:"hidden"}}>
+<div style={{padding:"14px 14px",borderBottom:"1px solid rgba(255,255,255,.06)",display:"flex",alignItems:"center",gap:9,minWidth:220}}>
 <div onClick={()=>{go("home");}} style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer"}}><div style={{width:30,height:30,borderRadius:7,flexShrink:0,background:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:800,color:"#1B1D21"}}>N</div>
 <span style={{color:"#fff",fontSize:13,fontWeight:800,letterSpacing:1.5}}>NETWORK</span></div>
-<button onClick={()=>setSideOpen(false)} style={{background:"none",border:"none",color:"rgba(255,255,255,.5)",fontSize:18,cursor:"pointer"}}>✕</button>
 </div>
 <nav style={{flex:1,overflowY:"auto",padding:"8px 0",minWidth:220}}>
 {CHS.map((item,idx)=>{
@@ -614,33 +613,96 @@ return <div key={item.p} onClick={()=>go(item.p)} style={{display:"flex",alignIt
 <main style={{flex:1,overflow:"hidden",display:"flex",flexDirection:"column",paddingBottom:mob?56:0}}>
 {/* GLOBAL HEADER BAR */}
 <div style={{height:48,flexShrink:0,background:"#fff",borderBottom:"1px solid #ECEDF0",display:"flex",alignItems:"center",padding:"0 16px",gap:10}}>
-<button onClick={()=>setSideOpen(true)} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",padding:"2px 4px",color:"#1E1E1E"}}>☰</button>
-<div onClick={()=>go("home")} style={{display:"flex",alignItems:"center",gap:7,cursor:"pointer"}}><div style={{width:26,height:26,borderRadius:6,background:"#1E1E1E",display:"flex",alignItems:"center",justifyContent:"center",fontSize:7,fontWeight:800,color:"#fff"}}>N</div><span style={{fontSize:14,fontWeight:800,letterSpacing:1.2}}>NETWORK</span></div>
-{ch!=="home"&&<><span style={{color:"#D1D5DB"}}>/</span><span style={{fontSize:13,fontWeight:600,color:"#6B7280"}}>{(CHS.find(x=>x.p===ch)||{l:ch==="settings"?"설정":ch}).l}</span></>}
+{mob&&<button onClick={()=>setSideOpen(true)} style={{background:"none",border:"none",fontSize:20,cursor:"pointer",padding:"2px 4px",color:"#1E1E1E"}}>☰</button>}
+{mob&&<div onClick={()=>go("home")} style={{display:"flex",alignItems:"center",gap:7,cursor:"pointer"}}><div style={{width:26,height:26,borderRadius:6,background:"#1E1E1E",display:"flex",alignItems:"center",justifyContent:"center",fontSize:7,fontWeight:800,color:"#fff"}}>N</div><span style={{fontSize:14,fontWeight:800,letterSpacing:1.2}}>NETWORK</span></div>}
+{ch!=="home"&&<><span style={{color:"#D1D5DB"}}>{mob?"/":""}</span><span style={{fontSize:13,fontWeight:600,color:"#6B7280"}}>{(CHS.find(x=>x.p===ch)||{l:ch==="settings"?"설정":ch}).l}</span></>}
 </div>
 {ch==="home"?(
-<div style={{flex:1,overflowY:"auto",background:"#F7F8FA",padding:mob?"20px 14px":"32px 36px"}}>
-<div style={{marginBottom:mob?16:28}}><h1 style={{fontSize:mob?18:22,fontWeight:800,marginBottom:4}}>{gr()}, {u?.name}님 👋</h1><p style={{fontSize:12.5,color:"#9CA3AF"}}>{u?.org} · <B t={u?.role||"유저"}/></p></div>
-<div style={{display:"grid",gridTemplateColumns:mob?"repeat(2,1fr)":"repeat(auto-fill,minmax(185px,1fr))",gap:mob?8:10,marginBottom:mob?16:32}}>
-{QK.map((l,i)=>(
-<div key={l.p} onClick={()=>go(l.p)} style={{padding:mob?12:16,borderRadius:10,background:"#fff",border:"1px solid #ECEDF0",cursor:"pointer",transition:"all .2s",animation:"fadeUp .3s ease "+i*.03+"s both"}}>
-<div style={{width:mob?28:36,height:mob?28:36,borderRadius:mob?7:9,background:l.c+"10",display:"flex",alignItems:"center",justifyContent:"center",fontSize:mob?14:17,marginBottom:mob?6:10}}>{l.i}</div>
-<div style={{fontSize:mob?12:13,fontWeight:700,marginBottom:1}}>{l.l}</div><div style={{fontSize:mob?10:11,color:"#9CA3AF"}}>{l.d}</div></div>))}
+<div style={{flex:1,overflowY:"auto",background:"#F7F8FA",padding:mob?"16px 12px":"24px 28px"}}>
+<div style={{marginBottom:mob?12:20,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}}>
+<div><h1 style={{fontSize:mob?18:22,fontWeight:800,marginBottom:2}}>{gr()}, {u?.name}님 👋</h1><p style={{fontSize:12,color:"#9CA3AF"}}>{u?.org} · <B t={u?.role||"유저"}/> · {td}</p></div>
 </div>
-<div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:10}}>
+
+{/* 현황 카드 */}
+<div style={{display:"grid",gridTemplateColumns:mob?"repeat(2,1fr)":"repeat(5,1fr)",gap:mob?8:10,marginBottom:mob?12:20}}>
+{[
+{l:"진행 계약",v:contracts.filter(c=>c.st==="진행").length,c:"#1D4ED8",bg:"#EFF6FF",p:"contracts"},
+{l:"연체",v:contracts.filter(c=>c.st==="연체").length,c:"#DC2626",bg:"#FEF2F2",p:"contracts"},
+{l:"가용 차량",v:vehicles.filter(v=>v.st==="가용").length,c:"#15803D",bg:"#F0FDF4",p:"inventory"},
+{l:"진행 사고",v:incidents.filter(i=>i.st!=="종결").length,c:"#F59E0B",bg:"#FFFBEB",p:"incidents"},
+{l:"상담중",v:consults.filter(c=>c.st==="상담중").length,c:"#0EA5E9",bg:"#F0F9FF",p:"consults"},
+].map(s=><div key={s.l} onClick={()=>go(s.p)} style={{padding:mob?"10px":"14px 16px",borderRadius:10,background:s.bg,border:"1px solid #ECEDF0",cursor:"pointer",transition:"all .15s"}}>
+<div style={{fontSize:mob?22:28,fontWeight:800,color:s.c}}>{s.v}</div>
+<div style={{fontSize:mob?10:11,color:"#6B7280",fontWeight:600,marginTop:2}}>{s.l}</div>
+</div>)}
+</div>
+
+{/* 5분할 테이블 영역 */}
+<div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:mob?10:14}}>
+
+{/* 최근 계약 */}
 <div style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",overflow:"hidden"}}>
-<div style={{padding:"10px 14px",borderBottom:"1px solid #F0F0F2",display:"flex",justifyContent:"space-between"}}><span style={{fontSize:12.5,fontWeight:700}}>📢 최근 공지</span><span onClick={()=>go("notices")} style={{fontSize:11,color:"#3B82F6",fontWeight:600,cursor:"pointer"}}>더보기 →</span></div>
-{notices.slice(0,3).map((n,i)=><div key={n.id} style={{padding:"8px 14px",borderBottom:i<2?"1px solid #F8F8FA":"none",display:"flex",justifyContent:"space-between"}}><span style={{fontSize:12,fontWeight:600,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginRight:8}}>{n.tt}</span><span style={{fontSize:10.5,color:"#C0C3C8",flexShrink:0}}>{n.dt}</span></div>)}
+<div style={{padding:"10px 14px",borderBottom:"1px solid #F0F0F2",display:"flex",justifyContent:"space-between",alignItems:"center"}}><span style={{fontSize:12.5,fontWeight:700}}>📝 최근 계약</span><span onClick={()=>go("contracts")} style={{fontSize:10.5,color:"#3B82F6",fontWeight:600,cursor:"pointer"}}>전체보기 →</span></div>
+{contracts.slice(0,5).map((c,i)=><div key={c.id} style={{padding:"8px 14px",borderBottom:i<4?"1px solid #F8F8FA":"none",display:"flex",alignItems:"center",gap:8,fontSize:12}}>
+<span style={{fontWeight:600,flex:"0 0 70px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.nm}</span>
+<span style={{color:"#6B7280",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.vn} · {c.md}</span>
+<B t={c.st}/>
+</div>)}
+{!contracts.length&&<div style={{padding:12,textAlign:"center",color:"#D1D5DB",fontSize:12}}>데이터 없음</div>}
 </div>
-<div style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:mob?12:16}}>
-<div style={{fontSize:12.5,fontWeight:700,marginBottom:10}}>📊 현황</div>
-<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
-<div style={{padding:8,background:"#F7F8FA",borderRadius:7,textAlign:"center"}}><div style={{fontSize:18,fontWeight:800,color:"#1D4ED8"}}>{contracts.filter(c=>c.st==="진행").length}</div><div style={{fontSize:10,color:"#9CA3AF"}}>진행 계약</div></div>
-<div style={{padding:8,background:"#F7F8FA",borderRadius:7,textAlign:"center"}}><div style={{fontSize:18,fontWeight:800,color:"#DC2626"}}>{contracts.filter(c=>c.st==="연체").length}</div><div style={{fontSize:10,color:"#9CA3AF"}}>연체</div></div>
-<div style={{padding:8,background:"#F7F8FA",borderRadius:7,textAlign:"center"}}><div style={{fontSize:18,fontWeight:800,color:"#15803D"}}>{vehicles.filter(v=>v.st==="가용").length}</div><div style={{fontSize:10,color:"#9CA3AF"}}>가용 차량</div></div>
-<div style={{padding:8,background:"#F7F8FA",borderRadius:7,textAlign:"center"}}><div style={{fontSize:18,fontWeight:800,color:"#F59E0B"}}>{incidents.filter(i=>i.st!=="종결").length}</div><div style={{fontSize:10,color:"#9CA3AF"}}>진행 사고</div></div>
-</div></div>
-</div></div>
+
+{/* 차량 현황 */}
+<div style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",overflow:"hidden"}}>
+<div style={{padding:"10px 14px",borderBottom:"1px solid #F0F0F2",display:"flex",justifyContent:"space-between",alignItems:"center"}}><span style={{fontSize:12.5,fontWeight:700}}>📦 차량 현황</span><span onClick={()=>go("inventory")} style={{fontSize:10.5,color:"#3B82F6",fontWeight:600,cursor:"pointer"}}>전체보기 →</span></div>
+<div style={{padding:"10px 14px",display:"flex",gap:8,flexWrap:"wrap"}}>
+{["가용","대여중","정비중","폐기"].map(s=>{const cnt=vehicles.filter(v=>v.st===s).length;return <div key={s} style={{flex:1,minWidth:60,padding:"8px 6px",background:"#F7F8FA",borderRadius:7,textAlign:"center"}}><div style={{fontSize:16,fontWeight:800,color:s==="가용"?"#15803D":s==="대여중"?"#1D4ED8":s==="정비중"?"#F59E0B":"#9CA3AF"}}>{cnt}</div><div style={{fontSize:10,color:"#9CA3AF"}}>{s}</div></div>;})}
+</div>
+{vehicles.filter(v=>v.st==="대여중").slice(0,3).map((v,i)=><div key={v.id} style={{padding:"6px 14px",borderTop:"1px solid #F8F8FA",display:"flex",alignItems:"center",gap:8,fontSize:12}}>
+<span style={{fontWeight:600}}>{v.vn}</span><span style={{color:"#6B7280",flex:1}}>{v.md}</span><B t={v.st}/>
+</div>)}
+</div>
+
+{/* 최근 사고 */}
+<div style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",overflow:"hidden"}}>
+<div style={{padding:"10px 14px",borderBottom:"1px solid #F0F0F2",display:"flex",justifyContent:"space-between",alignItems:"center"}}><span style={{fontSize:12.5,fontWeight:700}}>⚠️ 사고/클레임</span><span onClick={()=>go("incidents")} style={{fontSize:10.5,color:"#3B82F6",fontWeight:600,cursor:"pointer"}}>전체보기 →</span></div>
+{incidents.filter(i=>i.st!=="종결").slice(0,4).map((ic,i)=><div key={ic.id} style={{padding:"8px 14px",borderBottom:"1px solid #F8F8FA",display:"flex",alignItems:"center",gap:6,fontSize:12}}>
+<B t={ic.sv}/><span style={{fontWeight:600}}>{ic.vn}</span><span style={{color:"#6B7280",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{ic.tp} · {ic.ds}</span><B t={ic.st}/>
+</div>)}
+{claims.filter(c=>c.st!=="완료").slice(0,2).map((cl,i)=><div key={cl.id} style={{padding:"8px 14px",borderBottom:"1px solid #F8F8FA",display:"flex",alignItems:"center",gap:6,fontSize:12}}>
+<span style={{fontSize:10,padding:"1px 5px",borderRadius:3,background:"#F3E8FF",color:"#7C3AED",fontWeight:600}}>클레임</span><span style={{fontWeight:600}}>{cl.cu}</span><span style={{color:"#6B7280",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{cl.ds}</span><B t={cl.st}/>
+</div>)}
+{!incidents.filter(i=>i.st!=="종결").length&&!claims.filter(c=>c.st!=="완료").length&&<div style={{padding:12,textAlign:"center",color:"#D1D5DB",fontSize:12}}>진행중인 건 없음</div>}
+</div>
+
+{/* 최근 상담 */}
+<div style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",overflow:"hidden"}}>
+<div style={{padding:"10px 14px",borderBottom:"1px solid #F0F0F2",display:"flex",justifyContent:"space-between",alignItems:"center"}}><span style={{fontSize:12.5,fontWeight:700}}>📞 최근 상담</span><span onClick={()=>go("consults")} style={{fontSize:10.5,color:"#3B82F6",fontWeight:600,cursor:"pointer"}}>전체보기 →</span></div>
+{consults.slice(0,5).map((c,i)=><div key={c.id} style={{padding:"8px 14px",borderBottom:i<4?"1px solid #F8F8FA":"none",display:"flex",alignItems:"center",gap:6,fontSize:12}}>
+<span style={{fontWeight:600,flex:"0 0 55px"}}>{c.nm}</span><B t={c.tp}/><span style={{color:"#6B7280",flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.bd}</span><B t={c.st}/>
+</div>)}
+{!consults.length&&<div style={{padding:12,textAlign:"center",color:"#D1D5DB",fontSize:12}}>데이터 없음</div>}
+</div>
+
+{/* 공지 + 일정 (합본) */}
+<div style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",overflow:"hidden",gridColumn:mob?"1":"1/3"}}>
+<div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",minHeight:0}}>
+<div style={{borderRight:mob?"none":"1px solid #F0F0F2",borderBottom:mob?"1px solid #F0F0F2":"none"}}>
+<div style={{padding:"10px 14px",borderBottom:"1px solid #F0F0F2",display:"flex",justifyContent:"space-between",alignItems:"center"}}><span style={{fontSize:12.5,fontWeight:700}}>📢 공지사항</span><span onClick={()=>go("notices")} style={{fontSize:10.5,color:"#3B82F6",fontWeight:600,cursor:"pointer"}}>더보기 →</span></div>
+{notices.slice(0,4).map((n,i)=><div key={n.id} style={{padding:"8px 14px",borderBottom:i<3?"1px solid #F8F8FA":"none",display:"flex",justifyContent:"space-between"}}><span style={{fontSize:12,fontWeight:600,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginRight:8}}>{n.tt}</span><span style={{fontSize:10.5,color:"#C0C3C8",flexShrink:0}}>{n.dt}</span></div>)}
+{!notices.length&&<div style={{padding:12,textAlign:"center",color:"#D1D5DB",fontSize:12}}>공지 없음</div>}
+</div>
+<div>
+<div style={{padding:"10px 14px",borderBottom:"1px solid #F0F0F2",display:"flex",justifyContent:"space-between",alignItems:"center"}}><span style={{fontSize:12.5,fontWeight:700}}>📅 다가오는 일정</span><span onClick={()=>go("schedule")} style={{fontSize:10.5,color:"#3B82F6",fontWeight:600,cursor:"pointer"}}>더보기 →</span></div>
+{schedule.sort((a,b)=>a.dt>b.dt?1:-1).filter(s=>s.dt>=td).slice(0,4).map((s,i)=><div key={s.id} style={{padding:"8px 14px",borderBottom:i<3?"1px solid #F8F8FA":"none",display:"flex",alignItems:"center",gap:6,fontSize:12}}>
+<span style={{fontWeight:700,color:"#1D4ED8",flex:"0 0 80px"}}>{s.dt}</span><span style={{flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.tt}</span>{s.tp&&<B t={s.tp}/>}
+</div>)}
+{!schedule.filter(s=>s.dt>=td).length&&<div style={{padding:12,textAlign:"center",color:"#D1D5DB",fontSize:12}}>예정 일정 없음</div>}
+</div>
+</div>
+</div>
+
+</div>
+</div>
 ):ch==="settings"?(
 <div style={{flex:1,overflowY:"auto",background:"#F7F8FA",padding:mob?"16px 12px":"24px 20px"}}>{RC()}</div>
 ):(
