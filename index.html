@@ -442,7 +442,7 @@ const del=id=>{if(confirmDel())setMeetings(p=>p.filter(m=>m.id!==id));};
 return(<>
 <DateBar/>
 <div style={{display:"flex",flexDirection:"column",gap:8}}>{fl.map(m=><div key={m.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:mob?12:16}}>
-<div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6}}><span style={{fontSize:13,fontWeight:700,flex:1}}>{m.tt}</span><B t={m.st}/><span style={{display:"flex",gap:3}}><button style={DB} onClick={()=>startEdit(m,"m")}>수정</button><button style={DBR} onClick={()=>del(m.id)}>삭제</button></span></div>
+<div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6}}><span style={{fontSize:13,fontWeight:700,flex:1}}>{m.tt}</span><B t={m.st}/><span style={{display:"flex",gap:3}}>{m.st==="작성중"&&<button style={{padding:"4px 8px",borderRadius:5,border:"none",background:"#15803D",color:"#fff",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}} onClick={()=>setMeetings(p=>p.map(x=>x.id===m.id?{...x,st:"확정"}:x))}>✅ 완료</button>}<button style={DB} onClick={()=>startEdit(m,"m")}>수정</button><button style={DBR} onClick={()=>del(m.id)}>삭제</button></span></div>
 <div style={{fontSize:11.5,color:"#6B7280",marginBottom:6}}>📅 {m.dt} · 📍 {m.lc}</div>
 {!mob&&<div style={{fontSize:11.5,color:"#6B7280",marginBottom:6}}>👥 {m.at}</div>}
 <div style={{padding:"8px 12px",background:"#F7F8FA",borderRadius:7,fontSize:12,color:"#374151",lineHeight:1.5,whiteSpace:"pre-wrap"}}><b>결정:</b> {m.dc}</div><Thread itemKey={ik("meetings",m.id)}/></div>)}</div>
