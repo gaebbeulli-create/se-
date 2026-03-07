@@ -66,7 +66,8 @@ const sN=[{id:1,tt:"3월 입고 일정 안내",bd:"3월 10일 OK1 KS 5대, 3월 
 const sR=[{id:1,tt:"성서지점 추가 차량 요청",bd:"3월 중 OK1 KS 2대 추가 배정 요청드립니다.\n배달 수요 증가로 현재 차량이 부족합니다.",au:"박매니저",dt:"2026-03-02",st:"검토중"},{id:2,tt:"정비 일정 조율 건의",bd:"월 2회 정기 점검으로 변경 건의합니다.\n현재 월 1회로는 고장 예방이 어렵습니다.",au:"박매니저",dt:"2026-02-28",st:"승인"}];
 const sM=[{id:1,tt:"3월 정기 운영 회의",dt:"2026-03-03",lc:"본사 회의실",at:"김대표, 박매니저, 이과장",dc:"OK1 KS 추가 입고 5대 확정\n연체 회수 절차 강화",st:"확정"},{id:2,tt:"차량 정비 일정 협의",dt:"2026-02-28",lc:"온라인",at:"김대표, 정비팀장",dc:"매월 1회 전 차량 점검\n체크리스트 표준화",st:"공유완료"}];
 const sSc=[{id:1,tt:"OK1 KS 5대 입고",dt:"2026-03-10",tp:"입고"},{id:2,tt:"OK1 PRO 3대 입고",dt:"2026-03-15",tp:"입고"},{id:3,tt:"전 차량 정기점검",dt:"2026-03-20",tp:"정비"},{id:4,tt:"4월 정기 운영 회의",dt:"2026-04-01",tp:"회의"}];
-const sFl=[{id:1,nm:"2월_정산서_성서.xlsx",tp:"xlsx",sz:"245KB",au:"김대표",dt:"2026-03-01"},{id:2,nm:"OK1_KS_점검체크리스트.pdf",tp:"pdf",sz:"128KB",au:"박매니저",dt:"2026-02-28"},{id:3,nm:"렌탈계약서_양식_v3.docx",tp:"docx",sz:"89KB",au:"김대표",dt:"2026-02-15"}];
+const sFl=[{id:1,nm:"2월_정산서_성서.xlsx",tp:"xlsx",sz:"245KB",au:"김대표",dt:"2026-03-01",fld:""},{id:2,nm:"OK1_KS_점검체크리스트.pdf",tp:"pdf",sz:"128KB",au:"박매니저",dt:"2026-02-28",fld:""},{id:3,nm:"렌탈계약서_양식_v3.docx",tp:"docx",sz:"89KB",au:"김대표",dt:"2026-02-15",fld:""}];
+const sFd=[{id:1,nm:"정산서류",cr:"김대표",dt:"2026-03-01"},{id:2,nm:"점검자료",cr:"박매니저",dt:"2026-02-28"},{id:3,nm:"계약서양식",cr:"김대표",dt:"2026-02-15"}];
 
 function App(){
 const SS=window.sessionStorage;
@@ -107,7 +108,7 @@ const[requests,setRequests]=useState(()=>_load("rq",sR));
 const[meetings,setMeetings]=useState(()=>_load("mt",sM));
 const[schedule,setSchedule]=useState(()=>_load("sc",sSc));
 const[files,setFiles]=useState(()=>_load("fl",sFl));
-const[folders,setFolders]=useState(()=>_load("fdr",[]));
+const[folders,setFolders]=useState(()=>_load("fd",sFd));
 const[users,setUsers]=useState(()=>_load("us",initUsers));
 
 /* 변경 감지 → 자동 저장 */
@@ -121,7 +122,7 @@ useEffect(()=>{SS.setItem("nw_rq",JSON.stringify(requests));},[requests]);
 useEffect(()=>{SS.setItem("nw_mt",JSON.stringify(meetings));},[meetings]);
 useEffect(()=>{SS.setItem("nw_sc",JSON.stringify(schedule));},[schedule]);
 useEffect(()=>{SS.setItem("nw_fl",JSON.stringify(files));},[files]);
-useEffect(()=>{SS.setItem("nw_fdr",JSON.stringify(folders));},[folders]);
+useEffect(()=>{SS.setItem("nw_fd",JSON.stringify(folders));},[folders]);
 useEffect(()=>{SS.setItem("nw_us",JSON.stringify(users));},[users]);
 
 /* 토스트 알림 시스템 */
@@ -135,7 +136,7 @@ useEffect(()=>{SS.setItem("nw_rxn",JSON.stringify(reactions));},[reactions]);
 const EMOJIS=["👍","❤️","🔥","👏","😊","✅","❓","👀","🎉","💯"];
 const ik=(ch,id)=>ch+"_"+id;/* item key */
 
-const toggleReaction=(key,emoji)=>{const name=u?.name||"익명";setReactions(p=>{const cur={...(p[key]||{})};const arr=[...(cur[emoji]||[])];const idx=arr.indexOf(name);if(idx>=0)arr.splice(idx,1);else arr.push(name);if(arr.length)cur[emoji]=arr;else delete cur[emoji];return{...p,[key]:cur};});setEmoP(null);};
+const toggleReaction=(key,emoji)=>{const name=u?.name||"익명";setReactions(p=>{const cur={...(p[key]||{})};const arr=[...(cur[emoji]||[])];const idx=arr.indexOf(name);if(idx>=0)arr.splice(idx,1);else arr.push(name);if(arr.length)cur[emoji]=arr;else delete cur[emoji];return{...p,[key]:cur};});};
 /* 댓글 스레드 컴포넌트 */
 function Thread({itemKey}){
 const cmts=comments[itemKey]||[];
@@ -383,210 +384,177 @@ return(<>
 
 /* == 파일공유 == */
 if(ch==="files"){
-const ic={"xlsx":"#217346","pdf":"#DC2626","docx":"#2B579A","img":"#EA580C","zip":"#6B7280","pptx":"#D24726","hwp":"#0369A1","png":"#EA580C","jpg":"#EA580C","jpeg":"#EA580C","gif":"#EA580C","webp":"#EA580C","svg":"#EA580C"};
-const del=id=>{if(confirmDel())setFiles(p=>p.filter(f=>f.id!==id));};
-const[curFolder,setCurFolder]=useState(null);
+const ic={"xlsx":"#217346","pdf":"#DC2626","docx":"#2B579A","png":"#F59E0B","jpg":"#F59E0B","zip":"#6B7280","hwp":"#1D4ED8"};
+const[curFld,setCurFld]=useState("");/* 현재 폴더: ""=루트 */
 const[dragId,setDragId]=useState(null);
 const[dragOver,setDragOver]=useState(null);
-const[moveTarget,setMoveTarget]=useState(null);
-const[selFiles,setSelFiles]=useState([]);
-const[renameId,setRenameId]=useState(null);
-const[renameTxt,setRenameTxt]=useState("");
-const[fileRenameId,setFileRenameId]=useState(null);
-const[fileRenameTxt,setFileRenameTxt]=useState("");
-const[previewFile,setPreviewFile]=useState(null);
+const[selFiles,setSelFiles]=useState([]);/* 선택된 파일 IDs (이동용) */
+const[moveModal,setMoveModal]=useState(false);
 
-const toggleSel=(fid)=>setSelFiles(p=>p.includes(fid)?p.filter(x=>x!==fid):[...p,fid]);
-const moveFilesTo=(targetFolderId)=>{
-  setFiles(p=>p.map(f=>selFiles.includes(f.id)?{...f,folderId:targetFolderId}:f));
-  setSelFiles([]);setMoveTarget(null);
-};
+const flInFolder=files.filter(f=>(f.fld||"")===(curFld)&&(!sq||f.nm.toLowerCase().includes(sq)));
+const foldersInRoot=folders.filter(fd=>!sq||fd.nm.includes(sq));
 
+/* 폴더 추가 */
 const addFolder=()=>{
-  const nm=prompt("\uc0c8 \ud3f4\ub354 \uc774\ub984\uc744 \uc785\ub825\ud558\uc138\uc694:");
+  const nm=prompt("새 폴더 이름을 입력하세요:");
   if(!nm||!nm.trim())return;
-  setFolders(p=>[...p,{id:Date.now(),nm:nm.trim(),parent:curFolder,dt:td,au:u?.name}]);
+  if(folders.find(f=>f.nm===nm.trim())){alert("이미 같은 이름의 폴더가 있습니다.");return;}
+  setFolders(p=>[{id:nid(p),nm:nm.trim(),cr:u?.name||"",dt:td},...p]);
 };
+/* 폴더 삭제 */
 const delFolder=(fid)=>{
-  if(!confirmDel("\uc774 \ud3f4\ub354\ub97c \uc0ad\uc81c\ud558\uc2dc\uaca0\uc2b5\ub2c8\uae4c?\n(\uc548\uc758 \ud30c\uc77c\uc740 \uc0c1\uc704\ub85c \uc774\ub3d9\ub429\ub2c8\ub2e4)"))return;
-  const folder=folders.find(f=>f.id===fid);
-  const parentId=folder?folder.parent:null;
-  setFiles(p=>p.map(f=>f.folderId===fid?{...f,folderId:parentId}:f));
+  const fd=folders.find(f=>f.id===fid);
+  if(!fd)return;
+  const cnt=files.filter(f=>f.fld===fd.nm).length;
+  if(!confirmDel("폴더 '"+fd.nm+"'를 삭제합니다."+(cnt>0?" 내부 파일 "+cnt+"개는 루트로 이동됩니다.":"")))return;
+  /* 내부 파일 루트로 이동 */
+  if(cnt>0)setFiles(p=>p.map(f=>f.fld===fd.nm?{...f,fld:""}:f));
   setFolders(p=>p.filter(f=>f.id!==fid));
+  if(curFld===fd.nm)setCurFld("");
 };
-const startRename=(fid,nm)=>{setRenameId(fid);setRenameTxt(nm);};
-const doRename=()=>{if(renameTxt.trim()){setFolders(p=>p.map(f=>f.id===renameId?{...f,nm:renameTxt.trim()}:f));}setRenameId(null);setRenameTxt("");};
-
-const startFileRename=(fid,nm)=>{setFileRenameId(fid);setFileRenameTxt(nm);};
-const doFileRename=()=>{if(fileRenameTxt.trim()){setFiles(p=>p.map(f=>f.id===fileRenameId?{...f,nm:fileRenameTxt.trim()}:f));}setFileRenameId(null);setFileRenameTxt("");};
-
-const isPreviewable=(f)=>{
-  const imgTypes=["img","png","jpg","jpeg","gif","webp","svg"];
-  if(imgTypes.includes(f.tp))return "image";
-  if(f.tp==="pdf")return "pdf";
-  if(f.data){
-    if(f.data.startsWith("data:image"))return "image";
-    if(f.data.startsWith("data:application/pdf"))return "pdf";
-  }
-  return null;
+/* 폴더 이름 변경 */
+const renameFolder=(fid)=>{
+  const fd=folders.find(f=>f.id===fid);
+  if(!fd)return;
+  const nm=prompt("새 폴더 이름:",fd.nm);
+  if(!nm||!nm.trim()||nm.trim()===fd.nm)return;
+  const oldNm=fd.nm;
+  setFolders(p=>p.map(f=>f.id===fid?{...f,nm:nm.trim()}:f));
+  setFiles(p=>p.map(f=>f.fld===oldNm?{...f,fld:nm.trim()}:f));
+  if(curFld===oldNm)setCurFld(nm.trim());
 };
 
-const handleFileUpload=(e)=>{
-  const uploadedFiles=Array.from(e.target.files||[]);
-  uploadedFiles.forEach(file=>{
-    const reader=new FileReader();
-    reader.onload=(ev)=>{
-      const ext=file.name.split(".").pop().toLowerCase();
-      const sz=file.size<1024?(file.size+"B"):file.size<1048576?((file.size/1024).toFixed(0)+"KB"):((file.size/1048576).toFixed(1)+"MB");
-      const tpMap={"xlsx":"xlsx","xls":"xlsx","pdf":"pdf","doc":"docx","docx":"docx","pptx":"pptx","ppt":"pptx","hwp":"hwp","hwpx":"hwp","zip":"zip","rar":"zip","7z":"zip","png":"png","jpg":"jpg","jpeg":"jpeg","gif":"gif","webp":"webp","svg":"svg"};
-      setFiles(p=>[{id:Date.now()+Math.random(),nm:file.name,tp:tpMap[ext]||ext,sz:sz,au:u?.name,dt:td,folderId:curFolder,data:ev.target.result},...p]);
-    };
-    reader.readAsDataURL(file);
-  });
-  e.target.value="";
-};
+/* 파일 삭제 */
+const del=id=>{if(confirmDel())setFiles(p=>p.filter(f=>f.id!==id));setSelFiles(p=>p.filter(x=>x!==id));};
 
-const curFolders=folders.filter(f=>f.parent===curFolder);
-const curFiles=files.filter(f=>(f.folderId||null)===curFolder).filter(f=>!sq||f.nm.toLowerCase().includes(sq));
-
-const onDragStart=(e,fileId)=>{e.dataTransfer.setData("text/plain",fileId);setDragId(fileId);};
+/* 드래그 앤 드롭 */
+const onDragStart=(e,fId)=>{setDragId(fId);e.dataTransfer.effectAllowed="move";};
 const onDragEnd=()=>{setDragId(null);setDragOver(null);};
-const onFolderDrop=(e,folderId)=>{e.preventDefault();e.stopPropagation();const fid=parseInt(e.dataTransfer.getData("text/plain"));if(fid){setFiles(p=>p.map(f=>f.id===fid?{...f,folderId:folderId}:f));}setDragId(null);setDragOver(null);};
-const onRootDrop=(e)=>{e.preventDefault();const fid=parseInt(e.dataTransfer.getData("text/plain"));if(fid){setFiles(p=>p.map(f=>f.id===fid?{...f,folderId:curFolder}:f));}setDragId(null);setDragOver(null);};
+const onFolderDragOver=(e,fldNm)=>{e.preventDefault();e.dataTransfer.dropEffect="move";setDragOver(fldNm);};
+const onFolderDragLeave=()=>{setDragOver(null);};
+const onFolderDrop=(e,fldNm)=>{
+  e.preventDefault();setDragOver(null);
+  if(dragId!=null){
+    setFiles(p=>p.map(f=>f.id===dragId?{...f,fld:fldNm}:f));
+    setDragId(null);
+    notify("📁","파일공유","파일 이동",files.find(f=>f.id===dragId)?.nm+" → "+(fldNm||"루트"));
+  }
+};
+/* 루트 드롭 (폴더 밖으로 이동) */
+const onRootDrop=(e)=>{
+  e.preventDefault();setDragOver(null);
+  if(dragId!=null&&curFld){
+    setFiles(p=>p.map(f=>f.id===dragId?{...f,fld:""}:f));
+    setDragId(null);
+  }
+};
 
-const breadcrumb=[];
-let bcId=curFolder;
-while(bcId){const fd=folders.find(f=>f.id===bcId);if(fd){breadcrumb.unshift(fd);bcId=fd.parent;}else break;}
+/* 선택 토글 */
+const toggleSel=(id)=>{setSelFiles(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id]);};
+/* 선택 파일 이동 */
+const moveSelected=(targetFld)=>{
+  setFiles(p=>p.map(f=>selFiles.includes(f.id)?{...f,fld:targetFld}:f));
+  const cnt=selFiles.length;
+  setSelFiles([]);setMoveModal(false);
+  notify("📁","파일공유",cnt+"개 파일 이동","→ "+(targetFld||"루트"));
+};
+
+const fileRow=(f)=>(
+<div key={f.id} draggable onDragStart={e=>onDragStart(e,f.id)} onDragEnd={onDragEnd}
+  style={{background:dragId===f.id?"#EFF6FF":"#fff",borderRadius:8,border:selFiles.includes(f.id)?"2px solid #3B82F6":"1px solid #ECEDF0",padding:"10px 14px",display:"flex",alignItems:"center",gap:10,cursor:"grab",transition:"all .15s",opacity:dragId===f.id?0.5:1}}>
+<input type="checkbox" checked={selFiles.includes(f.id)} onChange={()=>toggleSel(f.id)} style={{flexShrink:0,cursor:"pointer"}} onClick={e=>e.stopPropagation()}/>
+<div style={{width:32,height:32,borderRadius:6,background:ic[f.tp]||"#6B7280",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:800,textTransform:"uppercase",flexShrink:0}}>{f.tp}</div>
+<div style={{flex:1,minWidth:0}}><div style={{fontSize:12.5,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{f.nm}</div><div style={{fontSize:10.5,color:"#9CA3AF"}}>{f.sz} · {f.au} · {f.dt}{f.fld?<span style={{marginLeft:4,padding:"1px 5px",borderRadius:3,background:"#F3F4F6",fontSize:9,color:"#6B7280"}}>📁 {f.fld}</span>:null}</div></div>
+<div style={{display:"flex",gap:3,flexShrink:0}}><button style={DBR} onClick={()=>del(f.id)}>삭제</button></div>
+</div>);
 
 return(<>
-{/* 미리보기 모달 */}
-{previewFile&&<div style={{position:"fixed",inset:0,zIndex:99999,display:"flex",alignItems:"center",justifyContent:"center"}} onClick={()=>setPreviewFile(null)}>
-<div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.7)"}}/>
-<div style={{position:"relative",maxWidth:"95vw",maxHeight:"92vh",display:"flex",flexDirection:"column",animation:"fadeUp .2s ease"}} onClick={e=>e.stopPropagation()}>
-<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 16px",background:"#1E1E1E",borderRadius:"12px 12px 0 0",minWidth:280}}>
-  <span style={{color:"#fff",fontSize:13,fontWeight:700,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1,marginRight:10}}>{previewFile.nm}</span>
-  <div style={{display:"flex",gap:6,flexShrink:0}}>
-    {previewFile.data&&<a href={previewFile.data} download={previewFile.nm} style={{padding:"4px 10px",borderRadius:6,background:"rgba(255,255,255,.15)",color:"#fff",fontSize:11,fontWeight:600,textDecoration:"none",cursor:"pointer"}} onClick={e=>e.stopPropagation()}>다운로드</a>}
-    <button onClick={()=>setPreviewFile(null)} style={{width:28,height:28,borderRadius:6,border:"none",background:"rgba(255,255,255,.15)",color:"#fff",cursor:"pointer",fontSize:14}}>✕</button>
-  </div>
-</div>
-<div style={{flex:1,overflow:"auto",background:"#fff",borderRadius:"0 0 12px 12px",display:"flex",alignItems:"center",justifyContent:"center",minHeight:300}}>
-  {isPreviewable(previewFile)==="image"&&previewFile.data?
-    <img src={previewFile.data} alt={previewFile.nm} style={{maxWidth:"90vw",maxHeight:"80vh",objectFit:"contain",borderRadius:"0 0 12px 12px"}}/>
-  :isPreviewable(previewFile)==="image"&&!previewFile.data?
-    <div style={{padding:40,textAlign:"center",color:"#9CA3AF"}}><div style={{fontSize:48,marginBottom:12}}>🖼️</div><div style={{fontSize:13}}>이미지 데이터가 없습니다<br/><span style={{fontSize:11}}>실제 파일을 업로드하면 미리보기가 가능합니다</span></div></div>
-  :isPreviewable(previewFile)==="pdf"&&previewFile.data?
-    <iframe src={previewFile.data} style={{width:mob?"92vw":"70vw",height:"80vh",border:"none",borderRadius:"0 0 12px 12px"}} title={previewFile.nm}/>
-  :isPreviewable(previewFile)==="pdf"&&!previewFile.data?
-    <div style={{padding:40,textAlign:"center",color:"#9CA3AF"}}><div style={{fontSize:48,marginBottom:12}}>📄</div><div style={{fontSize:13}}>PDF 데이터가 없습니다<br/><span style={{fontSize:11}}>실제 파일을 업로드하면 미리보기가 가능합니다</span></div></div>
-  :<div style={{padding:40,textAlign:"center",color:"#9CA3AF"}}><div style={{fontSize:48,marginBottom:12}}>📎</div><div style={{fontSize:13}}>미리보기를 지원하지 않는 형식입니다</div></div>}
-</div>
-</div></div>}
-
-{/* 브레드크럼 + 폴더추가 + 업로드 */}
+{/* 상단 바: 폴더 경로 + 액션 */}
 <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10,flexWrap:"wrap"}}>
-<span onClick={()=>setCurFolder(null)} style={{fontSize:12,fontWeight:600,color:curFolder?"#3B82F6":"#1E1E1E",cursor:"pointer"}}>{"\ud83d\udcc1"} 전체</span>
-{breadcrumb.map(bc=><React.Fragment key={bc.id}><span style={{color:"#D1D5DB",fontSize:11}}>/</span><span onClick={()=>setCurFolder(bc.id)} style={{fontSize:12,fontWeight:600,color:bc.id===curFolder?"#1E1E1E":"#3B82F6",cursor:"pointer"}}>{bc.nm}</span></React.Fragment>)}
-<div style={{flex:1}}/>
-{selFiles.length>0&&<button onClick={()=>setMoveTarget("show")} style={{padding:"4px 10px",borderRadius:6,border:"1px solid #3B82F6",background:"#EFF6FF",fontSize:11,fontWeight:600,color:"#1D4ED8",cursor:"pointer",fontFamily:"inherit"}}>{"\ud83d\udcc2"} 이동 ({selFiles.length})</button>}
-<label style={{padding:"4px 10px",borderRadius:6,border:"1px solid #10B981",background:"#F0FDF4",fontSize:11,fontWeight:600,color:"#15803D",cursor:"pointer",fontFamily:"inherit",display:"inline-flex",alignItems:"center",gap:3}}>
-{"\ud83d\udce4"} 업로드<input type="file" multiple accept="image/*,.pdf,.xlsx,.xls,.doc,.docx,.pptx,.ppt,.hwp,.hwpx,.zip,.rar" style={{display:"none"}} onChange={handleFileUpload}/>
-</label>
-<button onClick={addFolder} style={{padding:"4px 10px",borderRadius:6,border:"1px solid #E5E7EB",background:"#fff",fontSize:11,fontWeight:600,color:"#374151",cursor:"pointer",fontFamily:"inherit"}}>+ 새 폴더</button>
+<div style={{display:"flex",alignItems:"center",gap:4,flex:1,minWidth:0}}>
+<span onClick={()=>setCurFld("")} style={{fontSize:12,fontWeight:curFld?"600":"700",color:curFld?"#3B82F6":"#1E1E1E",cursor:curFld?"pointer":"default"}}>📁 전체</span>
+{curFld&&<><span style={{color:"#D1D5DB",fontSize:11}}>›</span><span style={{fontSize:12,fontWeight:700}}>{curFld}</span></>}
+</div>
+{selFiles.length>0&&<button onClick={()=>setMoveModal(true)} style={{padding:"5px 10px",borderRadius:6,border:"1.5px solid #3B82F6",background:"#EFF6FF",color:"#1D4ED8",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>📦 {selFiles.length}개 이동</button>}
+<button onClick={addFolder} style={{padding:"5px 10px",borderRadius:6,border:"1px solid #E5E7EB",background:"#fff",color:"#374151",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>📁+ 폴더</button>
 </div>
 
-{/* 이동 대상 선택 패널 */}
-{moveTarget==="show"&&<div style={{background:"#fff",border:"1px solid #ECEDF0",borderRadius:10,padding:12,marginBottom:10,animation:"fadeUp .2s ease"}}>
-<div style={{fontSize:12,fontWeight:700,marginBottom:8}}>{"\ud83d\udcc2"} 이동할 위치 선택</div>
-<div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-<button onClick={()=>moveFilesTo(null)} style={{padding:"6px 12px",borderRadius:7,border:"1px solid #E5E7EB",background:curFolder===null?"#F3F4F6":"#fff",fontSize:11.5,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>{"\ud83d\udcc1"} 최상위</button>
-{folders.map(fd=><button key={fd.id} onClick={()=>moveFilesTo(fd.id)} style={{padding:"6px 12px",borderRadius:7,border:"1px solid #E5E7EB",background:"#fff",fontSize:11.5,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>{"\ud83d\udcc1"} {fd.nm}</button>)}
-</div>
-<button onClick={()=>{setMoveTarget(null);setSelFiles([]);}} style={{marginTop:8,padding:"4px 10px",borderRadius:6,border:"none",background:"#F3F4F6",fontSize:11,color:"#6B7280",cursor:"pointer",fontFamily:"inherit"}}>취소</button>
+{/* 폴더 목록 (루트에서만 표시) */}
+{!curFld&&<div style={{display:"grid",gridTemplateColumns:mob?"repeat(2,1fr)":"repeat(auto-fill,minmax(160px,1fr))",gap:8,marginBottom:10}}>
+{foldersInRoot.map(fd=>{
+  const cnt=files.filter(f=>f.fld===fd.nm).length;
+  const isOver=dragOver===fd.nm;
+  return <div key={fd.id}
+    onDragOver={e=>onFolderDragOver(e,fd.nm)} onDragLeave={onFolderDragLeave} onDrop={e=>onFolderDrop(e,fd.nm)}
+    style={{background:isOver?"#DBEAFE":"#fff",borderRadius:10,border:isOver?"2px dashed #3B82F6":"1px solid #ECEDF0",padding:12,cursor:"pointer",transition:"all .2s",transform:isOver?"scale(1.02)":"none"}}>
+    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}} onClick={()=>setCurFld(fd.nm)}>
+      <span style={{fontSize:24}}>📂</span>
+      <div style={{flex:1,minWidth:0}}>
+        <div style={{fontSize:12.5,fontWeight:700,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{fd.nm}</div>
+        <div style={{fontSize:10,color:"#9CA3AF"}}>{cnt}개 파일</div>
+      </div>
+    </div>
+    <div style={{display:"flex",gap:3,justifyContent:"flex-end"}}>
+      <button style={{...DB,fontSize:10}} onClick={e=>{e.stopPropagation();renameFolder(fd.id);}}>이름변경</button>
+      <button style={{...DBR,fontSize:10}} onClick={e=>{e.stopPropagation();delFolder(fd.id);}}>삭제</button>
+    </div>
+  </div>;
+})}
 </div>}
 
-{/* 폴더 목록 */}
-<div onDragOver={e=>e.preventDefault()} onDrop={onRootDrop} style={{display:"flex",flexDirection:"column",gap:6,minHeight:60}}>
-{curFolders.map(fd=><div key={fd.id}
-  onDragOver={e=>{e.preventDefault();e.stopPropagation();setDragOver(fd.id);}}
-  onDragLeave={()=>setDragOver(null)}
-  onDrop={e=>onFolderDrop(e,fd.id)}
-  onClick={()=>{if(renameId!==fd.id)setCurFolder(fd.id);}}
-  style={{background:dragOver===fd.id?"#DBEAFE":"#fff",borderRadius:8,border:dragOver===fd.id?"2px dashed #3B82F6":"1px solid #ECEDF0",padding:"10px 14px",display:"flex",alignItems:"center",gap:10,cursor:"pointer",transition:"all .15s"}}>
-  <div style={{width:32,height:32,borderRadius:6,background:"#FEF3C7",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>{"\ud83d\udcc1"}</div>
-  <div style={{flex:1,minWidth:0}}>
-    {renameId===fd.id?
-      <input autoFocus value={renameTxt} onChange={e=>setRenameTxt(e.target.value)} onBlur={doRename} onKeyDown={e=>{if(e.key==="Enter")doRename();if(e.key==="Escape"){setRenameId(null);}}} onClick={e=>e.stopPropagation()} style={{...IS,padding:"4px 8px",fontSize:12}} />
-    :<>
-      <div style={{fontSize:12.5,fontWeight:600}}>{fd.nm}</div>
-      <div style={{fontSize:10.5,color:"#9CA3AF"}}>{files.filter(f=>f.folderId===fd.id).length}개 파일 · {fd.au} · {fd.dt}</div>
-    </>}
+{/* 폴더 내부일 때 뒤로가기 + 루트 드롭존 */}
+{curFld&&<div onDragOver={e=>{e.preventDefault();setDragOver("__root__");}} onDragLeave={()=>setDragOver(null)} onDrop={onRootDrop}
+  style={{marginBottom:8,padding:"8px 12px",borderRadius:8,border:dragOver==="__root__"?"2px dashed #F59E0B":"1px dashed #E5E7EB",background:dragOver==="__root__"?"#FFFBEB":"#FAFBFC",cursor:"pointer",transition:"all .15s"}}
+  onClick={()=>setCurFld("")}>
+  <span style={{fontSize:12,color:"#6B7280"}}>← 상위 폴더로 {dragId!=null&&<span style={{color:"#D97706",fontWeight:600}}>(여기에 드롭하면 루트로 이동)</span>}</span>
+</div>}
+
+{/* 폴더 내부에서 다른 폴더로 이동할 수 있는 드롭 타겟 */}
+{curFld&&dragId!=null&&<div style={{display:"flex",gap:6,marginBottom:8,flexWrap:"wrap"}}>
+{folders.filter(fd=>fd.nm!==curFld).map(fd=>(
+  <div key={fd.id} onDragOver={e=>onFolderDragOver(e,fd.nm)} onDragLeave={onFolderDragLeave} onDrop={e=>onFolderDrop(e,fd.nm)}
+    style={{padding:"6px 12px",borderRadius:8,border:dragOver===fd.nm?"2px dashed #3B82F6":"1px dashed #D1D5DB",background:dragOver===fd.nm?"#DBEAFE":"#fff",fontSize:11,fontWeight:600,color:"#6B7280",transition:"all .15s"}}>
+    📂 {fd.nm}
   </div>
-  <div style={{display:"flex",gap:4}} onClick={e=>e.stopPropagation()}>
-    <button onClick={()=>startRename(fd.id,fd.nm)} style={DB}>이름변경</button>
-    <button style={DBR} onClick={()=>delFolder(fd.id)}>삭제</button>
-  </div>
-</div>)}
+))}
+</div>}
 
 {/* 파일 목록 */}
-{curFiles.map(f=>{
-const pvType=isPreviewable(f);
-const hasThumb=f.data&&f.data.startsWith("data:image");
-return <div key={f.id}
-  draggable
-  onDragStart={e=>onDragStart(e,f.id)}
-  onDragEnd={onDragEnd}
-  style={{background:dragId===f.id?"#F0F0F2":"#fff",borderRadius:8,border:"1px solid #ECEDF0",padding:"10px 14px",display:"flex",alignItems:"center",gap:10,cursor:"grab",opacity:dragId===f.id?.5:1,transition:"opacity .15s"}}>
-  <input type="checkbox" checked={selFiles.includes(f.id)} onChange={()=>toggleSel(f.id)} onClick={e=>e.stopPropagation()} style={{width:16,height:16,cursor:"pointer",accentColor:"#1E1E1E",flexShrink:0}}/>
-  {/* 썸네일 or 파일타입 아이콘 */}
-  {hasThumb?
-    <div onClick={()=>setPreviewFile(f)} style={{width:40,height:40,borderRadius:6,overflow:"hidden",flexShrink:0,cursor:"pointer",border:"1px solid #ECEDF0"}}>
-      <img src={f.data} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
-    </div>
-  :<div onClick={pvType?()=>setPreviewFile(f):undefined} style={{width:32,height:32,borderRadius:6,background:ic[f.tp]||"#6B7280",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:800,textTransform:"uppercase",flexShrink:0,cursor:pvType?"pointer":"default",position:"relative"}}>
-    {f.tp}
-    {pvType&&<div style={{position:"absolute",bottom:-2,right:-2,width:14,height:14,borderRadius:"50%",background:"#3B82F6",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,border:"1.5px solid #fff"}}>{"\ud83d\udc41"}</div>}
-  </div>}
-  <div style={{flex:1,minWidth:0}}>
-    {fileRenameId===f.id?
-      <input autoFocus value={fileRenameTxt} onChange={e=>setFileRenameTxt(e.target.value)} onBlur={doFileRename} onKeyDown={e=>{if(e.key==="Enter")doFileRename();if(e.key==="Escape"){setFileRenameId(null);}}} onClick={e=>e.stopPropagation()} style={{...IS,padding:"4px 8px",fontSize:12}} />
-    :<>
-      <div style={{fontSize:12.5,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{f.nm}</div>
-      <div style={{fontSize:10.5,color:"#9CA3AF"}}>{f.sz} · {f.au} · {f.dt}</div>
-    </>}
-  </div>
-  <div style={{display:"flex",gap:4,flexShrink:0}}>
-    {pvType&&<button style={{...DB,borderColor:"#BFDBFE",color:"#1D4ED8",background:"#EFF6FF"}} onClick={()=>setPreviewFile(f)}>미리보기</button>}
-    <button style={DB} onClick={()=>startFileRename(f.id,f.nm)}>이름변경</button>
-    <button style={DBR} onClick={()=>del(f.id)}>삭제</button>
-  </div>
-</div>;})}
-
-{curFolders.length===0&&curFiles.length===0&&<div style={{textAlign:"center",padding:30,color:"#D1D5DB",fontSize:13}}>이 위치에 파일이 없습니다</div>}
+<div style={{display:"flex",flexDirection:"column",gap:6}}>
+{flInFolder.map(f=>fileRow(f))}
+{!flInFolder.length&&<div style={{padding:24,textAlign:"center",color:"#9CA3AF",fontSize:13}}>{curFld?"이 폴더가 비어 있습니다":"파일이 없습니다"}</div>}
 </div>
 
+{/* 파일 등록 모달 */}
 <Mdl open={mdl==="f"} onClose={X} title="파일 등록" mob={mob}>
-<div style={{marginBottom:14,padding:16,border:"2px dashed #D1D5DB",borderRadius:10,textAlign:"center",background:"#FAFBFC",cursor:"pointer",position:"relative"}} onClick={()=>document.getElementById("mdl-file-upload")?.click()}>
-<div style={{fontSize:28,marginBottom:6}}>{"\ud83d\udce4"}</div>
-<div style={{fontSize:13,fontWeight:600,color:"#374151"}}>클릭하여 파일 선택</div>
-<div style={{fontSize:11,color:"#9CA3AF",marginTop:2}}>이미지, PDF, 문서 등</div>
-<input id="mdl-file-upload" type="file" multiple accept="image/*,.pdf,.xlsx,.xls,.doc,.docx,.pptx,.ppt,.hwp,.hwpx,.zip,.rar" style={{display:"none"}} onChange={e=>{handleFileUpload(e);X();}}/>
-</div>
-<div style={{position:"relative"}}><div style={{position:"absolute",left:0,right:0,top:"50%",borderTop:"1px solid #E5E7EB"}}/><div style={{position:"relative",textAlign:"center"}}><span style={{background:"#fff",padding:"0 10px",fontSize:11,color:"#9CA3AF"}}>또는 직접 입력</span></div></div>
-<div style={{marginTop:14}}><label style={LS}>파일명</label><input style={IS} value={fm.nm||""} onChange={e=>F2("nm",e.target.value)} placeholder="파일명.xlsx"/></div>
+<div><label style={LS}>파일명</label><input style={IS} value={fm.nm||""} onChange={e=>F2("nm",e.target.value)} placeholder="파일명.xlsx"/></div>
 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginTop:10}}>
-<div><label style={LS}>형식</label><select style={IS} value={fm.tp||""} onChange={e=>F2("tp",e.target.value)}><option value="">선택</option><option>xlsx</option><option>pdf</option><option>docx</option><option>pptx</option><option>hwp</option><option>img</option><option>zip</option></select></div>
+<div><label style={LS}>형식</label><select style={IS} value={fm.tp||""} onChange={e=>F2("tp",e.target.value)}><option value="">선택</option><option>xlsx</option><option>pdf</option><option>docx</option><option>hwp</option><option>png</option><option>jpg</option><option>zip</option></select></div>
 <div><label style={LS}>크기</label><input style={IS} value={fm.sz||""} onChange={e=>F2("sz",e.target.value)} placeholder="128KB"/></div>
 </div>
-<div style={{marginTop:10}}>
-<label style={LS}>폴더</label>
-<select style={IS} value={fm.folderId||""} onChange={e=>F2("folderId",e.target.value||null)}>
-<option value="">최상위</option>
-{folders.map(fd=><option key={fd.id} value={fd.id}>{fd.nm}</option>)}
-</select>
+<div style={{marginTop:10}}><label style={LS}>폴더</label><select style={IS} value={fm.fld||""} onChange={e=>F2("fld",e.target.value)}><option value="">루트 (미분류)</option>{folders.map(fd=><option key={fd.id} value={fd.nm}>{fd.nm}</option>)}</select></div>
+<button onClick={()=>{setFiles(p=>[{id:nid(p),nm:fm.nm||"새파일",tp:fm.tp||"pdf",sz:fm.sz||"-",au:u?.name,dt:td,fld:fm.fld||curFld||""},...p]);X();}} style={SB}>등록하기</button>
+</Mdl>
+
+{/* 이동 대상 폴더 선택 모달 */}
+<Mdl open={moveModal} onClose={()=>setMoveModal(false)} title={"📦 "+selFiles.length+"개 파일 이동"} mob={mob}>
+<div style={{fontSize:12,color:"#6B7280",marginBottom:12}}>이동할 폴더를 선택하세요</div>
+<div style={{display:"flex",flexDirection:"column",gap:6}}>
+<div onClick={()=>moveSelected("")} style={{padding:"12px 14px",borderRadius:8,border:"1px solid #ECEDF0",background:"#FAFBFC",cursor:"pointer",display:"flex",alignItems:"center",gap:8,fontSize:13,fontWeight:600}}
+  onMouseEnter={e=>e.currentTarget.style.background="#EFF6FF"} onMouseLeave={e=>e.currentTarget.style.background="#FAFBFC"}>
+  <span style={{fontSize:18}}>🏠</span> 루트 (미분류)
 </div>
-<button onClick={()=>{setFiles(p=>[{id:nid(p),nm:fm.nm||"\uc0c8\ud30c\uc77c",tp:fm.tp||"pdf",sz:fm.sz||"-",au:u?.name,dt:td,folderId:fm.folderId?Number(fm.folderId):curFolder},...p]);X();}} style={SB}>등록하기</button>
-</Mdl></>);}
+{folders.map(fd=>(
+<div key={fd.id} onClick={()=>moveSelected(fd.nm)} style={{padding:"12px 14px",borderRadius:8,border:"1px solid #ECEDF0",background:"#fff",cursor:"pointer",display:"flex",alignItems:"center",gap:8,fontSize:13,fontWeight:600}}
+  onMouseEnter={e=>e.currentTarget.style.background="#EFF6FF"} onMouseLeave={e=>e.currentTarget.style.background="#fff"}>
+  <span style={{fontSize:18}}>📂</span> {fd.nm}
+  <span style={{marginLeft:"auto",fontSize:10,color:"#9CA3AF"}}>{files.filter(f=>f.fld===fd.nm).length}개</span>
+</div>
+))}
+</div>
+<button onClick={()=>setMoveModal(false)} style={{...SB,background:"#6B7280",marginTop:10}}>취소</button>
+</Mdl>
+</>);}
 
 /* == 설정 == */
 if(ch==="settings"){
