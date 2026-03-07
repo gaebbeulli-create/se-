@@ -505,7 +505,7 @@ return(<>
 <div><label style={LS}>연락처</label><input style={IS} value={fm.ph||""} onChange={e=>F2("ph",e.target.value)} placeholder="010-0000-0000"/></div>
 <div><label style={LS}>상담유형</label><select style={IS} value={fm.tp||""} onChange={e=>F2("tp",e.target.value)}><option value="">선택</option><option>렌탈문의</option><option>구입문의</option><option>고객상담</option></select></div>
 <div><label style={LS}>상담채널</label><select style={IS} value={fm.ch||"전화"} onChange={e=>F2("ch",e.target.value)}><option>전화</option><option>방문</option><option>카카오톡</option><option>문자</option><option>기타</option></select></div>
-<div><label style={LS}>지역</label><select style={IS} value={fm.rg||""} onChange={e=>F2("rg",e.target.value)}><option value="">선택</option><option>성서</option><option>달서</option><option>북구</option><option>수성</option><option>기타</option></select></div>
+<div><label style={LS}>지역</label><input style={IS} value={fm.rg||""} onChange={e=>F2("rg",e.target.value)} placeholder="대구 성서, 달서 등"/></div>
 <div><label style={LS}>관심차종</label><select style={IS} value={fm.md||""} onChange={e=>F2("md",e.target.value)}><option value="">미정</option><option>OK1 KS</option><option>OK1 PRO</option></select></div>
 <div><label style={LS}>상담일</label><input type="date" max="9999-12-31" style={IS} value={fm.dt||""} onChange={e=>F2("dt",e.target.value)}/></div>
 {editId&&<div><label style={LS}>상태</label><select style={IS} value={fm.st||""} onChange={e=>F2("st",e.target.value)}><option>후속필요</option><option>상담완료</option><option>계약전환</option></select></div>}
