@@ -99,6 +99,8 @@ const[uploading,setUploading]=useState(false);
 const[viewMode,setViewMode]=useState("list");
 const[fMd,setFMd]=useState("전체");
 const[fLoc,setFLoc]=useState("전체");
+const[curFolder,setCurFolder]=useState("전체");
+const[newFolder,setNewFolder]=useState("");
 useEffect(()=>{const h=()=>setMob(window.innerWidth<768);window.addEventListener("resize",h);return()=>window.removeEventListener("resize",h);},[]);
 useEffect(()=>{const h=(e)=>{e.preventDefault();setInstallEvt(e);};window.addEventListener("beforeinstallprompt",h);return()=>window.removeEventListener("beforeinstallprompt",h);},[]);
 /* 브라우저 뒤로가기 지원 */
@@ -623,7 +625,7 @@ const save=async()=>{if(editId){const upd={tt:fm.tt,bd:fm.bd,st:fm.st};await dbU
 const del=async id=>{if(confirmDel()){await delRow("requests",id,setRequests);cleanThread("requests",id);setDet(null);}};
 return(<>
 <div style={{display:"flex",flexDirection:"column",gap:8}}>{fl.map(r=><div key={r.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:mob?12:16,cursor:"pointer"}} onClick={()=>setDet(r)}>
-<div style={{display:"flex",alignItems:"center",gap:6,marginBottom:5}}><span style={{fontSize:13,fontWeight:700,flex:1}}>{r.tt}</span><B t={r.st}/><span style={{display:"flex",gap:3}} onClick={e=>e.stopPropagation()}><button style={DB} onClick={()=>startEdit(r,"r")}>수정</button><button style={DBR} onClick={()=>del(r.id)}>삭제</button></span></div>
+<div style={{display:"flex",alignItems:"center",gap:6,marginBottom:5}}><span style={{fontSize:13,fontWeight:700,flex:1}}>{r.tt}</span><B t={r.st}/><span style={{display:"flex",gap:3}} onClick={e=>e.stopPropagation()}>{r.st==="검토중"&&<><button style={{...DB,color:"#15803D",borderColor:"#86EFAC"}} onClick={async()=>{await dbU("requests",r.id,{st:"승인"});setRequests(p=>p.map(x=>x.id===r.id?{...x,st:"승인"}:x));}}>승인</button><button style={{...DB,color:"#F59E0B",borderColor:"#FDE68A"}} onClick={async()=>{await dbU("requests",r.id,{st:"보류"});setRequests(p=>p.map(x=>x.id===r.id?{...x,st:"보류"}:x));}}>보류</button></>}{r.st==="보류"&&<button style={{...DB,color:"#15803D",borderColor:"#86EFAC"}} onClick={async()=>{await dbU("requests",r.id,{st:"승인"});setRequests(p=>p.map(x=>x.id===r.id?{...x,st:"승인"}:x));}}>승인</button>}<button style={DB} onClick={()=>startEdit(r,"r")}>수정</button><button style={DBR} onClick={()=>del(r.id)}>삭제</button></span></div>
 <p style={{fontSize:12,color:"#6B7280",lineHeight:1.5}}>{r.bd.length>80?r.bd.slice(0,80)+"...":r.bd}</p>
 <div style={{fontSize:11,color:"#9CA3AF",marginTop:6}}>{r.au} · {r.dt}{(comments[ik("requests",r.id)]||[]).length>0&&<span style={{marginLeft:8,color:"#3B82F6",fontWeight:600}}>💬 {(comments[ik("requests",r.id)]||[]).length}</span>}{Object.keys(reactions[ik("requests",r.id)]||{}).length>0&&<span style={{marginLeft:4}}>{Object.entries(reactions[ik("requests",r.id)]||{}).map(([em,arr])=>arr.length>0?em:"").join("")}</span>}</div></div>)}</div>
 <Mdl open={mdl==="r"} onClose={X} title={editId?"요청 수정":"요청/건의 작성"} mob={mob}><div><label style={LS}>제목</label><input style={IS} value={fm.tt||""} onChange={e=>F2("tt",e.target.value)}/></div><div style={{marginTop:10}}><label style={LS}>내용</label><textarea style={{...IS,height:120}} value={fm.bd||""} onChange={e=>F2("bd",e.target.value)}/></div>{editId&&<div style={{marginTop:10}}><label style={LS}>상태</label><select style={IS} value={fm.st||""} onChange={e=>F2("st",e.target.value)}><option>검토중</option><option>승인</option><option>반려</option></select></div>}<button onClick={save} style={SB}>{editId?"저장":"등록하기"}</button></Mdl>
@@ -644,20 +646,34 @@ return(<>
 
 /* == 일정 == */
 if(ch==="schedule"){
-const tc={"입고":"#3B82F6","정비":"#F59E0B","회의":"#8B5CF6"};
-const fl=[...schedule].sort((a,b)=>a.dt.localeCompare(b.dt)).filter(s=>!sq||s.tt.includes(sq));
+const tc={"입고":"#3B82F6","정비":"#F59E0B","회의":"#8B5CF6","출고":"#10B981","기타":"#6B7280"};
+const fl=[...schedule].sort((a,b)=>a.dt.localeCompare(b.dt)).filter(s=>{
+if(sq&&!s.tt.includes(sq))return false;
+if(fm._df&&s.dt<fm._df)return false;
+if(fm._dt&&s.dt>fm._dt)return false;
+return true;});
 const save=async()=>{if(editId){const upd={tt:fm.tt,dt:fm.dt,tp:fm.tp};await dbU("schedule",editId,upd);setSchedule(p=>p.map(s=>s.id===editId?{...s,...upd}:s));}else{const row={tt:fm.tt||"",dt:fm.dt||td,tp:fm.tp||""};const saved=await dbI("schedule",row);if(saved)setSchedule(p=>[...p,saved]);notify("📅","일정",fm.tt||"새 일정",(fm.dt||"")+" · "+(fm.tp||""));}X();};
 const del=async id=>{if(confirmDel()){await delRow("schedule",id,setSchedule);}};
 return(<>
+<div style={{display:"flex",gap:8,marginBottom:10,flexWrap:"wrap",alignItems:"center"}}>
+<div style={{display:"flex",alignItems:"center",gap:4}}><span style={{fontSize:11,color:"#6B7280",fontWeight:600}}>시작</span><input type="date" value={fm._df||""} onChange={e=>F2("_df",e.target.value)} style={{padding:"5px 8px",borderRadius:6,border:"1px solid #E5E7EB",fontSize:12,fontFamily:"inherit"}}/></div>
+<div style={{display:"flex",alignItems:"center",gap:4}}><span style={{fontSize:11,color:"#6B7280",fontWeight:600}}>종료</span><input type="date" value={fm._dt||""} onChange={e=>F2("_dt",e.target.value)} style={{padding:"5px 8px",borderRadius:6,border:"1px solid #E5E7EB",fontSize:12,fontFamily:"inherit"}}/></div>
+{(fm._df||fm._dt)&&<button onClick={()=>{F2("_df","");F2("_dt","");}} style={{padding:"5px 10px",borderRadius:6,border:"1px solid #E5E7EB",background:"#fff",fontSize:11,cursor:"pointer",color:"#DC2626",fontFamily:"inherit"}}>초기화</button>}
+<span style={{fontSize:11,color:"#9CA3AF"}}>{fl.length}건</span>
+</div>
 <div style={{display:"flex",flexDirection:"column",gap:6}}>{fl.map(s=><div key={s.id} style={{background:"#fff",borderRadius:8,border:"1px solid #ECEDF0",padding:"10px 14px",display:"flex",alignItems:"center",gap:10}}>
 <div style={{width:4,height:32,borderRadius:2,background:tc[s.tp]||"#6B7280",flexShrink:0}}/>
 <div style={{flex:1,minWidth:0}}><div style={{fontSize:13,fontWeight:700,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.tt}</div><div style={{fontSize:11,color:"#9CA3AF"}}>{s.dt} · {s.tp}</div></div>
-<div style={{display:"flex",gap:3,flexShrink:0}}><button style={DB} onClick={()=>startEdit(s,"s")}>수정</button><button style={DBR} onClick={()=>del(s.id)}>삭제</button></div></div>)}</div>
-<Mdl open={mdl==="s"} onClose={X} title={editId?"일정 수정":"일정 추가"} mob={mob}><div><label style={LS}>제목</label><input style={IS} value={fm.tt||""} onChange={e=>F2("tt",e.target.value)}/></div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginTop:10}}><div><label style={LS}>날짜</label><input type="date" style={IS} value={fm.dt||""} onChange={e=>F2("dt",e.target.value)}/></div><div><label style={LS}>유형</label><select style={IS} value={fm.tp||""} onChange={e=>F2("tp",e.target.value)}><option value="">선택</option><option>입고</option><option>정비</option><option>회의</option></select></div></div><button onClick={save} style={SB}>{editId?"저장":"추가하기"}</button></Mdl></>);}
+<div style={{display:"flex",gap:3,flexShrink:0}}><button style={DB} onClick={()=>startEdit(s,"s")}>수정</button><button style={DBR} onClick={()=>del(s.id)}>삭제</button></div></div>)}
+{!fl.length&&<div style={{padding:20,textAlign:"center",color:"#9CA3AF"}}>일정이 없습니다</div>}
+</div>
+<Mdl open={mdl==="s"} onClose={X} title={editId?"일정 수정":"일정 추가"} mob={mob}><div><label style={LS}>제목</label><input style={IS} value={fm.tt||""} onChange={e=>F2("tt",e.target.value)}/></div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginTop:10}}><div><label style={LS}>날짜</label><input type="date" style={IS} value={fm.dt||""} onChange={e=>F2("dt",e.target.value)}/></div><div><label style={LS}>유형</label><select style={IS} value={fm.tp||""} onChange={e=>F2("tp",e.target.value)}><option value="">선택</option><option>입고</option><option>출고</option><option>정비</option><option>회의</option><option>기타</option></select></div></div><button onClick={save} style={SB}>{editId?"저장":"추가하기"}</button></Mdl></>);}
 
 /* == 파일공유 == */
 if(ch==="files"){
 const ic={"xlsx":"#217346","pdf":"#DC2626","docx":"#2B579A","png":"#F59E0B","jpg":"#F59E0B","jpeg":"#F59E0B","zip":"#6B7280","hwp":"#2563EB","pptx":"#D97706","csv":"#15803D"};
+const folders=["전체",...[...new Set(files.map(f=>f.folder||"기타").filter(Boolean))]];
+const fl=files.filter(f=>(curFolder==="전체"||(f.folder||"기타")===curFolder)&&(!sq||f.nm.includes(sq)));
 const del=async id=>{const f=files.find(x=>x.id===id);if(confirmDel()){if(f&&f.url){try{const path=f.url.split("/storage/v1/object/public/files/")[1];if(path)await sb.storage.from("files").remove([decodeURIComponent(path)]);}catch(e){}}await delRow("files",id,setFiles);}};
 const handleFileUpload=async(e)=>{const fileList=Array.from(e.target.files||[]);if(!fileList.length)return;setUploading(true);
 for(const file of fileList){
@@ -667,17 +683,24 @@ const safeName=Date.now()+"_"+Math.random().toString(36).slice(2,8)+"."+ext;
 const{data:upData,error:upErr}=await sb.storage.from("files").upload(safeName,file,{contentType:file.type,upsert:false});
 let fileUrl="";
 if(!upErr&&upData){const{data:urlData}=sb.storage.from("files").getPublicUrl(safeName);fileUrl=urlData?.publicUrl||"";}
-const row={nm:file.name,tp:ext,sz:sz,au:u?.name||"",dt:td,url:fileUrl};
+const row={nm:file.name,tp:ext,sz:sz,au:u?.name||"",dt:td,url:fileUrl,folder:curFolder==="전체"?"기타":curFolder};
 const saved=await dbI("files",row);
 if(saved)setFiles(p=>[saved,...p]);
 }
 setUploading(false);e.target.value="";};
-const downloadFile=(f)=>{if(f.url){const a=document.createElement("a");a.href=f.url;a.download=f.nm||"download";a.target="_blank";a.rel="noopener";document.body.appendChild(a);a.click();document.body.removeChild(a);}else{alert("다운로드 URL이 없습니다.");}};
+const downloadFile=(f)=>{if(f.url){const a=document.createElement("a");a.href=f.url;a.download=f.nm||"download";a.target="_blank";a.rel="noopener";document.body.appendChild(a);a.click();document.body.removeChild(a);}else{alert("이 파일은 샘플 데이터입니다. 삭제 후 실제 파일을 업로드해주세요.");}};
+const addFolder=()=>{const n=newFolder.trim();if(!n)return;if(folders.includes(n)){alert("이미 존재하는 폴더입니다.");return;}setFiles(p=>[...p]);setCurFolder(n);setNewFolder("");};
+const moveToFolder=async(fid,folder)=>{await dbU("files",fid,{folder});setFiles(p=>p.map(f=>f.id===fid?{...f,folder}:f));};
 return(<>
-<div style={{display:"flex",flexDirection:"column",gap:6}}>{files.map(f=><div key={f.id} style={{background:"#fff",borderRadius:8,border:"1px solid #ECEDF0",padding:"10px 14px",display:"flex",alignItems:"center",gap:10}}>
+<div style={{display:"flex",gap:6,marginBottom:10,flexWrap:"wrap",alignItems:"center"}}>
+{folders.map(f=><button key={f} onClick={()=>setCurFolder(f)} style={{padding:"6px 12px",borderRadius:7,border:curFolder===f?"1.5px solid #1E1E1E":"1px solid #E5E7EB",background:curFolder===f?"#1E1E1E":"#fff",color:curFolder===f?"#fff":"#6B7280",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:4}}>📁 {f}{f!=="전체"&&<span style={{fontSize:10,opacity:.6}}>({files.filter(x=>(x.folder||"기타")===f).length})</span>}</button>)}
+<div style={{display:"flex",gap:3,marginLeft:"auto"}}><input value={newFolder} onChange={e=>setNewFolder(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")addFolder();}} placeholder="새 폴더명" style={{padding:"5px 8px",borderRadius:6,border:"1px solid #E5E7EB",fontSize:11,width:100,fontFamily:"inherit"}}/><button onClick={addFolder} style={{padding:"5px 10px",borderRadius:6,border:"none",background:"#1E1E1E",color:"#fff",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>+ 폴더</button></div>
+</div>
+<div style={{display:"flex",flexDirection:"column",gap:6}}>{fl.map(f=><div key={f.id} style={{background:"#fff",borderRadius:8,border:"1px solid #ECEDF0",padding:"10px 14px",display:"flex",alignItems:"center",gap:10}}>
 <div style={{width:32,height:32,borderRadius:6,background:ic[f.tp]||"#6B7280",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:8,fontWeight:800,textTransform:"uppercase",flexShrink:0}}>{f.tp}</div>
-<div style={{flex:1,minWidth:0,cursor:f.url?"pointer":"default"}} onClick={()=>f.url?downloadFile(f):alert("이 파일은 샘플 데이터입니다. 삭제 후 실제 파일을 업로드해주세요.")}><div style={{fontSize:12.5,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",color:f.url?"#1D4ED8":"#1E1E1E"}}>{f.nm}{!f.url&&<span style={{fontSize:10,color:"#D1D5DB",marginLeft:4}}>(URL 없음)</span>}</div><div style={{fontSize:10.5,color:"#9CA3AF"}}>{f.sz} · {f.au} · {f.dt}</div></div>
-<div style={{display:"flex",gap:4,flexShrink:0}}>{f.url&&<button style={DB} onClick={()=>downloadFile(f)}>다운로드</button>}<button style={DBR} onClick={()=>del(f.id)}>삭제</button></div></div>)}{!files.length&&<div style={{padding:20,textAlign:"center",color:"#9CA3AF"}}>등록된 파일이 없습니다</div>}</div>
+<div style={{flex:1,minWidth:0,cursor:f.url?"pointer":"default"}} onClick={()=>f.url?downloadFile(f):alert("이 파일은 샘플 데이터입니다.")}><div style={{fontSize:12.5,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",color:f.url?"#1D4ED8":"#1E1E1E"}}>{f.nm}{!f.url&&<span style={{fontSize:10,color:"#D1D5DB",marginLeft:4}}>(URL 없음)</span>}</div><div style={{fontSize:10.5,color:"#9CA3AF"}}>{f.sz} · {f.au} · {f.dt}{f.folder&&f.folder!=="기타"?" · 📁"+f.folder:""}</div></div>
+<select value={f.folder||"기타"} onChange={e=>moveToFolder(f.id,e.target.value)} style={{padding:"3px 6px",borderRadius:5,border:"1px solid #E5E7EB",fontSize:10,color:"#6B7280",fontFamily:"inherit",cursor:"pointer"}}>{folders.filter(x=>x!=="전체").map(fo=><option key={fo}>{fo}</option>)}</select>
+<div style={{display:"flex",gap:4,flexShrink:0}}>{f.url&&<button style={DB} onClick={()=>downloadFile(f)}>다운로드</button>}<button style={DBR} onClick={()=>del(f.id)}>삭제</button></div></div>)}{!fl.length&&<div style={{padding:20,textAlign:"center",color:"#9CA3AF"}}>등록된 파일이 없습니다</div>}</div>
 <Mdl open={mdl==="f"} onClose={X} title="파일 업로드" mob={mob}>
 <div style={{border:"2px dashed #E5E7EB",borderRadius:10,padding:24,textAlign:"center",cursor:"pointer",position:"relative",background:uploading?"#F9FAFB":"#fff"}} onClick={()=>!uploading&&document.getElementById("file-upload-input")?.click()}>
 <input id="file-upload-input" type="file" multiple style={{display:"none"}} onChange={handleFileUpload}/>
