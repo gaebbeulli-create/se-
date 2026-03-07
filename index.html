@@ -69,6 +69,39 @@ const sSc=[{id:1,tt:"OK1 KS 5대 입고",dt:"2026-03-10",tp:"입고"},{id:2,tt:"
 const sFl=[{id:1,nm:"2월_정산서_성서.xlsx",tp:"xlsx",sz:"245KB",au:"김대표",dt:"2026-03-01",fld:""},{id:2,nm:"OK1_KS_점검체크리스트.pdf",tp:"pdf",sz:"128KB",au:"박매니저",dt:"2026-02-28",fld:""},{id:3,nm:"렌탈계약서_양식_v3.docx",tp:"docx",sz:"89KB",au:"김대표",dt:"2026-02-15",fld:""}];
 const sFd=[{id:1,nm:"정산서류",cr:"김대표",dt:"2026-03-01"},{id:2,nm:"점검자료",cr:"박매니저",dt:"2026-02-28"},{id:3,nm:"계약서양식",cr:"김대표",dt:"2026-02-15"}];
 
+/* 파일 업로드 모달 컴포넌트 (hooks 규칙 준수를 위해 App 외부 정의) */
+function FileUploadArea({ic,mob,onUpload,folders,fmFld,onFldChange}){
+const[udOver,setUdOver]=useState(false);
+const[uFiles,setUFiles]=useState([]);
+const fmtSz=(b)=>{if(b<1024)return b+"B";if(b<1048576)return(b/1024).toFixed(0)+"KB";return(b/1048576).toFixed(1)+"MB";};
+const getExt=(n)=>{const d=n.lastIndexOf(".");return d>=0?n.slice(d+1).toLowerCase():"";};
+const procFiles=(fl)=>{setUFiles(p=>[...p,...Array.from(fl).map(f=>({file:f,nm:f.name,tp:getExt(f.name)||"etc",sz:fmtSz(f.size)}))]);};
+const rmFile=(i)=>{setUFiles(p=>p.filter((_,idx)=>idx!==i));};
+const IS2={width:"100%",padding:"10px 12px",border:"1.5px solid #E5E7EB",borderRadius:8,fontSize:13,background:"#fff",fontFamily:"inherit",color:"#1E1E1E"};
+const LS2={display:"block",fontSize:12,fontWeight:600,color:"#374151",marginBottom:4};
+const SB2={marginTop:16,width:"100%",padding:"12px",borderRadius:10,border:"none",background:"#1E1E1E",color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit"};
+return(<div>
+<div onDragOver={e=>{e.preventDefault();e.stopPropagation();setUdOver(true);}} onDragLeave={e=>{e.preventDefault();e.stopPropagation();setUdOver(false);}} onDrop={e=>{e.preventDefault();e.stopPropagation();setUdOver(false);if(e.dataTransfer.files.length)procFiles(e.dataTransfer.files);}} onClick={()=>document.getElementById("fu-inp")?.click()}
+  style={{border:udOver?"2.5px dashed #3B82F6":"2px dashed #D1D5DB",borderRadius:12,padding:mob?"28px 16px":"36px 24px",textAlign:"center",cursor:"pointer",background:udOver?"#EFF6FF":"#FAFBFC",transition:"all .2s",marginBottom:12}}>
+<input id="fu-inp" type="file" multiple style={{display:"none"}} onChange={e=>{if(e.target.files.length)procFiles(e.target.files);e.target.value="";}}/>
+<div style={{fontSize:36,marginBottom:8}}>{udOver?"📂":"📎"}</div>
+<div style={{fontSize:13,fontWeight:700,color:udOver?"#1D4ED8":"#374151",marginBottom:4}}>{udOver?"여기에 놓으세요!":"파일을 드래그하거나 클릭하여 선택"}</div>
+<div style={{fontSize:11,color:"#9CA3AF"}}>여러 파일을 한번에 업로드할 수 있습니다</div>
+</div>
+{uFiles.length>0&&<div style={{marginBottom:12}}>
+<div style={{fontSize:12,fontWeight:700,color:"#374151",marginBottom:6}}>📋 선택된 파일 ({uFiles.length}개)</div>
+<div style={{display:"flex",flexDirection:"column",gap:4,maxHeight:200,overflowY:"auto"}}>
+{uFiles.map((uf,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 10px",background:"#fff",borderRadius:8,border:"1px solid #ECEDF0"}}>
+<div style={{width:28,height:28,borderRadius:5,background:(ic||{})[uf.tp]||"#6B7280",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:7,fontWeight:800,textTransform:"uppercase",flexShrink:0}}>{uf.tp}</div>
+<div style={{flex:1,minWidth:0}}><div style={{fontSize:12,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{uf.nm}</div><div style={{fontSize:10,color:"#9CA3AF"}}>{uf.sz}</div></div>
+<button onClick={e=>{e.stopPropagation();rmFile(i);}} style={{width:22,height:22,borderRadius:5,border:"none",background:"#FEF2F2",color:"#DC2626",fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>✕</button>
+</div>)}
+</div></div>}
+<div style={{marginBottom:12}}><label style={LS2}>저장 폴더</label><select style={IS2} value={fmFld!=null?fmFld:""} onChange={e=>onFldChange(e.target.value)}><option value="">루트 (미분류)</option>{(folders||[]).map(fd=><option key={fd.id} value={fd.nm}>{fd.nm}</option>)}</select></div>
+<button onClick={()=>{if(uFiles.length)onUpload(uFiles);}} disabled={!uFiles.length} style={{...SB2,opacity:uFiles.length?1:0.4,cursor:uFiles.length?"pointer":"not-allowed"}}>{uFiles.length?uFiles.length+"개 파일 업로드":"파일을 선택하세요"}</button>
+</div>);
+}
+
 function App(){
 const SS=window.sessionStorage;
 const _u=SS.getItem("nw_u")?JSON.parse(SS.getItem("nw_u")):null;
@@ -92,7 +125,7 @@ const X=()=>{setFm({});setMdl(null);setDet(null);setEditId(null);};
 const nid=a=>a.length?Math.max(...a.map(x=>x.id))+1:1;
 const $=n=>n?Number(n).toLocaleString()+"원":"";
 const td=new Date().toISOString().slice(0,10);
-const go=p=>{setCh(p);setQ("");setFil("전체");setDet(null);setEditId(null);setSideOpen(false);SS.setItem("nw_ch",p);};
+const go=p=>{setCh(p);setQ("");setFil("전체");setDet(null);setEditId(null);setSideOpen(false);setFileDet(null);setSelFiles([]);setMoveModal(false);SS.setItem("nw_ch",p);};
 const isAdmin=u&&u.role==="관리자";
 
 /* 데이터 영속성 - sessionStorage */
@@ -110,6 +143,13 @@ const[schedule,setSchedule]=useState(()=>_load("sc",sSc));
 const[files,setFiles]=useState(()=>_load("fl",sFl));
 const[folders,setFolders]=useState(()=>_load("fd",sFd));
 const[users,setUsers]=useState(()=>_load("us",initUsers));
+/* 파일공유 채널 전용 state (hooks 규칙 준수를 위해 최상위) */
+const[curFld,setCurFld]=useState("");
+const[fileDragId,setFileDragId]=useState(null);
+const[fileDragOver,setFileDragOver]=useState(null);
+const[selFiles,setSelFiles]=useState([]);
+const[moveModal,setMoveModal]=useState(false);
+const[fileDet,setFileDet]=useState(null);
 
 /* 변경 감지 → 자동 저장 */
 useEffect(()=>{SS.setItem("nw_ct",JSON.stringify(contracts));},[contracts]);
@@ -385,12 +425,8 @@ return(<>
 /* == 파일공유 == */
 if(ch==="files"){
 const ic={"xlsx":"#217346","pdf":"#DC2626","docx":"#2B579A","png":"#F59E0B","jpg":"#F59E0B","zip":"#6B7280","hwp":"#1D4ED8"};
-const[curFld,setCurFld]=useState("");/* 현재 폴더: ""=루트 */
-const[dragId,setDragId]=useState(null);
-const[dragOver,setDragOver]=useState(null);
-const[selFiles,setSelFiles]=useState([]);/* 선택된 파일 IDs (이동용) */
-const[moveModal,setMoveModal]=useState(false);
-const[fileDet,setFileDet]=useState(null);/* 파일 상세보기 */
+const dragId=fileDragId;const setDragId=setFileDragId;
+const dragOver=fileDragOver;const setDragOver=setFileDragOver;
 
 const flInFolder=files.filter(f=>(f.fld||"")===(curFld)&&(!sq||f.nm.toLowerCase().includes(sq)));
 const foldersInRoot=folders.filter(fd=>!sq||fd.nm.includes(sq));
@@ -527,45 +563,8 @@ return(<>
 </div>
 
 {/* 파일 업로드/수정 모달 */}
-{(()=>{
-/* 업로드용 로컬 state (IIFE 컴포넌트) */
-const UploadModal=()=>{
-const[udOver,setUdOver]=useState(false);
-const[uFiles,setUFiles]=useState([]);
-const fmtSz=(b)=>{if(b<1024)return b+"B";if(b<1048576)return(b/1024).toFixed(0)+"KB";return(b/1048576).toFixed(1)+"MB";};
-const getExt=(n)=>{const d=n.lastIndexOf(".");return d>=0?n.slice(d+1).toLowerCase():"";};
-const procFiles=(fl)=>{setUFiles(p=>[...p,...Array.from(fl).map(f=>({file:f,nm:f.name,tp:getExt(f.name)||"etc",sz:fmtSz(f.size)}))]);};
-const rmFile=(i)=>{setUFiles(p=>p.filter((_,idx)=>idx!==i));};
-const doUpload=()=>{
-  if(!uFiles.length)return;
-  const tgt=fm.fld||curFld||"";
-  const nf=uFiles.map((uf,i)=>({id:nid(files)+i,nm:uf.nm,tp:uf.tp,sz:uf.sz,au:u?.name,dt:td,fld:tgt}));
-  setFiles(p=>[...nf,...p]);
-  notify("📁","파일공유",nf.length+"개 파일 업로드",nf.map(f=>f.nm).join(", "));
-  X();
-};
-return(<div>
-<div onDragOver={e=>{e.preventDefault();e.stopPropagation();setUdOver(true);}} onDragLeave={e=>{e.preventDefault();e.stopPropagation();setUdOver(false);}} onDrop={e=>{e.preventDefault();e.stopPropagation();setUdOver(false);if(e.dataTransfer.files.length)procFiles(e.dataTransfer.files);}} onClick={()=>document.getElementById("fu-inp")?.click()}
-  style={{border:udOver?"2.5px dashed #3B82F6":"2px dashed #D1D5DB",borderRadius:12,padding:mob?"28px 16px":"36px 24px",textAlign:"center",cursor:"pointer",background:udOver?"#EFF6FF":"#FAFBFC",transition:"all .2s",marginBottom:12}}>
-<input id="fu-inp" type="file" multiple style={{display:"none"}} onChange={e=>{if(e.target.files.length)procFiles(e.target.files);e.target.value="";}}/>
-<div style={{fontSize:36,marginBottom:8}}>{udOver?"📂":"📎"}</div>
-<div style={{fontSize:13,fontWeight:700,color:udOver?"#1D4ED8":"#374151",marginBottom:4}}>{udOver?"여기에 놓으세요!":"파일을 드래그하거나 클릭하여 선택"}</div>
-<div style={{fontSize:11,color:"#9CA3AF"}}>여러 파일을 한번에 업로드할 수 있습니다</div>
-</div>
-{uFiles.length>0&&<div style={{marginBottom:12}}>
-<div style={{fontSize:12,fontWeight:700,color:"#374151",marginBottom:6}}>📋 선택된 파일 ({uFiles.length}개)</div>
-<div style={{display:"flex",flexDirection:"column",gap:4,maxHeight:200,overflowY:"auto"}}>
-{uFiles.map((uf,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 10px",background:"#fff",borderRadius:8,border:"1px solid #ECEDF0"}}>
-<div style={{width:28,height:28,borderRadius:5,background:ic[uf.tp]||"#6B7280",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:7,fontWeight:800,textTransform:"uppercase",flexShrink:0}}>{uf.tp}</div>
-<div style={{flex:1,minWidth:0}}><div style={{fontSize:12,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{uf.nm}</div><div style={{fontSize:10,color:"#9CA3AF"}}>{uf.sz}</div></div>
-<button onClick={e=>{e.stopPropagation();rmFile(i);}} style={{width:22,height:22,borderRadius:5,border:"none",background:"#FEF2F2",color:"#DC2626",fontSize:11,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>✕</button>
-</div>)}
-</div></div>}
-<div style={{marginBottom:12}}><label style={LS}>저장 폴더</label><select style={IS} value={fm.fld!=null?fm.fld:""} onChange={e=>F2("fld",e.target.value)}><option value="">루트 (미분류)</option>{folders.map(fd=><option key={fd.id} value={fd.nm}>{fd.nm}</option>)}</select></div>
-<button onClick={doUpload} disabled={!uFiles.length} style={{...SB,opacity:uFiles.length?1:0.4,cursor:uFiles.length?"pointer":"not-allowed"}}>{uFiles.length?uFiles.length+"개 파일 업로드":"파일을 선택하세요"}</button>
-</div>);};
-/* 수정 모드 */
-const EditModal=()=>(<div>
+<Mdl open={mdl==="f"} onClose={X} title={editId?"파일 수정":"파일 업로드"} mob={mob}>
+{editId?<div>
 <div><label style={LS}>파일명</label><input style={IS} value={fm.nm||""} onChange={e=>F2("nm",e.target.value)} placeholder="파일명.xlsx"/></div>
 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginTop:10}}>
 <div><label style={LS}>형식</label><select style={IS} value={fm.tp||""} onChange={e=>F2("tp",e.target.value)}><option value="">선택</option><option>xlsx</option><option>pdf</option><option>docx</option><option>hwp</option><option>png</option><option>jpg</option><option>zip</option></select></div>
@@ -573,9 +572,15 @@ const EditModal=()=>(<div>
 </div>
 <div style={{marginTop:10}}><label style={LS}>폴더</label><select style={IS} value={fm.fld!=null?fm.fld:""} onChange={e=>F2("fld",e.target.value)}><option value="">루트 (미분류)</option>{folders.map(fd=><option key={fd.id} value={fd.nm}>{fd.nm}</option>)}</select></div>
 <button onClick={()=>{setFiles(p=>p.map(f=>f.id===editId?{...f,nm:fm.nm||f.nm,tp:fm.tp||f.tp,sz:fm.sz||f.sz,fld:fm.fld!=null?fm.fld:f.fld}:f));X();}} style={SB}>저장</button>
-</div>);
-return <Mdl open={mdl==="f"} onClose={X} title={editId?"파일 수정":"파일 업로드"} mob={mob}>{editId?<EditModal/>:<UploadModal/>}</Mdl>;
-})()}
+</div>
+:<FileUploadArea ic={ic} mob={mob} folders={folders} fmFld={fm.fld!=null?fm.fld:""} onFldChange={v=>F2("fld",v)} onUpload={(uFiles)=>{
+  const tgt=fm.fld||curFld||"";
+  const nf=uFiles.map((uf,i)=>({id:nid(files)+i,nm:uf.nm,tp:uf.tp,sz:uf.sz,au:u?.name,dt:td,fld:tgt}));
+  setFiles(p=>[...nf,...p]);
+  notify("📁","파일공유",nf.length+"개 파일 업로드",nf.map(f=>f.nm).join(", "));
+  X();
+}}/>}
+</Mdl>
 
 {/* 이동 대상 폴더 선택 모달 */}
 <Mdl open={moveModal} onClose={()=>setMoveModal(false)} title={"📦 "+selFiles.length+"개 파일 이동"} mob={mob}>
