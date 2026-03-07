@@ -65,7 +65,7 @@ const sCL=[{id:1,no:"CL-001",ct:"정비",cu:"홍길동",pr:"보통",st:"처리�
 const sN=[{id:1,tt:"3월 입고 일정 안내",bd:"3월 10일 OK1 KS 5대, 3월 15일 OK1 PRO 3대 입고 예정입니다.\n각 지점별 배정은 추후 공지하겠습니다.",au:"김대표",dt:"2026-03-03",pn:true},{id:2,tt:"OK1 KS 배터리 관련 협의",bd:"최근 배터리 이슈가 보고되고 있어 SE글로벌과 협의 진행 중입니다.\n해당 차량 점검 부탁드립니다.",au:"김대표",dt:"2026-03-02",pn:false},{id:3,tt:"2월 정산 완료 안내",bd:"2월 정산이 완료되었습니다.\n각 지점별 정산서를 파일공유 채널에서 확인해주세요.",au:"김대표",dt:"2026-03-01",pn:false}];
 const sR=[{id:1,tt:"성서지점 추가 차량 요청",bd:"3월 중 OK1 KS 2대 추가 배정 요청드립니다.\n배달 수요 증가로 현재 차량이 부족합니다.",au:"박매니저",dt:"2026-03-02",st:"검토중"},{id:2,tt:"정비 일정 조율 건의",bd:"월 2회 정기 점검으로 변경 건의합니다.\n현재 월 1회로는 고장 예방이 어렵습니다.",au:"박매니저",dt:"2026-02-28",st:"승인"}];
 const sM=[{id:1,tt:"3월 정기 운영 회의",dt:"2026-03-03",lc:"본사 회의실",at:"김대표, 박매니저, 이과장",dc:"OK1 KS 추가 입고 5대 확정\n연체 회수 절차 강화",st:"확정"},{id:2,tt:"차량 정비 일정 협의",dt:"2026-02-28",lc:"온라인",at:"김대표, 정비팀장",dc:"매월 1회 전 차량 점검\n체크리스트 표준화",st:"공유완료"}];
-const sSc=[{id:1,tt:"OK1 KS 5대 입고",dt:"2026-03-10",tp:"입고"},{id:2,tt:"OK1 PRO 3대 입고",dt:"2026-03-15",tp:"입고"},{id:3,tt:"전 차량 정기점검",dt:"2026-03-20",tp:"정비"},{id:4,tt:"4월 정기 운영 회의",dt:"2026-04-01",tp:"회의"}];
+const sSc=[{id:1,tt:"OK1 KS 5대 입고",dt:"2026-03-10",tp:"입고",tm:"10:00",loc:"본사 창고",who:"김대표",memo:"SE글로벌에서 운송. 외관 검수 필수",st:"예정"},{id:2,tt:"OK1 PRO 3대 입고",dt:"2026-03-15",tp:"입고",tm:"14:00",loc:"본사 창고",who:"김대표, 박매니저",memo:"PRO 모델 배터리 사전 충전 필요",st:"예정"},{id:3,tt:"전 차량 정기점검",dt:"2026-03-20",tp:"정비",tm:"09:00",loc:"각 지점",who:"정비팀",memo:"체크리스트 기반 점검. 브레이크·배터리·타이어 중점",st:"예정"},{id:4,tt:"4월 정기 운영 회의",dt:"2026-04-01",tp:"회의",tm:"11:00",loc:"본사 회의실",who:"김대표, 박매니저, 이과장",memo:"3월 실적 리뷰, 4월 입고 계획 논의",st:"예정"},{id:5,tt:"성서지점 배터리 교체",dt:"2026-03-08",tp:"정비",tm:"13:00",loc:"성서지점",who:"정비팀",memo:"OK1 KS 2대 배터리 교체 작업",st:"완료"},{id:6,tt:"연체 고객 회수 미팅",dt:"2026-03-12",tp:"회의",tm:"15:00",loc:"온라인",who:"김대표, 법무팀",memo:"연체 3건 회수 절차 협의",st:"예정"}];
 const sFl=[{id:1,nm:"2월_정산서_성서.xlsx",tp:"xlsx",sz:"245KB",au:"김대표",dt:"2026-03-01",fld:""},{id:2,nm:"OK1_KS_점검체크리스트.pdf",tp:"pdf",sz:"128KB",au:"박매니저",dt:"2026-02-28",fld:""},{id:3,nm:"렌탈계약서_양식_v3.docx",tp:"docx",sz:"89KB",au:"김대표",dt:"2026-02-15",fld:""}];
 const sFd=[{id:1,nm:"정산서류",cr:"김대표",dt:"2026-03-01"},{id:2,nm:"점검자료",cr:"박매니저",dt:"2026-02-28"},{id:3,nm:"계약서양식",cr:"김대표",dt:"2026-02-15"}];
 
@@ -125,7 +125,7 @@ const X=()=>{setFm({});setMdl(null);setDet(null);setEditId(null);};
 const nid=a=>a.length?Math.max(...a.map(x=>x.id))+1:1;
 const $=n=>n?Number(n).toLocaleString()+"원":"";
 const td=new Date().toISOString().slice(0,10);
-const go=p=>{setCh(p);setQ("");setFil("전체");setDet(null);setEditId(null);setSideOpen(false);setFileDet(null);setSelFiles([]);setMoveModal(false);SS.setItem("nw_ch",p);};
+const go=p=>{setCh(p);setQ("");setFil("전체");setDet(null);setEditId(null);setSideOpen(false);setFileDet(null);setSelFiles([]);setMoveModal(false);setScDet(null);setDtFrom("");setDtTo("");SS.setItem("nw_ch",p);};
 const isAdmin=u&&u.role==="관리자";
 
 /* 데이터 영속성 - sessionStorage */
@@ -150,6 +150,15 @@ const[fileDragOver,setFileDragOver]=useState(null);
 const[selFiles,setSelFiles]=useState([]);
 const[moveModal,setMoveModal]=useState(false);
 const[fileDet,setFileDet]=useState(null);
+/* 일정 채널 전용 state */
+const[scFil,setScFil]=useState("전체");
+const[scTpFil,setScTpFil]=useState("전체");
+const[scView,setScView]=useState("list");
+const[scDet,setScDet]=useState(null);
+const[calMonth,setCalMonth]=useState(()=>{const n=new Date();return n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0");});
+/* 공통 날짜 필터 */
+const[dtFrom,setDtFrom]=useState("");
+const[dtTo,setDtTo]=useState("");
 
 /* 변경 감지 → 자동 저장 */
 useEffect(()=>{SS.setItem("nw_ct",JSON.stringify(contracts));},[contracts]);
@@ -233,6 +242,28 @@ const sq=q.toLowerCase();
 const startEdit=(item,modal)=>{setFm({...item});setEditId(item.id);setMdl(modal);setDet(null);};
 const confirmDel=(msg)=>window.confirm(msg||"정말 삭제하시겠습니까?");
 
+/* 날짜 필터 헬퍼 */
+const setDtPreset=(months)=>{const now=new Date();const from=new Date(now);from.setMonth(from.getMonth()-months);setDtFrom(from.toISOString().slice(0,10));setDtTo(now.toISOString().slice(0,10));};
+const clearDt=()=>{setDtFrom("");setDtTo("");};
+const dtMatch=(dateStr)=>{if(!dtFrom&&!dtTo)return true;if(!dateStr)return true;if(dtFrom&&dateStr<dtFrom)return false;if(dtTo&&dateStr>dtTo)return false;return true;};
+/* 날짜 input 4자리 연도 제한 */
+const dtInpProps={max:"9999-12-31",onKeyDown:e=>{const inp=e.target;setTimeout(()=>{if(inp.value){const yr=inp.value.split("-")[0];if(yr&&yr.length>4)inp.value=inp.value.replace(/^(\d{4})\d+/,"$1");}},0);}};
+/* 날짜 필터 바 */
+function DateBar(){
+const pb=(active)=>({padding:"4px 10px",borderRadius:5,border:active?"none":"1px solid #E5E7EB",background:active?"#1E1E1E":"#fff",color:active?"#fff":"#6B7280",fontSize:10,fontWeight:600,cursor:"pointer",fontFamily:"inherit"});
+const isPreset=(m)=>{if(!dtFrom||!dtTo)return false;const now=new Date();const from=new Date(now);from.setMonth(from.getMonth()-m);return dtFrom===from.toISOString().slice(0,10)&&dtTo===now.toISOString().slice(0,10);};
+return(<div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10,flexWrap:"wrap",padding:"8px 10px",background:"#fff",borderRadius:8,border:"1px solid #ECEDF0"}}>
+<span style={{fontSize:11,fontWeight:700,color:"#374151",flexShrink:0}}>📅</span>
+<input type="date" value={dtFrom} onChange={e=>{const v=e.target.value;if(v){const yr=v.split("-")[0];if(yr.length>4)return;}setDtFrom(v);}} {...dtInpProps} style={{padding:"4px 6px",borderRadius:5,border:"1px solid #E5E7EB",fontSize:11,fontFamily:"inherit",color:"#374151",width:mob?115:125}}/>
+<span style={{fontSize:11,color:"#9CA3AF"}}>~</span>
+<input type="date" value={dtTo} onChange={e=>{const v=e.target.value;if(v){const yr=v.split("-")[0];if(yr.length>4)return;}setDtTo(v);}} {...dtInpProps} style={{padding:"4px 6px",borderRadius:5,border:"1px solid #E5E7EB",fontSize:11,fontFamily:"inherit",color:"#374151",width:mob?115:125}}/>
+<div style={{display:"flex",gap:3}}>
+{[1,2,3].map(m=><button key={m} onClick={()=>setDtPreset(m)} style={pb(isPreset(m))}>{m}개월</button>)}
+{(dtFrom||dtTo)&&<button onClick={clearDt} style={{padding:"4px 8px",borderRadius:5,border:"1px solid #FECACA",background:"#FEF2F2",color:"#DC2626",fontSize:10,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>초기화</button>}
+</div>
+</div>);}
+
+
 /* Card Row - 모바일용 카드 아이템 */
 function CR({label,val,children}){return <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"4px 0",fontSize:12}}><span style={{color:"#9CA3AF"}}>{label}</span><span style={{fontWeight:600}}>{children||val}</span></div>;}
 
@@ -270,7 +301,7 @@ function RC(){
 /* == 계약관리 == */
 if(ch==="contracts"){
 const ss=["전체","진행","연체","만료","해지"];
-const fl=contracts.filter(c=>(fil==="전체"||c.st===fil)&&(!sq||c.nm.includes(sq)||c.no.includes(sq)||c.md.includes(sq)));
+const fl=contracts.filter(c=>(fil==="전체"||c.st===fil)&&dtMatch(c.s)&&(!sq||c.nm.includes(sq)||c.no.includes(sq)||c.md.includes(sq)));
 /* 가용 차량 목록 (새 계약용) */
 const avail=vehicles.filter(v=>v.st==="가용");
 const save=()=>{
@@ -290,22 +321,24 @@ const save=()=>{
   }X();};
 const del=id=>{const ct=contracts.find(c=>c.id===id);if(confirmDel()){setContracts(p=>p.filter(c=>c.id!==id));if(ct&&(ct.st==="진행"||ct.st==="연체")){setVehicles(p=>p.map(v=>v.vn===ct.vn?{...v,st:"가용"}:v));}setDet(null);}};
 return(<>
-<div style={{display:"flex",gap:5,marginBottom:12,flexWrap:"wrap"}}>{ss.map(s=><button key={s} onClick={()=>setFil(s)} style={fbtn(s)}>{s}</button>)}</div>
+<div style={{display:"flex",gap:5,marginBottom:8,flexWrap:"wrap"}}>{ss.map(s=><button key={s} onClick={()=>setFil(s)} style={fbtn(s)}>{s}</button>)}</div>
+<DateBar/>
 {mob?<div style={{display:"flex",flexDirection:"column",gap:8}}>{fl.map(c=><div key={c.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:14}}>
 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}><span style={{fontSize:13,fontWeight:700,color:"#3B82F6"}} onClick={()=>setDet(c)}>{c.no}</span><B t={c.st}/></div>
 <CR label="고객" val={c.nm+" ("+c.md+")"}/><CR label="차량" val={c.vn}/><CR label="월렌탈료" val={$(c.fee)}/>{c.up>0&&<CR label="미수금"><span style={{color:"#DC2626",fontWeight:700}}>{$(c.up)}</span></CR>}
 <div style={{marginTop:8,display:"flex",gap:4,justifyContent:"flex-end"}}><button style={DB} onClick={()=>startEdit(c,"c")}>수정</button><button style={DBR} onClick={()=>del(c.id)}>삭제</button></div></div>)}{!fl.length&&<div style={{padding:20,textAlign:"center",color:"#9CA3AF"}}>데이터 없음</div>}</div>
 :<div style={{background:"#fff",borderRadius:12,border:"1px solid #ECEDF0",overflow:"auto"}}><div style={{display:"flex",padding:"10px 16px",borderBottom:"1px solid #ECEDF0",fontSize:11,fontWeight:700,color:"#9CA3AF",minWidth:650}}><span style={{flex:"0 0 100px"}}>계약번호</span><span style={{flex:"0 0 70px"}}>고객</span><span style={{flex:"0 0 80px"}}>차종</span><span style={{flex:"0 0 90px"}}>차량번호</span><span style={{flex:"0 0 80px"}}>월렌탈료</span><span style={{flex:"0 0 80px"}}>미수금</span><span style={{flex:"0 0 60px"}}>상태</span><span style={{flex:"0 0 80px"}}></span></div>{fl.map(c=><div key={c.id} style={{display:"flex",padding:"10px 16px",borderBottom:"1px solid #F5F5F7",fontSize:13,minWidth:650,alignItems:"center"}} onMouseEnter={e=>e.currentTarget.style.background="#FAFBFC"} onMouseLeave={e=>e.currentTarget.style.background=""}><span style={{flex:"0 0 100px",fontWeight:600,color:"#3B82F6",cursor:"pointer"}} onClick={()=>setDet(c)}>{c.no}</span><span style={{flex:"0 0 70px"}}>{c.nm}</span><span style={{flex:"0 0 80px"}}>{c.md}</span><span style={{flex:"0 0 90px",color:"#6B7280"}}>{c.vn}</span><span style={{flex:"0 0 80px"}}>{$(c.fee)}</span><span style={{flex:"0 0 80px",color:c.up>0?"#DC2626":"#6B7280",fontWeight:c.up>0?700:400}}>{$(c.up)||"-"}</span><span style={{flex:"0 0 60px"}}><B t={c.st}/></span><span style={{flex:"0 0 80px",display:"flex",gap:4}}><button style={DB} onClick={()=>startEdit(c,"c")}>수정</button><button style={DBR} onClick={()=>del(c.id)}>삭제</button></span></div>)}{!fl.length&&<div style={{padding:24,textAlign:"center",color:"#9CA3AF"}}>데이터 없음</div>}</div>}
-<Mdl open={mdl==="c"} onClose={X} title={editId?"계약 수정":"새 계약 등록"} mob={mob}><div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:10}}><div><label style={LS}>고객명</label><input style={IS} value={fm.nm||""} onChange={e=>F2("nm",e.target.value)}/></div><div><label style={LS}>연락처</label><input style={IS} value={fm.ph||""} onChange={e=>F2("ph",e.target.value)}/></div><div><label style={LS}>차종</label><select style={IS} value={fm.md||""} onChange={e=>F2("md",e.target.value)}><option value="">선택</option><option>OK1 KS</option><option>OK1 PRO</option></select></div><div><label style={LS}>차량 배정 {!editId&&<span style={{color:"#3B82F6",fontSize:10}}>({avail.length}대 가용)</span>}</label>{editId?<input style={IS} value={fm.vn||""} onChange={e=>F2("vn",e.target.value)}/>:<select style={IS} value={fm.vn||""} onChange={e=>{const v=vehicles.find(x=>x.vn===e.target.value);F2("vn",e.target.value);if(v)F2("md",v.md);}}><option value="">차량 선택</option>{avail.map(v=><option key={v.id} value={v.vn}>{v.vn} ({v.md}) - {v.loc}</option>)}</select>}</div><div><label style={LS}>시작일</label><input type="date" style={IS} value={fm.s||""} onChange={e=>F2("s",e.target.value)}/></div><div><label style={LS}>종료일</label><input type="date" style={IS} value={fm.e||""} onChange={e=>F2("e",e.target.value)}/></div><div><label style={LS}>월렌탈료</label><input type="number" style={IS} value={fm.fee||""} onChange={e=>F2("fee",e.target.value)}/></div><div><label style={LS}>보증금</label><input type="number" style={IS} value={fm.dep||""} onChange={e=>F2("dep",e.target.value)}/></div>{editId&&<div><label style={LS}>상태</label><select style={IS} value={fm.st||""} onChange={e=>F2("st",e.target.value)}><option>진행</option><option>연체</option><option>만료</option><option>해지</option><option>회수중</option></select></div>}</div><div style={{marginTop:10}}><label style={LS}>메모</label><textarea style={{...IS,height:50}} value={fm.memo||""} onChange={e=>F2("memo",e.target.value)} placeholder="특이사항 기록"/></div><button onClick={save} style={SB}>{editId?"저장":"등록하기"}</button></Mdl>
+<Mdl open={mdl==="c"} onClose={X} title={editId?"계약 수정":"새 계약 등록"} mob={mob}><div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:10}}><div><label style={LS}>고객명</label><input style={IS} value={fm.nm||""} onChange={e=>F2("nm",e.target.value)}/></div><div><label style={LS}>연락처</label><input style={IS} value={fm.ph||""} onChange={e=>F2("ph",e.target.value)}/></div><div><label style={LS}>차종</label><select style={IS} value={fm.md||""} onChange={e=>F2("md",e.target.value)}><option value="">선택</option><option>OK1 KS</option><option>OK1 PRO</option></select></div><div><label style={LS}>차량 배정 {!editId&&<span style={{color:"#3B82F6",fontSize:10}}>({avail.length}대 가용)</span>}</label>{editId?<input style={IS} value={fm.vn||""} onChange={e=>F2("vn",e.target.value)}/>:<select style={IS} value={fm.vn||""} onChange={e=>{const v=vehicles.find(x=>x.vn===e.target.value);F2("vn",e.target.value);if(v)F2("md",v.md);}}><option value="">차량 선택</option>{avail.map(v=><option key={v.id} value={v.vn}>{v.vn} ({v.md}) - {v.loc}</option>)}</select>}</div><div><label style={LS}>시작일</label><input type="date" max="9999-12-31" style={IS} value={fm.s||""} onChange={e=>F2("s",e.target.value)}/></div><div><label style={LS}>종료일</label><input type="date" max="9999-12-31" style={IS} value={fm.e||""} onChange={e=>F2("e",e.target.value)}/></div><div><label style={LS}>월렌탈료</label><input type="number" style={IS} value={fm.fee||""} onChange={e=>F2("fee",e.target.value)}/></div><div><label style={LS}>보증금</label><input type="number" style={IS} value={fm.dep||""} onChange={e=>F2("dep",e.target.value)}/></div>{editId&&<div><label style={LS}>상태</label><select style={IS} value={fm.st||""} onChange={e=>F2("st",e.target.value)}><option>진행</option><option>연체</option><option>만료</option><option>해지</option><option>회수중</option></select></div>}</div><div style={{marginTop:10}}><label style={LS}>메모</label><textarea style={{...IS,height:50}} value={fm.memo||""} onChange={e=>F2("memo",e.target.value)} placeholder="특이사항 기록"/></div><button onClick={save} style={SB}>{editId?"저장":"등록하기"}</button></Mdl>
 <Mdl open={!!det&&ch==="contracts"} onClose={X} title="계약 상세" mob={mob}>{det&&<div style={{fontSize:13,lineHeight:2}}><CR label="계약번호" val={det.no}/><CR label="고객" val={det.nm+" ("+det.ph+")"}/><CR label="차종" val={det.md}/><CR label="차량번호" val={det.vn}/>{(()=>{const vv=vehicles.find(v=>v.vn===det.vn);return vv?<CR label="차량상태"><B t={vv.st}/></CR>:null;})()}<CR label="기간" val={det.s+" ~ "+det.e}/><CR label="월렌탈료" val={$(det.fee)}/><CR label="보증금" val={$(det.dep)}/><CR label="미수금"><span style={{color:det.up>0?"#DC2626":"inherit"}}>{$(det.up)||"없음"}</span></CR><CR label="상태"><B t={det.st}/></CR>{det.memo&&<div style={{marginTop:8,padding:"8px 10px",background:"#F7F8FA",borderRadius:6,fontSize:12,color:"#374151",lineHeight:1.5,whiteSpace:"pre-wrap"}}><b>메모:</b> {det.memo}</div>}<div style={{marginTop:10,display:"flex",gap:6}}><button style={DB} onClick={()=>startEdit(det,"c")}>수정</button><button style={DBR} onClick={()=>del(det.id)}>삭제</button></div></div>}</Mdl></>);}
 
 /* == 차량재고 == */
 if(ch==="inventory"){
 const ss=["전체","가용","대여중","정비중"];
-const fl=vehicles.filter(v=>(fil==="전체"||v.st===fil)&&(!sq||v.vn.includes(sq)||v.md.includes(sq)));
+const fl=vehicles.filter(v=>(fil==="전체"||v.st===fil)&&dtMatch(v.ck)&&(!sq||v.vn.includes(sq)||v.md.includes(sq)));
 const save=()=>{if(editId){setVehicles(p=>p.map(v=>v.id===editId?{...v,vn:fm.vn||v.vn,md:fm.md||v.md,st:fm.st||v.st,loc:fm.loc||v.loc}:v));}else{setVehicles(p=>[{id:nid(p),vn:fm.vn||"",md:fm.md||"",st:fm.st||"가용",loc:fm.loc||"",ck:td},...p]);notify("📦","차량재고","새 차량 등록",(fm.vn||"")+" · "+(fm.md||"")+" · "+(fm.loc||""));}X();};
 const del=id=>{if(confirmDel())setVehicles(p=>p.filter(v=>v.id!==id));};
-return(<><div style={{display:"flex",gap:5,marginBottom:12,flexWrap:"wrap"}}>{ss.map(s=><button key={s} onClick={()=>setFil(s)} style={fbtn(s)}>{s}</button>)}<span style={{marginLeft:"auto",fontSize:11,color:"#9CA3AF",lineHeight:"26px"}}>총 {fl.length}대</span></div>
+return(<><div style={{display:"flex",gap:5,marginBottom:8,flexWrap:"wrap"}}>{ss.map(s=><button key={s} onClick={()=>setFil(s)} style={fbtn(s)}>{s}</button>)}<span style={{marginLeft:"auto",fontSize:11,color:"#9CA3AF",lineHeight:"26px"}}>총 {fl.length}대</span></div>
+<DateBar/>
 <div style={{display:"grid",gridTemplateColumns:mob?"1fr":"repeat(auto-fill,minmax(210px,1fr))",gap:8}}>{fl.map(v=>{const ct=contracts.find(c=>c.vn===v.vn&&(c.st==="진행"||c.st==="연체"));return <div key={v.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:14}}>
 <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}><span style={{fontSize:13,fontWeight:700}}>{v.vn}</span><B t={v.st}/></div>
 <div style={{fontSize:12,color:"#6B7280"}}>{v.md} · 📍 {v.loc}</div><div style={{fontSize:11,color:"#9CA3AF",marginTop:3}}>점검 {v.ck}</div>
@@ -316,12 +349,13 @@ return(<><div style={{display:"flex",gap:5,marginBottom:12,flexWrap:"wrap"}}>{ss
 /* == 출고현황 == */
 if(ch==="dispatch"){
 const ss=["전체","준비","출고완료","취소"];
-const fl=dispatches.filter(d=>(fil==="전체"||d.st===fil)&&(!sq||d.no.includes(sq)||d.tg.includes(sq)||d.memo?.includes(sq)));
+const fl=dispatches.filter(d=>(fil==="전체"||d.st===fil)&&dtMatch(d.dt)&&(!sq||d.no.includes(sq)||d.tg.includes(sq)||d.memo?.includes(sq)));
 const handleImg=(e)=>{const files=Array.from(e.target.files||[]);files.forEach(f=>{const reader=new FileReader();reader.onload=(ev)=>{F2("imgs",[...(fm.imgs||[]),ev.target.result]);};reader.readAsDataURL(f);});};
 const removeImg=(idx)=>{F2("imgs",(fm.imgs||[]).filter((_,i)=>i!==idx));};
 const save=()=>{if(editId){setDispatches(p=>p.map(d=>d.id===editId?{...d,dt:fm.dt||d.dt,tg:fm.tg||d.tg,vh:fm.vh||d.vh,st:fm.st||d.st,memo:fm.memo!==undefined?fm.memo:d.memo,imgs:fm.imgs||d.imgs}:d));}else{const id=nid(dispatches);setDispatches(p=>[{id,no:"DP-"+String(id).padStart(3,"0"),dt:fm.dt||td,tg:fm.tg||"",vh:fm.vh||"",st:"준비",memo:fm.memo||"",imgs:fm.imgs||[]},...p]);notify("🚚","출고현황","새 출고 등록",(fm.tg||"")+" · "+(fm.vh||"")+(fm.memo?"\n"+fm.memo:""));}X();};
 const del=id=>{if(confirmDel())setDispatches(p=>p.filter(d=>d.id!==id));setDet(null);};
-return(<><div style={{display:"flex",gap:5,marginBottom:12,flexWrap:"wrap"}}>{ss.map(s=><button key={s} onClick={()=>setFil(s)} style={fbtn(s)}>{s}</button>)}</div>
+return(<><div style={{display:"flex",gap:5,marginBottom:8,flexWrap:"wrap"}}>{ss.map(s=><button key={s} onClick={()=>setFil(s)} style={fbtn(s)}>{s}</button>)}</div>
+<DateBar/>
 <div style={{display:"flex",flexDirection:"column",gap:8}}>{fl.map(d=><div key={d.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:mob?12:16,cursor:"pointer"}} onClick={()=>setDet(d)}>
 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}><span style={{fontSize:13,fontWeight:700}}>{d.no}</span><B t={d.st}/></div>
 <div style={{display:"flex",gap:mob?0:16,flexDirection:mob?"column":"row"}}>
@@ -331,7 +365,7 @@ return(<><div style={{display:"flex",gap:5,marginBottom:12,flexWrap:"wrap"}}>{ss
 <div style={{marginTop:8,display:"flex",gap:4,justifyContent:"flex-end"}} onClick={e=>e.stopPropagation()}><button style={DB} onClick={()=>startEdit(d,"d")}>수정</button><button style={DBR} onClick={()=>del(d.id)}>삭제</button></div></div>)}</div>
 {/* 출고 폼 */}
 <Mdl open={mdl==="d"} onClose={X} title={editId?"출고 수정":"출고 등록"} mob={mob}>
-<div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:10}}><div><label style={LS}>출고일</label><input type="date" style={IS} value={fm.dt||""} onChange={e=>F2("dt",e.target.value)}/></div><div><label style={LS}>대상지점</label><input style={IS} value={fm.tg||""} onChange={e=>F2("tg",e.target.value)}/></div>{editId&&<div><label style={LS}>상태</label><select style={IS} value={fm.st||""} onChange={e=>F2("st",e.target.value)}><option>준비</option><option>출고완료</option><option>취소</option></select></div>}</div>
+<div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:10}}><div><label style={LS}>출고일</label><input type="date" max="9999-12-31" style={IS} value={fm.dt||""} onChange={e=>F2("dt",e.target.value)}/></div><div><label style={LS}>대상지점</label><input style={IS} value={fm.tg||""} onChange={e=>F2("tg",e.target.value)}/></div>{editId&&<div><label style={LS}>상태</label><select style={IS} value={fm.st||""} onChange={e=>F2("st",e.target.value)}><option>준비</option><option>출고완료</option><option>취소</option></select></div>}</div>
 <div style={{marginTop:10}}><label style={LS}>차량 내역</label><input style={IS} value={fm.vh||""} onChange={e=>F2("vh",e.target.value)} placeholder="OK1 KS 2대"/></div>
 <div style={{marginTop:10}}><label style={LS}>메모</label><textarea style={{...IS,height:60}} value={fm.memo||""} onChange={e=>F2("memo",e.target.value)} placeholder="출고 시 특이사항, 차량 상태 등"/></div>
 <div style={{marginTop:10}}><label style={LS}>사진 첨부</label>
@@ -351,30 +385,33 @@ return(<><div style={{display:"flex",gap:5,marginBottom:12,flexWrap:"wrap"}}>{ss
 
 /* == 사고접수 == */
 if(ch==="incidents"){
-const fl=incidents.filter(i=>!sq||i.no.includes(sq)||i.vn.includes(sq)||i.ds.includes(sq));
+const fl=incidents.filter(i=>dtMatch(i.dt)&&(!sq||i.no.includes(sq)||i.vn.includes(sq)||i.ds.includes(sq)));
 const save=()=>{if(editId){setIncidents(p=>p.map(i=>i.id===editId?{...i,dt:fm.dt||i.dt,vn:fm.vn||i.vn,tp:fm.tp||i.tp,sv:fm.sv||i.sv,ds:fm.ds||i.ds,st:fm.st||i.st}:i));}else{const id=nid(incidents);setIncidents(p=>[{id,no:"IC-"+String(id).padStart(3,"0"),dt:fm.dt||td,vn:fm.vn||"",tp:fm.tp||"",sv:fm.sv||"보통",st:"접수",co:0,ins:"",ds:fm.ds||""},...p]);notify("⚠️","사고접수","새 사고 접수","["+(fm.sv||"보통")+"] "+(fm.vn||"")+" · "+(fm.tp||"")+(fm.ds?"\n"+fm.ds:""));}X();};
 const del=id=>{if(confirmDel())setIncidents(p=>p.filter(i=>i.id!==id));};
 return(<>
+<DateBar/>
 {mob?<div style={{display:"flex",flexDirection:"column",gap:8}}>{fl.map(i=><div key={i.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:14}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}><span style={{fontSize:13,fontWeight:700}}>{i.no}</span><div style={{display:"flex",gap:4}}><B t={i.sv}/><B t={i.st}/></div></div><CR label="사고일" val={i.dt}/><CR label="차량" val={i.vn}/><CR label="유형" val={i.tp}/><CR label="내용" val={i.ds}/><div style={{marginTop:8,display:"flex",gap:4,justifyContent:"flex-end"}}><button style={DB} onClick={()=>startEdit(i,"i")}>수정</button><button style={DBR} onClick={()=>del(i.id)}>삭제</button></div></div>)}</div>
 :<div style={{background:"#fff",borderRadius:12,border:"1px solid #ECEDF0",overflow:"hidden"}}>{fl.map(i=><div key={i.id} style={{display:"flex",padding:"10px 16px",borderBottom:"1px solid #F5F5F7",fontSize:13,alignItems:"center"}}><span style={{flex:"0 0 80px",fontWeight:600}}>{i.no}</span><span style={{flex:"0 0 80px"}}>{i.dt}</span><span style={{flex:"0 0 90px"}}>{i.vn}</span><span style={{flex:"0 0 50px"}}>{i.tp}</span><span style={{flex:"0 0 55px"}}><B t={i.sv}/></span><span style={{flex:1,color:"#6B7280"}}>{i.ds}</span><span style={{flex:"0 0 70px"}}><B t={i.st}/></span><span style={{flex:"0 0 80px",display:"flex",gap:4}}><button style={DB} onClick={()=>startEdit(i,"i")}>수정</button><button style={DBR} onClick={()=>del(i.id)}>삭제</button></span></div>)}</div>}
-<Mdl open={mdl==="i"} onClose={X} title={editId?"사고 수정":"사고 접수"} mob={mob}><div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:10}}><div><label style={LS}>사고일</label><input type="date" style={IS} value={fm.dt||""} onChange={e=>F2("dt",e.target.value)}/></div><div><label style={LS}>차량번호</label><input style={IS} value={fm.vn||""} onChange={e=>F2("vn",e.target.value)}/></div><div><label style={LS}>유형</label><select style={IS} value={fm.tp||""} onChange={e=>F2("tp",e.target.value)}><option value="">선택</option><option>대물</option><option>대인</option><option>단독</option><option>도난</option><option>파손</option></select></div><div><label style={LS}>긴급도</label><select style={IS} value={fm.sv||"보통"} onChange={e=>F2("sv",e.target.value)}><option>보통</option><option>긴급</option></select></div>{editId&&<div><label style={LS}>상태</label><select style={IS} value={fm.st||""} onChange={e=>F2("st",e.target.value)}><option>접수</option><option>조사</option><option>보험진행</option><option>종결</option></select></div>}</div><div style={{marginTop:10}}><label style={LS}>내용</label><textarea style={{...IS,height:60}} value={fm.ds||""} onChange={e=>F2("ds",e.target.value)}/></div><button onClick={save} style={SB}>{editId?"저장":"접수하기"}</button></Mdl></>);}
+<Mdl open={mdl==="i"} onClose={X} title={editId?"사고 수정":"사고 접수"} mob={mob}><div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:10}}><div><label style={LS}>사고일</label><input type="date" max="9999-12-31" style={IS} value={fm.dt||""} onChange={e=>F2("dt",e.target.value)}/></div><div><label style={LS}>차량번호</label><input style={IS} value={fm.vn||""} onChange={e=>F2("vn",e.target.value)}/></div><div><label style={LS}>유형</label><select style={IS} value={fm.tp||""} onChange={e=>F2("tp",e.target.value)}><option value="">선택</option><option>대물</option><option>대인</option><option>단독</option><option>도난</option><option>파손</option></select></div><div><label style={LS}>긴급도</label><select style={IS} value={fm.sv||"보통"} onChange={e=>F2("sv",e.target.value)}><option>보통</option><option>긴급</option></select></div>{editId&&<div><label style={LS}>상태</label><select style={IS} value={fm.st||""} onChange={e=>F2("st",e.target.value)}><option>접수</option><option>조사</option><option>보험진행</option><option>종결</option></select></div>}</div><div style={{marginTop:10}}><label style={LS}>내용</label><textarea style={{...IS,height:60}} value={fm.ds||""} onChange={e=>F2("ds",e.target.value)}/></div><button onClick={save} style={SB}>{editId?"저장":"접수하기"}</button></Mdl></>);}
 
 /* == 클레임 == */
 if(ch==="claims"){
-const fl=claims.filter(c=>!sq||c.no.includes(sq)||c.cu.includes(sq)||c.ds.includes(sq));
+const fl=claims.filter(c=>dtMatch(c.dt)&&(!sq||c.no.includes(sq)||c.cu.includes(sq)||c.ds.includes(sq)));
 const save=()=>{if(editId){setClaims(p=>p.map(c=>c.id===editId?{...c,ct:fm.ct||c.ct,cu:fm.cu||c.cu,pr:fm.pr||c.pr,ds:fm.ds||c.ds,st:fm.st||c.st}:c));}else{const id=nid(claims);setClaims(p=>[{id,no:"CL-"+String(id).padStart(3,"0"),ct:fm.ct||"기타",cu:fm.cu||"",pr:fm.pr||"보통",st:"접수",ds:fm.ds||"",dt:td},...p]);notify("🧾","클레임","새 클레임 접수","["+(fm.ct||"기타")+"] "+(fm.cu||"")+(fm.ds?"\n"+fm.ds:""));}X();};
 const del=id=>{if(confirmDel())setClaims(p=>p.filter(c=>c.id!==id));};
 return(<>
+<DateBar/>
 {mob?<div style={{display:"flex",flexDirection:"column",gap:8}}>{fl.map(c=><div key={c.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:14}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}><span style={{fontSize:13,fontWeight:700}}>{c.no}</span><div style={{display:"flex",gap:4}}><B t={c.ct}/><B t={c.st}/></div></div><CR label="고객" val={c.cu}/><CR label="긴급도"><B t={c.pr}/></CR><CR label="내용" val={c.ds}/><div style={{marginTop:8,display:"flex",gap:4,justifyContent:"flex-end"}}><button style={DB} onClick={()=>startEdit(c,"cl")}>수정</button><button style={DBR} onClick={()=>del(c.id)}>삭제</button></div></div>)}</div>
 :<div style={{background:"#fff",borderRadius:12,border:"1px solid #ECEDF0",overflow:"hidden"}}>{fl.map(c=><div key={c.id} style={{display:"flex",padding:"10px 16px",borderBottom:"1px solid #F5F5F7",fontSize:13,alignItems:"center"}}><span style={{flex:"0 0 80px",fontWeight:600}}>{c.no}</span><span style={{flex:"0 0 55px"}}><B t={c.ct}/></span><span style={{flex:"0 0 70px"}}>{c.cu}</span><span style={{flex:"0 0 55px"}}><B t={c.pr}/></span><span style={{flex:1,color:"#6B7280"}}>{c.ds}</span><span style={{flex:"0 0 70px"}}><B t={c.st}/></span><span style={{flex:"0 0 80px",display:"flex",gap:4}}><button style={DB} onClick={()=>startEdit(c,"cl")}>수정</button><button style={DBR} onClick={()=>del(c.id)}>삭제</button></span></div>)}</div>}
 <Mdl open={mdl==="cl"} onClose={X} title={editId?"클레임 수정":"클레임 접수"} mob={mob}><div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:10}}><div><label style={LS}>분류</label><select style={IS} value={fm.ct||""} onChange={e=>F2("ct",e.target.value)}><option value="">선택</option><option>요금</option><option>정비</option><option>CS</option><option>환불</option><option>기타</option></select></div><div><label style={LS}>고객명</label><input style={IS} value={fm.cu||""} onChange={e=>F2("cu",e.target.value)}/></div><div><label style={LS}>긴급도</label><select style={IS} value={fm.pr||"보통"} onChange={e=>F2("pr",e.target.value)}><option>보통</option><option>긴급</option></select></div>{editId&&<div><label style={LS}>상태</label><select style={IS} value={fm.st||""} onChange={e=>F2("st",e.target.value)}><option>접수</option><option>처리중</option><option>해결</option><option>반려</option></select></div>}</div><div style={{marginTop:10}}><label style={LS}>내용</label><textarea style={{...IS,height:70}} value={fm.ds||""} onChange={e=>F2("ds",e.target.value)}/></div><button onClick={save} style={SB}>{editId?"저장":"접수하기"}</button></Mdl></>);}
 
 /* == 공지사항 == */
 if(ch==="notices"){
-const fl=notices.filter(n=>!sq||n.tt.includes(sq)||n.bd.includes(sq));
+const fl=notices.filter(n=>dtMatch(n.dt)&&(!sq||n.tt.includes(sq)||n.bd.includes(sq)));
 const save=()=>{if(editId){setNotices(p=>p.map(n=>n.id===editId?{...n,tt:fm.tt||n.tt,bd:fm.bd||n.bd,pn:fm.pn!==undefined?fm.pn:n.pn}:n));}else{setNotices(p=>[{id:nid(p),tt:fm.tt||"",bd:fm.bd||"",au:u?.name,dt:td,pn:!!fm.pn},...p]);notify("📢","공지사항",fm.tt||"새 공지",fm.bd||"");}X();};
 const del=id=>{if(confirmDel())setNotices(p=>p.filter(n=>n.id!==id));setDet(null);};
 return(<>
+<DateBar/>
 <div style={{display:"flex",flexDirection:"column",gap:8}}>{fl.map(n=><div key={n.id} style={{background:"#fff",borderRadius:10,border:n.pn?"2px solid #3B82F6":"1px solid #ECEDF0",padding:mob?12:16,cursor:"pointer"}} onClick={()=>setDet(n)}>
 <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:5}}>{n.pn&&<span style={{padding:"1px 6px",borderRadius:4,fontSize:9,fontWeight:700,background:"#EFF6FF",color:"#1D4ED8"}}>📌</span>}<span style={{fontSize:13,fontWeight:700,flex:1}}>{n.tt}</span>
 <span style={{display:"flex",gap:3}} onClick={e=>e.stopPropagation()}><button style={DB} onClick={()=>startEdit(n,"n")}>수정</button><button style={DBR} onClick={()=>del(n.id)}>삭제</button></span></div>
@@ -385,10 +422,11 @@ return(<>
 
 /* == 요청/건의 == */
 if(ch==="requests"){
-const fl=requests.filter(r=>!sq||r.tt.includes(sq)||r.bd.includes(sq));
+const fl=requests.filter(r=>dtMatch(r.dt)&&(!sq||r.tt.includes(sq)||r.bd.includes(sq)));
 const save=()=>{if(editId){setRequests(p=>p.map(r=>r.id===editId?{...r,tt:fm.tt||r.tt,bd:fm.bd||r.bd,st:fm.st||r.st}:r));}else{setRequests(p=>[{id:nid(p),tt:fm.tt||"",bd:fm.bd||"",au:u?.name,dt:td,st:"검토중"},...p]);notify("💬","요청/건의",fm.tt||"새 요청",fm.bd||"");}X();};
 const del=id=>{if(confirmDel())setRequests(p=>p.filter(r=>r.id!==id));setDet(null);};
 return(<>
+<DateBar/>
 <div style={{display:"flex",flexDirection:"column",gap:8}}>{fl.map(r=><div key={r.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:mob?12:16,cursor:"pointer"}} onClick={()=>setDet(r)}>
 <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:5}}><span style={{fontSize:13,fontWeight:700,flex:1}}>{r.tt}</span><B t={r.st}/><span style={{display:"flex",gap:3}} onClick={e=>e.stopPropagation()}><button style={DB} onClick={()=>startEdit(r,"r")}>수정</button><button style={DBR} onClick={()=>del(r.id)}>삭제</button></span></div>
 <p style={{fontSize:12,color:"#6B7280",lineHeight:1.5}}>{r.bd.length>80?r.bd.slice(0,80)+"...":r.bd}</p>
@@ -398,29 +436,165 @@ return(<>
 
 /* == 회의록 == */
 if(ch==="meetings"){
-const fl=meetings.filter(m=>!sq||m.tt.includes(sq)||m.dc.includes(sq));
+const fl=meetings.filter(m=>dtMatch(m.dt)&&(!sq||m.tt.includes(sq)||m.dc.includes(sq)));
 const save=()=>{if(editId){setMeetings(p=>p.map(m=>m.id===editId?{...m,tt:fm.tt||m.tt,dt:fm.dt||m.dt,lc:fm.lc||m.lc,at:fm.at||m.at,dc:fm.dc||m.dc,st:fm.st||m.st}:m));}else{setMeetings(p=>[{id:nid(p),tt:fm.tt||"",dt:fm.dt||td,lc:fm.lc||"",at:fm.at||"",dc:fm.dc||"",st:"작성중"},...p]);notify("📋","회의록",fm.tt||"새 회의록",fm.dc||"");}X();};
 const del=id=>{if(confirmDel())setMeetings(p=>p.filter(m=>m.id!==id));};
 return(<>
+<DateBar/>
 <div style={{display:"flex",flexDirection:"column",gap:8}}>{fl.map(m=><div key={m.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:mob?12:16}}>
 <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6}}><span style={{fontSize:13,fontWeight:700,flex:1}}>{m.tt}</span><B t={m.st}/><span style={{display:"flex",gap:3}}><button style={DB} onClick={()=>startEdit(m,"m")}>수정</button><button style={DBR} onClick={()=>del(m.id)}>삭제</button></span></div>
 <div style={{fontSize:11.5,color:"#6B7280",marginBottom:6}}>📅 {m.dt} · 📍 {m.lc}</div>
 {!mob&&<div style={{fontSize:11.5,color:"#6B7280",marginBottom:6}}>👥 {m.at}</div>}
 <div style={{padding:"8px 12px",background:"#F7F8FA",borderRadius:7,fontSize:12,color:"#374151",lineHeight:1.5,whiteSpace:"pre-wrap"}}><b>결정:</b> {m.dc}</div><Thread itemKey={ik("meetings",m.id)}/></div>)}</div>
-<Mdl open={mdl==="m"} onClose={X} title={editId?"회의록 수정":"회의록 작성"} mob={mob}><div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:10}}><div><label style={LS}>제목</label><input style={IS} value={fm.tt||""} onChange={e=>F2("tt",e.target.value)}/></div><div><label style={LS}>일시</label><input type="date" style={IS} value={fm.dt||""} onChange={e=>F2("dt",e.target.value)}/></div><div><label style={LS}>장소</label><input style={IS} value={fm.lc||""} onChange={e=>F2("lc",e.target.value)}/></div><div><label style={LS}>참석자</label><input style={IS} value={fm.at||""} onChange={e=>F2("at",e.target.value)}/></div>{editId&&<div><label style={LS}>상태</label><select style={IS} value={fm.st||""} onChange={e=>F2("st",e.target.value)}><option>작성중</option><option>확정</option><option>공유완료</option></select></div>}</div><div style={{marginTop:10}}><label style={LS}>결정사항</label><textarea style={{...IS,height:70}} value={fm.dc||""} onChange={e=>F2("dc",e.target.value)}/></div><button onClick={save} style={SB}>{editId?"저장":"저장하기"}</button></Mdl></>);}
+<Mdl open={mdl==="m"} onClose={X} title={editId?"회의록 수정":"회의록 작성"} mob={mob}><div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:10}}><div><label style={LS}>제목</label><input style={IS} value={fm.tt||""} onChange={e=>F2("tt",e.target.value)}/></div><div><label style={LS}>일시</label><input type="date" max="9999-12-31" style={IS} value={fm.dt||""} onChange={e=>F2("dt",e.target.value)}/></div><div><label style={LS}>장소</label><input style={IS} value={fm.lc||""} onChange={e=>F2("lc",e.target.value)}/></div><div><label style={LS}>참석자</label><input style={IS} value={fm.at||""} onChange={e=>F2("at",e.target.value)}/></div>{editId&&<div><label style={LS}>상태</label><select style={IS} value={fm.st||""} onChange={e=>F2("st",e.target.value)}><option>작성중</option><option>확정</option><option>공유완료</option></select></div>}</div><div style={{marginTop:10}}><label style={LS}>결정사항</label><textarea style={{...IS,height:70}} value={fm.dc||""} onChange={e=>F2("dc",e.target.value)}/></div><button onClick={save} style={SB}>{editId?"저장":"저장하기"}</button></Mdl></>);}
 
 /* == 일정 == */
 if(ch==="schedule"){
-const tc={"입고":"#3B82F6","정비":"#F59E0B","회의":"#8B5CF6"};
-const fl=[...schedule].sort((a,b)=>a.dt.localeCompare(b.dt)).filter(s=>!sq||s.tt.includes(sq));
-const save=()=>{if(editId){setSchedule(p=>p.map(s=>s.id===editId?{...s,tt:fm.tt||s.tt,dt:fm.dt||s.dt,tp:fm.tp||s.tp}:s));}else{setSchedule(p=>[...p,{id:nid(p),tt:fm.tt||"",dt:fm.dt||td,tp:fm.tp||""}]);notify("📅","일정",fm.tt||"새 일정",(fm.dt||"")+" · "+(fm.tp||""));}X();};
-const del=id=>{if(confirmDel())setSchedule(p=>p.filter(s=>s.id!==id));};
+const tc={"입고":"#3B82F6","정비":"#F59E0B","회의":"#8B5CF6","기타":"#6B7280"};
+const tci={"입고":"📦","정비":"🔧","회의":"💼","기타":"📌"};
+const sts=["전체","예정","완료"];
+const tps=["전체","입고","정비","회의"];
+
+const fl=[...schedule].filter(s=>(scFil==="전체"||s.st===scFil)&&(scTpFil==="전체"||s.tp===scTpFil)&&dtMatch(s.dt)&&(!sq||s.tt.includes(sq)||s.memo?.includes(sq)||s.who?.includes(sq))).sort((a,b)=>a.dt.localeCompare(b.dt));
+
+const save=()=>{
+  if(editId){setSchedule(p=>p.map(s=>s.id===editId?{...s,tt:fm.tt||s.tt,dt:fm.dt||s.dt,tp:fm.tp||s.tp,tm:fm.tm!==undefined?fm.tm:s.tm,loc:fm.loc!==undefined?fm.loc:s.loc,who:fm.who!==undefined?fm.who:s.who,memo:fm.memo!==undefined?fm.memo:s.memo,st:fm.st||s.st}:s));
+  }else{
+    setSchedule(p=>[...p,{id:nid(p),tt:fm.tt||"",dt:fm.dt||td,tp:fm.tp||"기타",tm:fm.tm||"",loc:fm.loc||"",who:fm.who||"",memo:fm.memo||"",st:"예정"}]);
+    notify("📅","일정",fm.tt||"새 일정",(fm.dt||"")+" "+(fm.tm||"")+" · "+(fm.tp||""));
+  }X();
+};
+const del=id=>{if(confirmDel()){setSchedule(p=>p.filter(s=>s.id!==id));setScDet(null);}};
+const toggleDone=(id)=>{setSchedule(p=>p.map(s=>s.id===id?{...s,st:s.st==="완료"?"예정":"완료"}:s));};
+
+/* 미니 캘린더 */
+const calY=+calMonth.split("-")[0], calM=+calMonth.split("-")[1];
+const calFirst=new Date(calY,calM-1,1);
+const calDays=new Date(calY,calM,0).getDate();
+const calStartDay=calFirst.getDay();/* 0=Sun */
+const calCells=[];
+for(let i=0;i<calStartDay;i++)calCells.push(null);
+for(let d=1;d<=calDays;d++)calCells.push(d);
+const prevMonth=()=>{const d=new Date(calY,calM-2,1);setCalMonth(d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"));};
+const nextMonth=()=>{const d=new Date(calY,calM,1);setCalMonth(d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"));};
+const eventsOnDay=(d)=>{const ds=calY+"-"+String(calM).padStart(2,"0")+"-"+String(d).padStart(2,"0");return schedule.filter(s=>s.dt===ds);};
+const isToday=(d)=>{const t=new Date();return t.getFullYear()===calY&&t.getMonth()+1===calM&&t.getDate()===d;};
+
+/* D-day 계산 */
+const dday=(dt)=>{const t=new Date(td);const e=new Date(dt);const diff=Math.ceil((e-t)/(1000*60*60*24));if(diff===0)return "오늘";if(diff>0)return "D-"+diff;return "D+"+Math.abs(diff);};
+
 return(<>
-<div style={{display:"flex",flexDirection:"column",gap:6}}>{fl.map(s=><div key={s.id} style={{background:"#fff",borderRadius:8,border:"1px solid #ECEDF0",padding:"10px 14px",display:"flex",alignItems:"center",gap:10}}>
-<div style={{width:4,height:32,borderRadius:2,background:tc[s.tp]||"#6B7280",flexShrink:0}}/>
-<div style={{flex:1,minWidth:0}}><div style={{fontSize:13,fontWeight:700,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.tt}</div><div style={{fontSize:11,color:"#9CA3AF"}}>{s.dt} · {s.tp}</div></div>
-<div style={{display:"flex",gap:3,flexShrink:0}}><button style={DB} onClick={()=>startEdit(s,"s")}>수정</button><button style={DBR} onClick={()=>del(s.id)}>삭제</button></div></div>)}</div>
-<Mdl open={mdl==="s"} onClose={X} title={editId?"일정 수정":"일정 추가"} mob={mob}><div><label style={LS}>제목</label><input style={IS} value={fm.tt||""} onChange={e=>F2("tt",e.target.value)}/></div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginTop:10}}><div><label style={LS}>날짜</label><input type="date" style={IS} value={fm.dt||""} onChange={e=>F2("dt",e.target.value)}/></div><div><label style={LS}>유형</label><select style={IS} value={fm.tp||""} onChange={e=>F2("tp",e.target.value)}><option value="">선택</option><option>입고</option><option>정비</option><option>회의</option></select></div></div><button onClick={save} style={SB}>{editId?"저장":"추가하기"}</button></Mdl></>);}
+{/* 필터 + 뷰 토글 */}
+<div style={{display:"flex",gap:5,marginBottom:10,flexWrap:"wrap",alignItems:"center"}}>
+{sts.map(s=><button key={s} onClick={()=>setScFil(s)} style={fbtn(s==="전체"&&scFil==="전체"?"전체":s===scFil?s:"_")}
+  style={{padding:"5px 10px",borderRadius:6,border:scFil===s?"none":"1px solid #E5E7EB",background:scFil===s?"#1E1E1E":"#fff",color:scFil===s?"#fff":"#6B7280",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>{s}</button>)}
+<span style={{width:1,height:16,background:"#E5E7EB",margin:"0 2px"}}/>
+{tps.map(t=><button key={t} onClick={()=>setScTpFil(t)}
+  style={{padding:"5px 10px",borderRadius:6,border:scTpFil===t?"none":"1px solid #E5E7EB",background:scTpFil===t?tc[t]||"#1E1E1E":"#fff",color:scTpFil===t?"#fff":"#6B7280",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>{t==="전체"?t:(tci[t]||"")+" "+t}</button>)}
+<div style={{marginLeft:"auto",display:"flex",gap:2}}>
+<button onClick={()=>setScView("list")} style={{padding:"5px 10px",borderRadius:"6px 0 0 6px",border:"1px solid #E5E7EB",background:scView==="list"?"#1E1E1E":"#fff",color:scView==="list"?"#fff":"#6B7280",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>📋</button>
+<button onClick={()=>setScView("cal")} style={{padding:"5px 10px",borderRadius:"0 6px 6px 0",border:"1px solid #E5E7EB",borderLeft:"none",background:scView==="cal"?"#1E1E1E":"#fff",color:scView==="cal"?"#fff":"#6B7280",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>📅</button>
+</div>
+</div>
+<DateBar/>
+
+{/* 캘린더 뷰 */}
+{scView==="cal"&&<div style={{background:"#fff",borderRadius:12,border:"1px solid #ECEDF0",overflow:"hidden",marginBottom:12}}>
+<div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 16px",borderBottom:"1px solid #F0F0F2"}}>
+<button onClick={prevMonth} style={{background:"none",border:"none",fontSize:16,cursor:"pointer",padding:"4px 8px"}}>◀</button>
+<span style={{fontSize:14,fontWeight:700}}>{calY}년 {calM}월</span>
+<button onClick={nextMonth} style={{background:"none",border:"none",fontSize:16,cursor:"pointer",padding:"4px 8px"}}>▶</button>
+</div>
+<div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)"}}>
+{["일","월","화","수","목","금","토"].map((d,i)=><div key={d} style={{padding:"6px 0",textAlign:"center",fontSize:10,fontWeight:700,color:i===0?"#DC2626":i===6?"#3B82F6":"#9CA3AF",borderBottom:"1px solid #F0F0F2"}}>{d}</div>)}
+{calCells.map((d,i)=>{
+  if(!d)return <div key={"e"+i} style={{padding:mob?4:6,minHeight:mob?36:52,borderBottom:"1px solid #F8F8FA"}}/>;
+  const evts=eventsOnDay(d);
+  const today=isToday(d);
+  const dow=new Date(calY,calM-1,d).getDay();
+  return <div key={d} style={{padding:mob?3:4,minHeight:mob?36:52,borderBottom:"1px solid #F8F8FA",cursor:evts.length?"pointer":"default",background:today?"#FFFBEB":"transparent"}} onClick={()=>{if(evts.length===1)setScDet(evts[0]);else if(evts.length>1)setScDet(evts[0]);}}>
+    <div style={{fontSize:mob?10:11,fontWeight:today?800:500,color:today?"#D97706":dow===0?"#DC2626":dow===6?"#3B82F6":"#374151",textAlign:"center",marginBottom:2}}>{d}</div>
+    <div style={{display:"flex",flexDirection:"column",gap:1}}>
+    {evts.slice(0,mob?1:2).map(ev=><div key={ev.id} onClick={e=>{e.stopPropagation();setScDet(ev);}} style={{padding:"1px 3px",borderRadius:3,background:tc[ev.tp]||"#6B7280",color:"#fff",fontSize:mob?7:8,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",cursor:"pointer"}}>{mob?"":tci[ev.tp]||""}{ev.tt}</div>)}
+    {evts.length>(mob?1:2)&&<div style={{fontSize:7,color:"#9CA3AF",textAlign:"center"}}>+{evts.length-(mob?1:2)}</div>}
+    </div>
+  </div>;
+})}
+</div>
+</div>}
+
+{/* 리스트 뷰 */}
+{scView==="list"&&<div style={{display:"flex",flexDirection:"column",gap:6}}>
+{fl.map(s=><div key={s.id} onClick={()=>setScDet(s)} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:mob?"10px 12px":"12px 16px",display:"flex",alignItems:"center",gap:mob?8:12,cursor:"pointer",transition:"all .15s",opacity:s.st==="완료"?0.6:1}} onMouseEnter={e=>e.currentTarget.style.borderColor="#D1D5DB"} onMouseLeave={e=>e.currentTarget.style.borderColor="#ECEDF0"}>
+<div style={{width:mob?36:42,height:mob?36:42,borderRadius:mob?8:10,background:(tc[s.tp]||"#6B7280")+"18",display:"flex",alignItems:"center",justifyContent:"center",fontSize:mob?16:20,flexShrink:0}}>{tci[s.tp]||"📌"}</div>
+<div style={{flex:1,minWidth:0}}>
+  <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
+    <span style={{fontSize:13,fontWeight:700,textDecoration:s.st==="완료"?"line-through":"none",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",flex:1}}>{s.tt}</span>
+    <span style={{fontSize:10,fontWeight:700,color:tc[s.tp]||"#6B7280",flexShrink:0,padding:"2px 6px",borderRadius:4,background:(tc[s.tp]||"#6B7280")+"15"}}>{s.tp}</span>
+  </div>
+  <div style={{display:"flex",alignItems:"center",gap:8,fontSize:11,color:"#9CA3AF",flexWrap:"wrap"}}>
+    <span>📅 {s.dt}{s.tm?" "+s.tm:""}</span>
+    {s.loc&&<span>📍 {s.loc}</span>}
+    {s.who&&!mob&&<span>👤 {s.who}</span>}
+  </div>
+</div>
+<div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4,flexShrink:0}}>
+  <span style={{fontSize:10,fontWeight:700,color:s.st==="완료"?"#15803D":new Date(s.dt)< new Date(td)?"#DC2626":"#D97706",padding:"2px 6px",borderRadius:4,background:s.st==="완료"?"#F0FDF4":new Date(s.dt)<new Date(td)?"#FEF2F2":"#FFFBEB"}}>{s.st==="완료"?"✅ 완료":dday(s.dt)}</span>
+  <div style={{display:"flex",gap:3}} onClick={e=>e.stopPropagation()}>
+    <button style={{...DB,fontSize:10,padding:"3px 6px"}} onClick={()=>toggleDone(s.id)}>{s.st==="완료"?"↩":"✓"}</button>
+    <button style={{...DB,fontSize:10,padding:"3px 6px"}} onClick={()=>startEdit(s,"s")}>수정</button>
+    <button style={{...DBR,fontSize:10,padding:"3px 6px"}} onClick={()=>del(s.id)}>삭제</button>
+  </div>
+</div>
+</div>)}
+{!fl.length&&<div style={{padding:24,textAlign:"center",color:"#9CA3AF",fontSize:13}}>일정이 없습니다</div>}
+</div>}
+
+{/* 일정 등록/수정 모달 */}
+<Mdl open={mdl==="s"} onClose={X} title={editId?"일정 수정":"일정 추가"} mob={mob}>
+<div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:10}}>
+<div style={{gridColumn:mob?"1":"1/3"}}><label style={LS}>제목</label><input style={IS} value={fm.tt||""} onChange={e=>F2("tt",e.target.value)} placeholder="일정 제목"/></div>
+<div><label style={LS}>날짜</label><input type="date" max="9999-12-31" style={IS} value={fm.dt||""} onChange={e=>F2("dt",e.target.value)}/></div>
+<div><label style={LS}>시간</label><input type="time" style={IS} value={fm.tm||""} onChange={e=>F2("tm",e.target.value)}/></div>
+<div><label style={LS}>유형</label><select style={IS} value={fm.tp||""} onChange={e=>F2("tp",e.target.value)}><option value="">선택</option><option>입고</option><option>정비</option><option>회의</option><option>기타</option></select></div>
+<div><label style={LS}>장소</label><input style={IS} value={fm.loc||""} onChange={e=>F2("loc",e.target.value)} placeholder="본사, 온라인 등"/></div>
+<div style={{gridColumn:mob?"1":"1/3"}}><label style={LS}>담당자</label><input style={IS} value={fm.who||""} onChange={e=>F2("who",e.target.value)} placeholder="김대표, 박매니저"/></div>
+{editId&&<div><label style={LS}>상태</label><select style={IS} value={fm.st||"예정"} onChange={e=>F2("st",e.target.value)}><option>예정</option><option>완료</option></select></div>}
+</div>
+<div style={{marginTop:10}}><label style={LS}>메모</label><textarea style={{...IS,height:70}} value={fm.memo||""} onChange={e=>F2("memo",e.target.value)} placeholder="상세 내용, 준비사항 등"/></div>
+<button onClick={save} style={SB}>{editId?"저장":"추가하기"}</button>
+</Mdl>
+
+{/* 일정 상세 모달 */}
+<Mdl open={!!scDet} onClose={()=>setScDet(null)} title="일정 상세" mob={mob}>{scDet&&<div>
+<div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16,paddingBottom:14,borderBottom:"1px solid #F0F0F2"}}>
+  <div style={{width:48,height:48,borderRadius:12,background:(tc[scDet.tp]||"#6B7280")+"18",display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,flexShrink:0}}>{tci[scDet.tp]||"📌"}</div>
+  <div style={{flex:1}}>
+    <div style={{fontSize:16,fontWeight:700,lineHeight:1.3,textDecoration:scDet.st==="완료"?"line-through":"none"}}>{scDet.tt}</div>
+    <div style={{display:"flex",alignItems:"center",gap:6,marginTop:4}}>
+      <span style={{padding:"2px 8px",borderRadius:4,fontSize:10,fontWeight:700,background:(tc[scDet.tp]||"#6B7280")+"15",color:tc[scDet.tp]||"#6B7280"}}>{scDet.tp}</span>
+      <span style={{fontSize:11,fontWeight:700,color:scDet.st==="완료"?"#15803D":"#D97706"}}>{scDet.st==="완료"?"✅ 완료":dday(scDet.dt)}</span>
+    </div>
+  </div>
+</div>
+<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}}>
+  <div style={{padding:"10px 12px",background:"#F7F8FA",borderRadius:8}}><div style={{fontSize:10,color:"#9CA3AF",marginBottom:2}}>📅 날짜</div><div style={{fontSize:13,fontWeight:600}}>{scDet.dt}</div></div>
+  <div style={{padding:"10px 12px",background:"#F7F8FA",borderRadius:8}}><div style={{fontSize:10,color:"#9CA3AF",marginBottom:2}}>⏰ 시간</div><div style={{fontSize:13,fontWeight:600}}>{scDet.tm||"미정"}</div></div>
+  <div style={{padding:"10px 12px",background:"#F7F8FA",borderRadius:8}}><div style={{fontSize:10,color:"#9CA3AF",marginBottom:2}}>📍 장소</div><div style={{fontSize:13,fontWeight:600}}>{scDet.loc||"미정"}</div></div>
+  <div style={{padding:"10px 12px",background:"#F7F8FA",borderRadius:8}}><div style={{fontSize:10,color:"#9CA3AF",marginBottom:2}}>👤 담당자</div><div style={{fontSize:13,fontWeight:600}}>{scDet.who||"미정"}</div></div>
+</div>
+{scDet.memo&&<div style={{padding:"12px 14px",background:"#F7F8FA",borderRadius:8,marginBottom:14}}>
+  <div style={{fontSize:10,color:"#9CA3AF",marginBottom:4}}>📝 메모</div>
+  <div style={{fontSize:12.5,color:"#374151",lineHeight:1.6,whiteSpace:"pre-wrap"}}>{scDet.memo}</div>
+</div>}
+<div style={{display:"flex",gap:6}}>
+  <button onClick={()=>toggleDone(scDet.id)} style={{flex:1,padding:"10px",borderRadius:8,border:"1.5px solid "+(scDet.st==="완료"?"#FDBA74":"#86EFAC"),background:scDet.st==="완료"?"#FFFBEB":"#F0FDF4",color:scDet.st==="완료"?"#EA580C":"#15803D",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>{scDet.st==="완료"?"↩ 예정으로":"✅ 완료처리"}</button>
+  <button onClick={()=>{startEdit(scDet,"s");setScDet(null);}} style={{flex:1,padding:"10px",borderRadius:8,border:"1.5px solid #E5E7EB",background:"#fff",color:"#374151",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>✏️ 수정</button>
+  <button onClick={()=>del(scDet.id)} style={{padding:"10px 14px",borderRadius:8,border:"1.5px solid #FECACA",background:"#FEF2F2",color:"#DC2626",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>🗑️</button>
+</div>
+<Thread itemKey={ik("schedule",scDet.id)}/>
+</div>}</Mdl>
+</>);}
 
 /* == 파일공유 == */
 if(ch==="files"){
@@ -428,7 +602,7 @@ const ic={"xlsx":"#217346","pdf":"#DC2626","docx":"#2B579A","png":"#F59E0B","jpg
 const dragId=fileDragId;const setDragId=setFileDragId;
 const dragOver=fileDragOver;const setDragOver=setFileDragOver;
 
-const flInFolder=files.filter(f=>(f.fld||"")===(curFld)&&(!sq||f.nm.toLowerCase().includes(sq)));
+const flInFolder=files.filter(f=>(f.fld||"")===(curFld)&&dtMatch(f.dt)&&(!sq||f.nm.toLowerCase().includes(sq)));
 const foldersInRoot=folders.filter(fd=>!sq||fd.nm.includes(sq));
 
 /* 폴더 추가 */
@@ -515,6 +689,7 @@ return(<>
 {selFiles.length>0&&<button onClick={()=>setMoveModal(true)} style={{padding:"5px 10px",borderRadius:6,border:"1.5px solid #3B82F6",background:"#EFF6FF",color:"#1D4ED8",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>📦 {selFiles.length}개 이동</button>}
 <button onClick={addFolder} style={{padding:"5px 10px",borderRadius:6,border:"1px solid #E5E7EB",background:"#fff",color:"#374151",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>📁+ 폴더</button>
 </div>
+<DateBar/>
 
 {/* 폴더 목록 (루트에서만 표시) */}
 {!curFld&&<div style={{display:"grid",gridTemplateColumns:mob?"repeat(2,1fr)":"repeat(auto-fill,minmax(160px,1fr))",gap:8,marginBottom:10}}>
