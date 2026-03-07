@@ -64,8 +64,8 @@ function B({t}){const[bg,c]=BM[t]||["#F3F4F6","#6B7280"];return <span style={{di
 
 function Mdl({open,onClose,title,children,mob}){if(!open)return null;return(<div style={{position:"fixed",inset:0,zIndex:9999,display:"flex",alignItems:mob?"flex-end":"center",justifyContent:"center"}} onClick={onClose}><div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.35)"}}/><div style={{position:"relative",background:"#fff",borderRadius:mob?"16px 16px 0 0":16,width:mob?"100%":"92%",maxWidth:mob?"100%":540,maxHeight:mob?"90vh":"85vh",overflow:"auto",padding:mob?"20px 16px 28px":24,animation:"fadeUp .2s ease"}} onClick={e=>e.stopPropagation()}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}><h2 style={{fontSize:16,fontWeight:800}}>{title}</h2><button onClick={onClose} style={{width:28,height:28,borderRadius:6,border:"none",background:"#F3F4F6",cursor:"pointer",fontSize:14}}>✕</button></div>{children}</div></div>);}
 
-const CHS=[{p:"home",l:"홈",i:"🏠"},{d:1,l:"운영"},{p:"contracts",l:"계약관리",i:"📝"},{p:"inventory",l:"차량재고",i:"📦"},{p:"dispatch",l:"출고현황",i:"🚚"},{d:1,l:"이슈"},{p:"incidents",l:"사고접수",i:"⚠️"},{p:"claims",l:"클레임",i:"🧾"},{p:"consults",l:"상담내역",i:"📞"},{d:1,l:"소통"},{p:"notices",l:"공지사항",i:"📢"},{p:"requests",l:"요청/건의",i:"💬"},{p:"meetings",l:"회의록",i:"📋"},{d:1,l:"기타"},{p:"schedule",l:"일정/스케줄",i:"📅"},{p:"files",l:"파일공유",i:"📁"}];
-const QK=[{p:"contracts",i:"📝",l:"계약관리",d:"렌탈 계약 현황",c:"#3B82F6"},{p:"inventory",i:"📦",l:"차량재고",d:"재고·배정 현황",c:"#10B981"},{p:"dispatch",i:"🚚",l:"출고현황",d:"출고·입고 확인",c:"#F59E0B"},{p:"incidents",i:"⚠️",l:"사고접수",d:"사고 처리 현황",c:"#EF4444"},{p:"claims",i:"🧾",l:"클레임",d:"클레임 접수·처리",c:"#8B5CF6"},{p:"consults",i:"📞",l:"상담내역",d:"고객 상담 기록",c:"#0EA5E9"},{p:"notices",i:"📢",l:"공지사항",d:"업무 공지",c:"#EC4899"},{p:"requests",i:"💬",l:"요청/건의",d:"협의·요청 사항",c:"#06B6D4"},{p:"schedule",i:"📅",l:"일정",d:"공유 일정",c:"#14B8A6"},{p:"files",i:"📁",l:"파일",d:"공유 문서",c:"#6366F1"},{p:"meetings",i:"📋",l:"회의록",d:"회의 내용 관리",c:"#F97316"}];
+const CHS=[{p:"home",l:"홈",i:"🏠"},{d:1,l:"운영"},{p:"contracts",l:"계약관리",i:"📝"},{p:"inventory",l:"차량재고",i:"📦"},{p:"dispatch",l:"출고현황",i:"🚚"},{p:"insurance",l:"보험관리",i:"🛡️"},{d:1,l:"이슈"},{p:"incidents",l:"사고접수",i:"⚠️"},{p:"claims",l:"클레임",i:"🧾"},{p:"consults",l:"상담내역",i:"📞"},{d:1,l:"소통"},{p:"notices",l:"공지사항",i:"📢"},{p:"requests",l:"요청/건의",i:"💬"},{p:"meetings",l:"회의록",i:"📋"},{d:1,l:"기타"},{p:"schedule",l:"일정/스케줄",i:"📅"},{p:"files",l:"파일공유",i:"📁"}];
+const QK=[{p:"contracts",i:"📝",l:"계약관리",d:"렌탈 계약 현황",c:"#3B82F6"},{p:"inventory",i:"📦",l:"차량재고",d:"재고·배정 현황",c:"#10B981"},{p:"dispatch",i:"🚚",l:"출고현황",d:"출고·입고 확인",c:"#F59E0B"},{p:"insurance",i:"🛡️",l:"보험관리",d:"보험 증서·현황",c:"#7C3AED"},{p:"incidents",i:"⚠️",l:"사고접수",d:"사고 처리 현황",c:"#EF4444"},{p:"claims",i:"🧾",l:"클레임",d:"클레임 접수·처리",c:"#8B5CF6"},{p:"consults",i:"📞",l:"상담내역",d:"고객 상담 기록",c:"#0EA5E9"},{p:"notices",i:"📢",l:"공지사항",d:"업무 공지",c:"#EC4899"},{p:"requests",i:"💬",l:"요청/건의",d:"협의·요청 사항",c:"#06B6D4"},{p:"schedule",i:"📅",l:"일정",d:"공유 일정",c:"#14B8A6"},{p:"files",i:"📁",l:"파일",d:"공유 문서",c:"#6366F1"},{p:"meetings",i:"📋",l:"회의록",d:"회의 내용 관리",c:"#F97316"}];
 
 const initUsers=[
 {id:1,email:"admin@teambro.kr",pw:"1234",name:"김대표",role:"관리자",org:"본사",phone:"010-0000-0000",active:true},
@@ -133,6 +133,7 @@ const[meetings,setMeetings]=useState([]);
 const[schedule,setSchedule]=useState([]);
 const[files,setFiles]=useState([]);
 const[consults,setConsults]=useState([]);
+const[insur,setInsur]=useState([]);
 const[users,setUsers]=useState([]);
 const[dbReady,setDbReady]=useState(false);
 /* 댓글 & 이모지 리액션 시스템 */
@@ -140,13 +141,13 @@ const[comments,setComments]=useState({});/* {channelKey_id: [{id,au,txt,dt,ts}]}
 const[reactions,setReactions]=useState({});/* {channelKey_id: {emoji: [userName,...]}} */
 /* DB에서 전체 데이터 로드 */
 useEffect(()=>{(async()=>{
-const[ct,vh,dp,ic,cl,nt,rq,mt,sc,fl,us,cmt,rxn,cs]=await Promise.all([
+const[ct,vh,dp,ic,cl,nt,rq,mt,sc,fl,us,cmt,rxn,cs,ins]=await Promise.all([
 dbS("contracts"),dbS("vehicles"),dbS("dispatches"),dbS("incidents"),
 dbS("claims"),dbS("notices"),dbS("requests"),dbS("meetings"),
-dbS("schedule"),dbS("files"),dbS("users"),dbS("comments"),dbS("reactions"),dbS("consultations")]);
+dbS("schedule"),dbS("files"),dbS("users"),dbS("comments"),dbS("reactions"),dbS("consultations"),dbS("insurance")]);
 setContracts(ct);setVehicles(vh);setDispatches(dp);setIncidents(ic);
 setClaims(cl);setNotices(nt);setRequests(rq);setMeetings(mt);
-setSchedule(sc);setFiles(fl);setUsers(us);setConsults(cs);
+setSchedule(sc);setFiles(fl);setUsers(us);setConsults(cs);setInsur(ins);
 /* 댓글/리액션 → 기존 구조로 변환 */
 const cmtObj={};cmt.forEach(c=>{if(!cmtObj[c.item_key])cmtObj[c.item_key]=[];cmtObj[c.item_key].push({id:c.id,au:c.au,txt:c.txt,dt:c.dt,ts:c.ts});});
 setComments(cmtObj);
@@ -227,7 +228,7 @@ const login=async(e)=>{if(e&&e.preventDefault)e.preventDefault();setEr("");setLd
   setU({name:data.name,role:data.role,org:data.org,email:data.email,uid:data.uid});SS.setItem("nw_u",JSON.stringify({name:data.name,role:data.role,org:data.org,email:data.email,uid:data.uid}));SS.setItem("nw_ch","home");setPg("app");setCh("home");setLd(false);};
 const logout=()=>{setU(null);setPg("land");setEm("");setPw("");SS.removeItem("nw_u");SS.removeItem("nw_ch");};
 const fbtn=s=>({padding:"5px 10px",borderRadius:6,border:fil===s?"none":"1px solid #E5E7EB",background:fil===s?"#1E1E1E":"#fff",color:fil===s?"#fff":"#6B7280",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"});
-const mm={contracts:"c",inventory:"v",dispatch:"d",incidents:"i",claims:"cl",consults:"cs",notices:"n",requests:"r",meetings:"m",schedule:"s",files:"f",settings:"user"};
+const mm={contracts:"c",inventory:"v",dispatch:"d",insurance:"ins",incidents:"i",claims:"cl",consults:"cs",notices:"n",requests:"r",meetings:"m",schedule:"s",files:"f",settings:"user"};
 const sq=q.toLowerCase();
 const startEdit=(item,modal)=>{setFm({...item});setEditId(item.id);setMdl(modal);setDet(null);};
 const confirmDel=(msg)=>window.confirm(msg||"정말 삭제하시겠습니까?");
@@ -279,14 +280,14 @@ const save=async()=>{
   if(editId){
     const old=contracts.find(c=>c.id===editId);
     const newSt=fm.st||old.st;
-    const upd={nm:fm.nm||old.nm,ph:fm.ph||old.ph,md:fm.md||old.md,vn:fm.vn||old.vn,s:fm.s||old.s,e:fm.e||old.e,fee:+fm.fee||old.fee,dep:+fm.dep||old.dep,st:newSt,memo:fm.memo!==undefined?fm.memo:old.memo};
+    const upd={nm:fm.nm||old.nm,ph:fm.ph||old.ph,md:fm.md||old.md,vn:fm.vn||old.vn,s:fm.s||old.s,e:fm.e||old.e,fee:+fm.fee||old.fee,dep:+fm.dep||old.dep,st:newSt,memo:fm.memo!==undefined?fm.memo:old.memo,region:fm.region,region2:fm.region2,join_fee:+fm.join_fee||0,ins_tp:fm.ins_tp,note:fm.note};
     await dbU("contracts",editId,upd);
     setContracts(p=>p.map(c=>c.id===editId?{...c,...upd}:c));
     if(old&&(newSt==="해지"||newSt==="만료")&&(old.st==="진행"||old.st==="연체")){const vv=vehicles.find(v=>v.vn===old.vn);if(vv){await dbU("vehicles",vv.id,{st:"가용"});setVehicles(p=>p.map(v=>v.vn===old.vn?{...v,st:"가용"}:v));}}
     if(old&&(newSt==="진행")&&(old.st==="해지"||old.st==="만료")){const vv=vehicles.find(v=>v.vn===old.vn);if(vv){await dbU("vehicles",vv.id,{st:"대여중"});setVehicles(p=>p.map(v=>v.vn===old.vn?{...v,st:"대여중"}:v));}}
   }else{
     const selVn=fm.vn||"";
-    const row={no:"CT-"+String(Date.now()).slice(-6),nm:fm.nm||"",ph:fm.ph||"",md:fm.md||"",vn:selVn,s:fm.s||null,e:fm.e||null,fee:+fm.fee||0,dep:+fm.dep||0,up:0,st:"진행",loc:fm.loc||"",memo:fm.memo||""};
+    const row={no:"CT-"+String(Date.now()).slice(-6),nm:fm.nm||"",ph:fm.ph||"",md:fm.md||"",vn:selVn,s:fm.s||null,e:fm.e||null,fee:+fm.fee||0,dep:+fm.dep||0,up:0,st:"진행",loc:fm.loc||"",memo:fm.memo||"",region:fm.region||"",region2:fm.region2||"",join_fee:+fm.join_fee||0,ins_tp:fm.ins_tp||"",note:fm.note||""};
     const saved=await dbI("contracts",row);if(saved)setContracts(p=>[saved,...p]);
     if(selVn){const vv=vehicles.find(v=>v.vn===selVn);if(vv){await dbU("vehicles",vv.id,{st:"대여중"});setVehicles(p=>p.map(v=>v.vn===selVn?{...v,st:"대여중"}:v));}}
     notify("📝","계약관리","새 계약 등록",(fm.nm||"")+" · "+(fm.md||"")+" · "+(selVn||"")+" · 월 "+((+fm.fee||0).toLocaleString())+"원");
@@ -296,11 +297,26 @@ return(<>
 <div style={{display:"flex",gap:5,marginBottom:12,flexWrap:"wrap"}}>{ss.map(s=><button key={s} onClick={()=>setFil(s)} style={fbtn(s)}>{s}</button>)}</div>
 {mob?<div style={{display:"flex",flexDirection:"column",gap:8}}>{fl.map(c=><div key={c.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:14}}>
 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}><span style={{fontSize:13,fontWeight:700,color:"#3B82F6"}} onClick={()=>setDet(c)}>{c.no}</span><B t={c.st}/></div>
-<CR label="고객" val={c.nm+" ("+c.md+")"}/><CR label="차량" val={c.vn}/><CR label="월렌탈료" val={$(c.fee)}/>{c.up>0&&<CR label="미수금"><span style={{color:"#DC2626",fontWeight:700}}>{$(c.up)}</span></CR>}
+<CR label="고객" val={c.nm+" ("+c.md+")"}/><CR label="차량" val={c.vn}/>{c.region&&<CR label="지역" val={(c.region||"")+" "+(c.region2||"")}/>}<CR label="월렌탈료" val={$(c.fee)}/>{c.ins_tp&&<CR label="보험" val={c.ins_tp}/>}{c.up>0&&<CR label="미수금"><span style={{color:"#DC2626",fontWeight:700}}>{$(c.up)}</span></CR>}
 <div style={{marginTop:8,display:"flex",gap:4,justifyContent:"flex-end"}}><button style={DB} onClick={()=>startEdit(c,"c")}>수정</button><button style={DBR} onClick={()=>del(c.id)}>삭제</button></div></div>)}{!fl.length&&<div style={{padding:20,textAlign:"center",color:"#9CA3AF"}}>데이터 없음</div>}</div>
-:<div style={{background:"#fff",borderRadius:12,border:"1px solid #ECEDF0",overflow:"auto"}}><div style={{display:"flex",padding:"10px 16px",borderBottom:"1px solid #ECEDF0",fontSize:11,fontWeight:700,color:"#9CA3AF",minWidth:650}}><span style={{flex:"0 0 100px"}}>계약번호</span><span style={{flex:"0 0 70px"}}>고객</span><span style={{flex:"0 0 80px"}}>차종</span><span style={{flex:"0 0 90px"}}>차량번호</span><span style={{flex:"0 0 80px"}}>월렌탈료</span><span style={{flex:"0 0 80px"}}>미수금</span><span style={{flex:"0 0 60px"}}>상태</span><span style={{flex:"0 0 80px"}}></span></div>{fl.map(c=><div key={c.id} style={{display:"flex",padding:"10px 16px",borderBottom:"1px solid #F5F5F7",fontSize:13,minWidth:650,alignItems:"center"}} onMouseEnter={e=>e.currentTarget.style.background="#FAFBFC"} onMouseLeave={e=>e.currentTarget.style.background=""}><span style={{flex:"0 0 100px",fontWeight:600,color:"#3B82F6",cursor:"pointer"}} onClick={()=>setDet(c)}>{c.no}</span><span style={{flex:"0 0 70px"}}>{c.nm}</span><span style={{flex:"0 0 80px"}}>{c.md}</span><span style={{flex:"0 0 90px",color:"#6B7280"}}>{c.vn}</span><span style={{flex:"0 0 80px"}}>{$(c.fee)}</span><span style={{flex:"0 0 80px",color:c.up>0?"#DC2626":"#6B7280",fontWeight:c.up>0?700:400}}>{$(c.up)||"-"}</span><span style={{flex:"0 0 60px"}}><B t={c.st}/></span><span style={{flex:"0 0 80px",display:"flex",gap:4}}><button style={DB} onClick={()=>startEdit(c,"c")}>수정</button><button style={DBR} onClick={()=>del(c.id)}>삭제</button></span></div>)}{!fl.length&&<div style={{padding:24,textAlign:"center",color:"#9CA3AF"}}>데이터 없음</div>}</div>}
-<Mdl open={mdl==="c"} onClose={X} title={editId?"계약 수정":"새 계약 등록"} mob={mob}><div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:10}}><div><label style={LS}>고객명</label><input style={IS} value={fm.nm||""} onChange={e=>F2("nm",e.target.value)}/></div><div><label style={LS}>연락처</label><input style={IS} value={fm.ph||""} onChange={e=>F2("ph",e.target.value)}/></div><div><label style={LS}>차종</label><select style={IS} value={fm.md||""} onChange={e=>F2("md",e.target.value)}><option value="">선택</option><option>OK1 KS</option><option>OK1 PRO</option></select></div><div><label style={LS}>차량 배정 {!editId&&<span style={{color:"#3B82F6",fontSize:10}}>({avail.length}대 가용)</span>}</label>{editId?<input style={IS} value={fm.vn||""} onChange={e=>F2("vn",e.target.value)}/>:<select style={IS} value={fm.vn||""} onChange={e=>{const v=vehicles.find(x=>x.vn===e.target.value);F2("vn",e.target.value);if(v)F2("md",v.md);}}><option value="">차량 선택</option>{avail.map(v=><option key={v.id} value={v.vn}>{v.vn} ({v.md}) - {v.loc}</option>)}</select>}</div><div><label style={LS}>시작일</label><input type="date" style={IS} value={fm.s||""} onChange={e=>F2("s",e.target.value)}/></div><div><label style={LS}>종료일</label><input type="date" style={IS} value={fm.e||""} onChange={e=>F2("e",e.target.value)}/></div><div><label style={LS}>월렌탈료</label><input type="number" style={IS} value={fm.fee||""} onChange={e=>F2("fee",e.target.value)}/></div><div><label style={LS}>보증금</label><input type="number" style={IS} value={fm.dep||""} onChange={e=>F2("dep",e.target.value)}/></div>{editId&&<div><label style={LS}>상태</label><select style={IS} value={fm.st||""} onChange={e=>F2("st",e.target.value)}><option>진행</option><option>연체</option><option>만료</option><option>해지</option><option>회수중</option></select></div>}</div><div style={{marginTop:10}}><label style={LS}>메모</label><textarea style={{...IS,height:50}} value={fm.memo||""} onChange={e=>F2("memo",e.target.value)} placeholder="특이사항 기록"/></div><button onClick={save} style={SB}>{editId?"저장":"등록하기"}</button></Mdl>
-<Mdl open={!!det&&ch==="contracts"} onClose={X} title="계약 상세" mob={mob}>{det&&<div style={{fontSize:13,lineHeight:2}}><CR label="계약번호" val={det.no}/><CR label="고객" val={det.nm+" ("+det.ph+")"}/><CR label="차종" val={det.md}/><CR label="차량번호" val={det.vn}/>{(()=>{const vv=vehicles.find(v=>v.vn===det.vn);return vv?<CR label="차량상태"><B t={vv.st}/></CR>:null;})()}<CR label="기간" val={det.s+" ~ "+det.e}/><CR label="월렌탈료" val={$(det.fee)}/><CR label="보증금" val={$(det.dep)}/><CR label="미수금"><span style={{color:det.up>0?"#DC2626":"inherit"}}>{$(det.up)||"없음"}</span></CR><CR label="상태"><B t={det.st}/></CR>{det.memo&&<div style={{marginTop:8,padding:"8px 10px",background:"#F7F8FA",borderRadius:6,fontSize:12,color:"#374151",lineHeight:1.5,whiteSpace:"pre-wrap"}}><b>메모:</b> {det.memo}</div>}<div style={{marginTop:10,display:"flex",gap:6}}><button style={DB} onClick={()=>startEdit(det,"c")}>수정</button><button style={DBR} onClick={()=>del(det.id)}>삭제</button></div></div>}</Mdl></>);}
+:<div style={{background:"#fff",borderRadius:12,border:"1px solid #ECEDF0",overflow:"auto"}}><div style={{display:"flex",padding:"10px 16px",borderBottom:"1px solid #ECEDF0",fontSize:11,fontWeight:700,color:"#9CA3AF",minWidth:900}}><span style={{flex:"0 0 70px"}}>계약번호</span><span style={{flex:"0 0 60px"}}>고객</span><span style={{flex:"0 0 80px"}}>지역</span><span style={{flex:"0 0 65px"}}>차종</span><span style={{flex:"0 0 100px"}}>차량번호</span><span style={{flex:"0 0 75px"}}>렌탈료</span><span style={{flex:"0 0 65px"}}>보험</span><span style={{flex:"0 0 50px"}}>비고</span><span style={{flex:"0 0 55px"}}>상태</span><span style={{flex:"0 0 80px"}}></span></div>{fl.map(c=><div key={c.id} style={{display:"flex",padding:"10px 16px",borderBottom:"1px solid #F5F5F7",fontSize:13,minWidth:900,alignItems:"center"}} onMouseEnter={e=>e.currentTarget.style.background="#FAFBFC"} onMouseLeave={e=>e.currentTarget.style.background=""}><span style={{flex:"0 0 70px",fontWeight:600,color:"#3B82F6",cursor:"pointer"}} onClick={()=>setDet(c)}>{c.no}</span><span style={{flex:"0 0 60px"}}>{c.nm}</span><span style={{flex:"0 0 80px",color:"#6B7280",fontSize:12}}>{(c.region||"")+" "+(c.region2||"")}</span><span style={{flex:"0 0 65px"}}>{c.md}</span><span style={{flex:"0 0 100px",color:"#6B7280"}}>{c.vn}</span><span style={{flex:"0 0 75px"}}>{$(c.fee)}</span><span style={{flex:"0 0 65px",fontSize:11}}>{c.ins_tp||"-"}</span><span style={{flex:"0 0 50px",fontSize:11,color:"#9CA3AF"}}>{c.note||""}</span><span style={{flex:"0 0 55px"}}><B t={c.st}/></span><span style={{flex:"0 0 80px",display:"flex",gap:4}}><button style={DB} onClick={()=>startEdit(c,"c")}>수정</button><button style={DBR} onClick={()=>del(c.id)}>삭제</button></span></div>)}{!fl.length&&<div style={{padding:24,textAlign:"center",color:"#9CA3AF"}}>데이터 없음</div>}</div>}
+<Mdl open={mdl==="c"} onClose={X} title={editId?"계약 수정":"새 계약 등록"} mob={mob}><div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:10}}>
+<div><label style={LS}>고객명</label><input style={IS} value={fm.nm||""} onChange={e=>F2("nm",e.target.value)}/></div>
+<div><label style={LS}>연락처</label><input style={IS} value={fm.ph||""} onChange={e=>F2("ph",e.target.value)}/></div>
+<div><label style={LS}>지역</label><input style={IS} value={fm.region||""} onChange={e=>F2("region",e.target.value)} placeholder="대구, 부산, 서울 등"/></div>
+<div><label style={LS}>세부지역</label><input style={IS} value={fm.region2||""} onChange={e=>F2("region2",e.target.value)} placeholder="달서구, 남구 등"/></div>
+<div><label style={LS}>차종</label><select style={IS} value={fm.md||""} onChange={e=>F2("md",e.target.value)}><option value="">선택</option><option>OK1 KS</option><option>OK1 PRO</option></select></div>
+<div><label style={LS}>차량 배정 {!editId&&<span style={{color:"#3B82F6",fontSize:10}}>({avail.length}대 가용)</span>}</label>{editId?<input style={IS} value={fm.vn||""} onChange={e=>F2("vn",e.target.value)}/>:<select style={IS} value={fm.vn||""} onChange={e=>{const v=vehicles.find(x=>x.vn===e.target.value);F2("vn",e.target.value);if(v)F2("md",v.md);}}><option value="">차량 선택</option>{avail.map(v=><option key={v.id} value={v.vn}>{v.vn} ({v.md}) - {v.loc}</option>)}</select>}</div>
+<div><label style={LS}>출고일 (시작일)</label><input type="date" style={IS} value={fm.s||""} onChange={e=>F2("s",e.target.value)}/></div>
+<div><label style={LS}>종료일</label><input type="date" style={IS} value={fm.e||""} onChange={e=>F2("e",e.target.value)}/></div>
+<div><label style={LS}>월렌탈료</label><input type="number" style={IS} value={fm.fee||""} onChange={e=>F2("fee",e.target.value)}/></div>
+<div><label style={LS}>보증금</label><input type="number" style={IS} value={fm.dep||""} onChange={e=>F2("dep",e.target.value)}/></div>
+<div><label style={LS}>가입비</label><input type="number" style={IS} value={fm.join_fee||""} onChange={e=>F2("join_fee",e.target.value)} placeholder="0"/></div>
+<div><label style={LS}>보험종류</label><select style={IS} value={fm.ins_tp||""} onChange={e=>F2("ins_tp",e.target.value)}><option value="">선택</option><option>21세</option><option>24세</option><option>26세</option><option>30세</option><option>35세</option><option>본인</option></select></div>
+{editId&&<div><label style={LS}>상태</label><select style={IS} value={fm.st||""} onChange={e=>F2("st",e.target.value)}><option>진행</option><option>운영중</option><option>계약중</option><option>연체</option><option>만료</option><option>해지</option><option>회수중</option></select></div>}
+<div><label style={LS}>비고</label><input style={IS} value={fm.note||""} onChange={e=>F2("note",e.target.value)} placeholder="팀, 허, 리스트 등"/></div>
+</div><div style={{marginTop:10}}><label style={LS}>메모</label><textarea style={{...IS,height:50}} value={fm.memo||""} onChange={e=>F2("memo",e.target.value)} placeholder="특이사항 기록"/></div><button onClick={save} style={SB}>{editId?"저장":"등록하기"}</button></Mdl>
+<Mdl open={!!det&&ch==="contracts"} onClose={X} title="계약 상세" mob={mob}>{det&&<div style={{fontSize:13,lineHeight:2}}><CR label="계약번호" val={det.no}/><CR label="고객" val={det.nm+" ("+det.ph+")"}/>{det.region&&<CR label="지역" val={(det.region||"")+" "+(det.region2||"")}/>}<CR label="차종" val={det.md}/><CR label="차량번호" val={det.vn}/>{(()=>{const vv=vehicles.find(v=>v.vn===det.vn);return vv?<CR label="차량상태"><B t={vv.st}/></CR>:null;})()}<CR label="출고일(시작)" val={det.s}/>{det.e&&<CR label="종료일" val={det.e}/>}<CR label="월렌탈료" val={$(det.fee)}/><CR label="보증금" val={$(det.dep)}/>{det.join_fee>0&&<CR label="가입비" val={$(det.join_fee)}/>}{det.ins_tp&&<CR label="보험종류" val={det.ins_tp}/>}<CR label="미수금"><span style={{color:det.up>0?"#DC2626":"inherit"}}>{$(det.up)||"없음"}</span></CR><CR label="상태"><B t={det.st}/></CR>{det.note&&<CR label="비고" val={det.note}/>}{det.memo&&<div style={{marginTop:8,padding:"8px 10px",background:"#F7F8FA",borderRadius:6,fontSize:12,color:"#374151",lineHeight:1.5,whiteSpace:"pre-wrap"}}><b>메모:</b> {det.memo}</div>}<div style={{marginTop:10,display:"flex",gap:6}}><button style={DB} onClick={()=>startEdit(det,"c")}>수정</button><button style={DBR} onClick={()=>del(det.id)}>삭제</button></div></div>}</Mdl></>);}
 
 /* == 차량재고 == */
 if(ch==="inventory"){
@@ -308,7 +324,7 @@ const ss=["전체","가용","대여중","정비중","폐기"];
 const models=[...new Set(vehicles.map(v=>v.md))].filter(Boolean);
 const locs=[...new Set(vehicles.map(v=>v.loc))].filter(Boolean);
 const fl=vehicles.filter(v=>(fil==="전체"||v.st===fil)&&(fMd==="전체"||v.md===fMd)&&(fLoc==="전체"||v.loc===fLoc)&&(!sq||v.vn.includes(sq)||v.md.includes(sq)||v.loc.includes(sq)));
-const save=async()=>{if(editId){const upd={vn:fm.vn,md:fm.md,st:fm.st,loc:fm.loc};await dbU("vehicles",editId,upd);setVehicles(p=>p.map(v=>v.id===editId?{...v,...upd}:v));}else{const row={vn:fm.vn||"",md:fm.md||"",st:fm.st||"가용",loc:fm.loc||"",ck:td};const saved=await dbI("vehicles",row);if(saved)setVehicles(p=>[saved,...p]);notify("📦","차량재고","새 차량 등록",(fm.vn||"")+" · "+(fm.md||"")+" · "+(fm.loc||""));}X();};
+const save=async()=>{if(editId){const upd={vn:fm.vn,md:fm.md,st:fm.st,loc:fm.loc,yr:fm.yr,clr:fm.clr,km:+fm.km||0,ins:fm.ins,ins_e:fm.ins_e,memo:fm.memo};await dbU("vehicles",editId,upd);setVehicles(p=>p.map(v=>v.id===editId?{...v,...upd}:v));}else{const row={vn:fm.vn||"",md:fm.md||"",st:fm.st||"가용",loc:fm.loc||"",ck:td,yr:fm.yr||"",clr:fm.clr||"",km:+fm.km||0,ins:fm.ins||"",ins_e:fm.ins_e||"",memo:fm.memo||""};const saved=await dbI("vehicles",row);if(saved)setVehicles(p=>[saved,...p]);notify("📦","차량재고","새 차량 등록",(fm.vn||"")+" · "+(fm.md||"")+" · "+(fm.loc||""));}X();};
 const del=async id=>{if(confirmDel()){await delRow("vehicles",id,setVehicles);}};
 return(<>
 <div style={{display:"flex",gap:5,marginBottom:8,flexWrap:"wrap",alignItems:"center"}}>
@@ -326,7 +342,9 @@ return(<>
 {viewMode==="tile"?
 <div style={{display:"grid",gridTemplateColumns:mob?"1fr":"repeat(auto-fill,minmax(210px,1fr))",gap:8}}>{fl.map(v=>{const ct=contracts.find(c=>c.vn===v.vn&&(c.st==="진행"||c.st==="연체"));return <div key={v.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:14}}>
 <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}><span style={{fontSize:13,fontWeight:700}}>{v.vn}</span><B t={v.st}/></div>
-<div style={{fontSize:12,color:"#6B7280"}}>{v.md} · 📍 {v.loc}</div><div style={{fontSize:11,color:"#9CA3AF",marginTop:3}}>점검 {v.ck}</div>
+<div style={{fontSize:12,color:"#6B7280"}}>{v.md}{v.yr?" · "+v.yr+"년":""}{v.clr?" · "+v.clr:""} · 📍 {v.loc}</div>
+{v.ins&&<div style={{fontSize:11,color:"#7C3AED",marginTop:2}}>🛡️ {v.ins}{v.ins_e?" (~"+v.ins_e+")":""}</div>}
+<div style={{fontSize:11,color:"#9CA3AF",marginTop:2}}>{v.km>0?v.km.toLocaleString()+"km · ":""}점검 {v.ck}</div>
 {ct&&<div style={{marginTop:5,padding:"4px 8px",background:"#EFF6FF",borderRadius:5,fontSize:11,color:"#1D4ED8"}}>👤 {ct.nm} ({ct.no})</div>}
 <div style={{marginTop:8,display:"flex",gap:4,justifyContent:"flex-end"}}><button style={DB} onClick={()=>startEdit(v,"v")}>수정</button><button style={DBR} onClick={()=>del(v.id)}>삭제</button></div></div>;})}</div>
 :<div style={{background:"#fff",borderRadius:12,border:"1px solid #ECEDF0",overflow:"auto"}}>
@@ -342,7 +360,20 @@ return(<>
 </div>;})}
 {!fl.length&&<div style={{padding:24,textAlign:"center",color:"#9CA3AF"}}>데이터 없음</div>}
 </div>}
-<Mdl open={mdl==="v"} onClose={X} title={editId?"차량 수정":"차량 등록"} mob={mob}><div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:10}}><div><label style={LS}>차량번호</label><input style={IS} value={fm.vn||""} onChange={e=>F2("vn",e.target.value)}/></div><div><label style={LS}>차종</label><select style={IS} value={fm.md||""} onChange={e=>F2("md",e.target.value)}><option value="">선택</option><option>OK1 KS</option><option>OK1 PRO</option></select></div><div><label style={LS}>위치</label><input style={IS} value={fm.loc||""} onChange={e=>F2("loc",e.target.value)}/></div><div><label style={LS}>상태</label><select style={IS} value={fm.st||"가용"} onChange={e=>F2("st",e.target.value)}><option>가용</option><option>대여중</option><option>정비중</option><option>폐기</option></select></div></div><button onClick={save} style={SB}>{editId?"저장":"등록하기"}</button></Mdl></>);}
+<Mdl open={mdl==="v"} onClose={X} title={editId?"차량 수정":"차량 등록"} mob={mob}><div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:10}}>
+<div><label style={LS}>차량번호</label><input style={IS} value={fm.vn||""} onChange={e=>F2("vn",e.target.value)} placeholder="대구1가 1234"/></div>
+<div><label style={LS}>차종</label><select style={IS} value={fm.md||""} onChange={e=>F2("md",e.target.value)}><option value="">선택</option><option>OK1 KS</option><option>OK1 PRO</option></select></div>
+<div><label style={LS}>연식</label><input style={IS} value={fm.yr||""} onChange={e=>F2("yr",e.target.value)} placeholder="2024"/></div>
+<div><label style={LS}>색상</label><input style={IS} value={fm.clr||""} onChange={e=>F2("clr",e.target.value)} placeholder="화이트, 블랙 등"/></div>
+<div><label style={LS}>주행거리 (km)</label><input type="number" style={IS} value={fm.km||""} onChange={e=>F2("km",e.target.value)} placeholder="0"/></div>
+<div><label style={LS}>위치 (지점)</label><input style={IS} value={fm.loc||""} onChange={e=>F2("loc",e.target.value)} placeholder="서서, 달서, 북구, 수성"/></div>
+<div><label style={LS}>상태</label><select style={IS} value={fm.st||"가용"} onChange={e=>F2("st",e.target.value)}><option>가용</option><option>대여중</option><option>정비중</option><option>폐기</option></select></div>
+<div><label style={LS}>보험사</label><input style={IS} value={fm.ins||""} onChange={e=>F2("ins",e.target.value)} placeholder="삼성화재, 현대해상 등"/></div>
+<div><label style={LS}>보험 만료일</label><input type="date" style={IS} value={fm.ins_e||""} onChange={e=>F2("ins_e",e.target.value)}/></div>
+</div>
+{(()=>{const linked=insur.filter(i=>i.vn===fm.vn&&i.st==="유효");return linked.length?<div style={{marginTop:8,padding:"8px 12px",background:"#F5F3FF",borderRadius:7,fontSize:11.5,color:"#7C3AED"}}>🛡️ 보험관리 연동: {linked.map(i=>i.ins+" ("+i.s+"~"+i.e+")").join(", ")}</div>:fm.vn?<div style={{marginTop:8,padding:"8px 12px",background:"#FEF2F2",borderRadius:7,fontSize:11.5,color:"#DC2626"}}>⚠️ 이 차량에 등록된 유효 보험이 없습니다</div>:null;})()}
+<div style={{marginTop:10}}><label style={LS}>메모</label><textarea style={{...IS,height:50}} value={fm.memo||""} onChange={e=>F2("memo",e.target.value)} placeholder="특이사항, 옵션 등"/></div>
+<button onClick={save} style={SB}>{editId?"저장":"등록하기"}</button></Mdl></>);}
 
 /* == 출고현황 == */
 if(ch==="dispatch"){
@@ -350,19 +381,31 @@ const ss=["전체","준비","출고완료","취소"];
 const fl=dispatches.filter(d=>(fil==="전체"||d.st===fil)&&(!sq||d.no.includes(sq)||d.tg.includes(sq)||d.memo?.includes(sq)));
 const handleImg=(e)=>{const files=Array.from(e.target.files||[]);files.forEach(f=>{const reader=new FileReader();reader.onload=(ev)=>{F2("imgs",[...(fm.imgs||[]),ev.target.result]);};reader.readAsDataURL(f);});};
 const removeImg=(idx)=>{F2("imgs",(fm.imgs||[]).filter((_,i)=>i!==idx));};
-const save=async()=>{if(editId){const upd={dt:fm.dt,tg:fm.tg,vh:fm.vh,st:fm.st,memo:fm.memo!==undefined?fm.memo:undefined,imgs:fm.imgs};await dbU("dispatches",editId,upd);setDispatches(p=>p.map(d=>d.id===editId?{...d,...upd}:d));}else{const row={no:"DP-"+String(Date.now()).slice(-6),dt:fm.dt||td,tg:fm.tg||"",vh:fm.vh||"",st:"준비",memo:fm.memo||"",imgs:fm.imgs||[]};const saved=await dbI("dispatches",row);if(saved)setDispatches(p=>[saved,...p]);notify("🚚","출고현황","새 출고 등록",(fm.tg||"")+" · "+(fm.vh||""));}X();};
+const save=async()=>{if(editId){const upd={dt:fm.dt,tg:fm.tg,vh:fm.vh,st:fm.st,memo:fm.memo!==undefined?fm.memo:undefined,imgs:fm.imgs,ins:fm.ins};await dbU("dispatches",editId,upd);setDispatches(p=>p.map(d=>d.id===editId?{...d,...upd}:d));}else{const selV=vehicles.find(v=>v.vn===fm.vh);const row={no:"DP-"+String(Date.now()).slice(-6),dt:fm.dt||td,tg:fm.tg||"",vh:fm.vh||"",st:"준비",memo:fm.memo||"",imgs:fm.imgs||[],ins:fm.ins||(selV?.ins||"")};const saved=await dbI("dispatches",row);if(saved)setDispatches(p=>[saved,...p]);notify("🚚","출고현황","새 출고 등록",(fm.tg||"")+" · "+(fm.vh||""));}X();};
 const del=async id=>{if(confirmDel()){await delRow("dispatches",id,setDispatches);cleanThread("dispatches",id);setDet(null);}};
-return(<><div style={{display:"flex",gap:5,marginBottom:12,flexWrap:"wrap"}}>{ss.map(s=><button key={s} onClick={()=>setFil(s)} style={fbtn(s)}>{s}</button>)}</div>
-<div style={{display:"flex",flexDirection:"column",gap:8}}>{fl.map(d=><div key={d.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:mob?12:16,cursor:"pointer"}} onClick={()=>setDet(d)}>
-<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}><span style={{fontSize:13,fontWeight:700}}>{d.no}</span><B t={d.st}/></div>
-<div style={{display:"flex",gap:mob?0:16,flexDirection:mob?"column":"row"}}>
-<div style={{flex:1}}><CR label="출고일" val={d.dt}/><CR label="대상" val={d.tg}/><CR label="차량" val={d.vh}/>{d.memo&&<div style={{fontSize:11,color:"#6B7280",marginTop:4,lineHeight:1.4}}>{d.memo.length>60?d.memo.slice(0,60)+"...":d.memo}</div>}</div>
-{d.imgs&&d.imgs.length>0&&<div style={{display:"flex",gap:4,marginTop:mob?8:0,flexShrink:0}}>{d.imgs.slice(0,3).map((img,i)=><img key={i} src={img} style={{width:48,height:48,borderRadius:6,objectFit:"cover",border:"1px solid #ECEDF0"}}/>)}{d.imgs.length>3&&<div style={{width:48,height:48,borderRadius:6,background:"#F3F4F6",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,color:"#6B7280"}}>+{d.imgs.length-3}</div>}</div>}
+return(<><div style={{display:"flex",gap:5,marginBottom:12,flexWrap:"wrap"}}>{ss.map(s=><button key={s} onClick={()=>setFil(s)} style={fbtn(s)}>{s}{s!=="전체"?" ("+dispatches.filter(d=>d.st===s).length+")":""}</button>)}</div>
+<div style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",overflow:"auto"}}>
+<table style={{width:"100%",minWidth:700,borderCollapse:"collapse",fontSize:12.5}}>
+<thead><tr style={{borderBottom:"2px solid #ECEDF0",fontSize:11,fontWeight:700,color:"#9CA3AF",textAlign:"left"}}>
+<th style={{padding:"10px 12px"}}>출고번호</th><th style={{padding:"10px 8px"}}>출고일</th><th style={{padding:"10px 8px"}}>대상지점</th><th style={{padding:"10px 8px"}}>차량</th><th style={{padding:"10px 8px"}}>보험사</th><th style={{padding:"10px 8px"}}>상태</th><th style={{padding:"10px 8px"}}>메모</th><th style={{padding:"10px 8px",width:80}}></th>
+</tr></thead>
+<tbody>{fl.map(d=><tr key={d.id} style={{borderBottom:"1px solid #F5F5F7",cursor:"pointer"}} onClick={()=>setDet(d)} onMouseEnter={e=>e.currentTarget.style.background="#FAFBFC"} onMouseLeave={e=>e.currentTarget.style.background=""}>
+<td style={{padding:"9px 12px",fontWeight:600,color:"#3B82F6"}}>{d.no}</td>
+<td style={{padding:"9px 8px"}}>{d.dt}</td>
+<td style={{padding:"9px 8px"}}>{d.tg}</td>
+<td style={{padding:"9px 8px"}}>{d.vh}</td>
+<td style={{padding:"9px 8px",color:"#7C3AED"}}>{d.ins||"-"}</td>
+<td style={{padding:"9px 8px"}}><B t={d.st}/></td>
+<td style={{padding:"9px 8px",color:"#6B7280",maxWidth:150,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{d.memo||""}</td>
+<td style={{padding:"9px 8px"}} onClick={e=>e.stopPropagation()}><div style={{display:"flex",gap:3}}><button style={DB} onClick={()=>startEdit(d,"d")}>수정</button><button style={DBR} onClick={()=>del(d.id)}>삭제</button></div></td>
+</tr>)}</tbody>
+</table>
+{!fl.length&&<div style={{padding:20,textAlign:"center",color:"#9CA3AF"}}>데이터 없음</div>}
 </div>
-<div style={{marginTop:8,display:"flex",gap:4,justifyContent:"flex-end"}} onClick={e=>e.stopPropagation()}><button style={DB} onClick={()=>startEdit(d,"d")}>수정</button><button style={DBR} onClick={()=>del(d.id)}>삭제</button></div></div>)}</div>
 {/* 출고 폼 */}
 <Mdl open={mdl==="d"} onClose={X} title={editId?"출고 수정":"출고 등록"} mob={mob}>
-<div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:10}}><div><label style={LS}>출고일</label><input type="date" style={IS} value={fm.dt||""} onChange={e=>F2("dt",e.target.value)}/></div><div><label style={LS}>대상지점</label><input style={IS} value={fm.tg||""} onChange={e=>F2("tg",e.target.value)}/></div>{editId&&<div><label style={LS}>상태</label><select style={IS} value={fm.st||""} onChange={e=>F2("st",e.target.value)}><option>준비</option><option>출고완료</option><option>취소</option></select></div>}</div>
+<div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:10}}><div><label style={LS}>출고일</label><input type="date" style={IS} value={fm.dt||""} onChange={e=>F2("dt",e.target.value)}/></div><div><label style={LS}>대상지점</label><input style={IS} value={fm.tg||""} onChange={e=>F2("tg",e.target.value)}/></div><div><label style={LS}>차량 선택</label><select style={IS} value={fm.vh||""} onChange={e=>{const vn=e.target.value;F2("vh",vn);const v=vehicles.find(x=>x.vn===vn);if(v&&v.ins)F2("ins",v.ins);}}><option value="">선택</option>{vehicles.map(v=><option key={v.id} value={v.vn}>{v.vn} ({v.md}){v.ins?" · 🛡️"+v.ins:""}</option>)}</select></div><div><label style={LS}>보험사</label><input style={IS} value={fm.ins||""} onChange={e=>F2("ins",e.target.value)} placeholder="차량 선택 시 자동입력"/></div>{editId&&<div><label style={LS}>상태</label><select style={IS} value={fm.st||""} onChange={e=>F2("st",e.target.value)}><option>준비</option><option>출고완료</option><option>취소</option></select></div>}</div>
+{(()=>{const linked=insur.filter(i=>i.vn===fm.vh&&i.st==="유효");return linked.length?<div style={{marginTop:6,padding:"6px 12px",background:"#F5F3FF",borderRadius:7,fontSize:11,color:"#7C3AED"}}>🛡️ 보험: {linked.map(i=>i.ins+" ("+i.pn+", ~"+i.e+")").join(", ")}</div>:null;})()}
 <div style={{marginTop:10}}><label style={LS}>차량 내역</label><input style={IS} value={fm.vh||""} onChange={e=>F2("vh",e.target.value)} placeholder="OK1 KS 2대"/></div>
 <div style={{marginTop:10}}><label style={LS}>메모</label><textarea style={{...IS,height:60}} value={fm.memo||""} onChange={e=>F2("memo",e.target.value)} placeholder="출고 시 특이사항, 차량 상태 등"/></div>
 <div style={{marginTop:10}}><label style={LS}>사진 첨부</label>
@@ -375,10 +418,60 @@ return(<><div style={{display:"flex",gap:5,marginBottom:12,flexWrap:"wrap"}}>{ss
 <button onClick={save} style={SB}>{editId?"저장":"등록하기"}</button></Mdl>
 {/* 출고 상세 */}
 <Mdl open={!!det&&ch==="dispatch"} onClose={X} title={"출고 상세 — "+det?.no} mob={mob}>{det&&<div>
-<CR label="출고번호" val={det.no}/><CR label="상태"><B t={det.st}/></CR><CR label="출고일" val={det.dt}/><CR label="대상지점" val={det.tg}/><CR label="차량내역" val={det.vh}/>
+<CR label="출고번호" val={det.no}/><CR label="상태"><B t={det.st}/></CR><CR label="출고일" val={det.dt}/><CR label="대상지점" val={det.tg}/><CR label="차량내역" val={det.vh}/>{det.ins&&<CR label="보험사" val={det.ins}/>}
 {det.memo&&<div style={{marginTop:10,padding:"10px 12px",background:"#F7F8FA",borderRadius:7,fontSize:12,color:"#374151",lineHeight:1.5,whiteSpace:"pre-wrap"}}><b>메모:</b> {det.memo}</div>}
 {det.imgs&&det.imgs.length>0&&<div style={{marginTop:10}}><div style={{fontSize:12,fontWeight:600,color:"#374151",marginBottom:6}}>📷 첨부 사진 ({det.imgs.length})</div><div style={{display:"flex",flexWrap:"wrap",gap:6}}>{det.imgs.map((img,i)=><img key={i} src={img} style={{width:mob?80:100,height:mob?80:100,borderRadius:8,objectFit:"cover",border:"1px solid #ECEDF0",cursor:"pointer"}} onClick={()=>window.open(img,"_blank")}/>)}</div></div>}
 <div style={{marginTop:12,display:"flex",gap:6}}><button style={DB} onClick={()=>startEdit(det,"d")}>수정</button><button style={DBR} onClick={()=>del(det.id)}>삭제</button></div></div>}</Mdl></>);}
+
+/* == 보험관리 == */
+if(ch==="insurance"){
+const stF=["전체","유효","만료","해지"];
+const fl=insur.filter(i=>(fil==="전체"||i.st===fil)&&(!sq||((i.nm||"").includes(sq)||(i.vn||"").includes(sq)||(i.ins||"").includes(sq)||(i.pn||"").includes(sq))));
+const uploadInsFile=async(e)=>{const file=e.target.files?.[0];if(!file)return;setUploading(true);try{const ext=file.name.split(".").pop().toLowerCase();const safeName=Date.now()+"_"+Math.random().toString(36).slice(2,8)+"."+ext;const{error}=await sb.storage.from("files").upload(safeName,file,{contentType:file.type,upsert:false});if(error){alert("업로드 실패: "+error.message);setUploading(false);return;}const{data:urlData}=sb.storage.from("files").getPublicUrl(safeName);F2("file_url",urlData.publicUrl);F2("file_nm",file.name);}catch(err){alert("업로드 오류");}setUploading(false);};
+const save=async()=>{if(editId){const upd={nm:fm.nm,vn:fm.vn,ins:fm.ins,pn:fm.pn,tp:fm.tp,s:fm.s,e:fm.e,fee:+fm.fee||0,st:fm.st,memo:fm.memo,file_url:fm.file_url,file_nm:fm.file_nm};await dbU("insurance",editId,upd);setInsur(p=>p.map(i=>i.id===editId?{...i,...upd}:i));}else{const row={nm:fm.nm||"",vn:fm.vn||"",ins:fm.ins||"",pn:fm.pn||"",tp:fm.tp||"자동차보험",s:fm.s||"",e:fm.e||"",fee:+fm.fee||0,st:"유효",memo:fm.memo||"",file_url:fm.file_url||"",file_nm:fm.file_nm||"",au:u?.name||"",dt:td};const saved=await dbI("insurance",row);if(saved)setInsur(p=>[saved,...p]);notify("🛡️","보험관리","새 보험 등록",(fm.nm||"")+" · "+(fm.ins||""));}X();};
+const del=async id=>{if(confirmDel()){await delRow("insurance",id,setInsur);cleanThread("insurance",id);}};
+const downloadIns=(i)=>{if(i.file_url){const a=document.createElement("a");a.href=i.file_url;a.download=i.file_nm||"download";a.target="_blank";document.body.appendChild(a);a.click();document.body.removeChild(a);}};
+return(<>
+<div style={{display:"flex",gap:5,marginBottom:8,flexWrap:"wrap"}}>{stF.map(s=><button key={s} onClick={()=>setFil(s)} style={fbtn(s)}>{s}{s!=="전체"?" ("+insur.filter(i=>i.st===s).length+")":""}</button>)}</div>
+<div style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",overflow:"auto"}}>
+<table style={{width:"100%",minWidth:800,borderCollapse:"collapse",fontSize:12.5}}>
+<thead><tr style={{borderBottom:"2px solid #ECEDF0",fontSize:11,fontWeight:700,color:"#9CA3AF",textAlign:"left"}}>
+<th style={{padding:"10px 12px"}}>계약자</th><th style={{padding:"10px 8px"}}>차량번호</th><th style={{padding:"10px 8px"}}>보험사</th><th style={{padding:"10px 8px"}}>유형</th><th style={{padding:"10px 8px"}}>증권번호</th><th style={{padding:"10px 8px"}}>기간</th><th style={{padding:"10px 8px"}}>보험료</th><th style={{padding:"10px 8px"}}>증서</th><th style={{padding:"10px 8px"}}>상태</th><th style={{padding:"10px 8px",width:80}}></th>
+</tr></thead>
+<tbody>{fl.map(i=><tr key={i.id} style={{borderBottom:"1px solid #F5F5F7"}} onMouseEnter={e=>e.currentTarget.style.background="#FAFBFC"} onMouseLeave={e=>e.currentTarget.style.background=""}>
+<td style={{padding:"9px 12px",fontWeight:600}}>{i.nm||"-"}</td>
+<td style={{padding:"9px 8px"}}>{i.vn}</td>
+<td style={{padding:"9px 8px",color:"#7C3AED"}}>{i.ins}</td>
+<td style={{padding:"9px 8px"}}><B t={i.tp}/></td>
+<td style={{padding:"9px 8px",color:"#6B7280"}}>{i.pn||"-"}</td>
+<td style={{padding:"9px 8px",fontSize:11}}>{i.s}~{i.e}</td>
+<td style={{padding:"9px 8px"}}>{i.fee?Number(i.fee).toLocaleString()+"원":"-"}</td>
+<td style={{padding:"9px 8px"}}>{i.file_nm?<span style={{color:"#3B82F6",cursor:"pointer",fontSize:11,textDecoration:"underline"}} onClick={()=>downloadIns(i)}>📎</span>:"-"}</td>
+<td style={{padding:"9px 8px"}}><B t={i.st}/></td>
+<td style={{padding:"9px 8px"}}><div style={{display:"flex",gap:3}}><button style={DB} onClick={()=>startEdit(i,"ins")}>수정</button><button style={DBR} onClick={()=>del(i.id)}>삭제</button></div></td>
+</tr>)}</tbody>
+</table>
+{!fl.length&&<div style={{padding:20,textAlign:"center",color:"#9CA3AF"}}>등록된 보험이 없습니다</div>}
+</div>
+<Mdl open={mdl==="ins"} onClose={X} title={editId?"보험 수정":"보험 등록"} mob={mob}>
+<div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:10}}>
+<div><label style={LS}>계약자명</label><input style={IS} value={fm.nm||""} onChange={e=>F2("nm",e.target.value)} placeholder="홍길동"/></div>
+<div><label style={LS}>차량번호</label><select style={IS} value={fm.vn||""} onChange={e=>F2("vn",e.target.value)}><option value="">선택</option>{vehicles.map(v=><option key={v.id} value={v.vn}>{v.vn} ({v.md})</option>)}</select></div>
+<div><label style={LS}>보험사</label><input style={IS} value={fm.ins||""} onChange={e=>F2("ins",e.target.value)} placeholder="삼성화재, 현대해상 등"/></div>
+<div><label style={LS}>증권번호</label><input style={IS} value={fm.pn||""} onChange={e=>F2("pn",e.target.value)} placeholder="증권번호"/></div>
+<div><label style={LS}>보험유형</label><select style={IS} value={fm.tp||""} onChange={e=>F2("tp",e.target.value)}><option value="">선택</option><option>업무용(책임보험)</option><option>유상운송(영업용)</option><option>운전자보험</option><option>기타보험</option></select></div>
+<div><label style={LS}>보험료 (원)</label><input type="number" style={IS} value={fm.fee||""} onChange={e=>F2("fee",e.target.value)} placeholder="0"/></div>
+<div><label style={LS}>보험 시작일</label><input type="date" style={IS} value={fm.s||""} onChange={e=>F2("s",e.target.value)}/></div>
+<div><label style={LS}>보험 만료일</label><input type="date" style={IS} value={fm.e||""} onChange={e=>F2("e",e.target.value)}/></div>
+{editId&&<div><label style={LS}>상태</label><select style={IS} value={fm.st||"유효"} onChange={e=>F2("st",e.target.value)}><option>유효</option><option>만료</option><option>해지</option></select></div>}
+<div style={{gridColumn:mob?"1":"1/3"}}><label style={LS}>보험증서 파일</label>
+<div style={{display:"flex",alignItems:"center",gap:8,marginTop:4}}>
+<label style={{padding:"6px 14px",borderRadius:7,border:"1px solid #E5E7EB",background:"#fff",fontSize:12,fontWeight:600,cursor:"pointer",color:"#6B7280",fontFamily:"inherit"}}>{uploading?"업로드중...":"파일 선택"}<input type="file" accept=".pdf,.jpg,.jpeg,.png,.xlsx,.docx,.hwp,.zip" onChange={uploadInsFile} style={{display:"none"}}/></label>
+{fm.file_nm&&<span style={{fontSize:12,color:"#3B82F6",fontWeight:600}}>📎 {fm.file_nm}</span>}
+</div></div>
+</div>
+<div style={{marginTop:10}}><label style={LS}>메모</label><textarea style={{...IS,height:60}} value={fm.memo||""} onChange={e=>F2("memo",e.target.value)} placeholder="비고, 특약사항 등"/></div>
+<button onClick={save} style={SB}>{editId?"저장":"등록하기"}</button></Mdl></>);}
 
 /* == 사고접수 == */
 if(ch==="incidents"){
@@ -386,8 +479,27 @@ const fl=incidents.filter(i=>!sq||i.no.includes(sq)||i.vn.includes(sq)||i.ds.inc
 const save=async()=>{if(editId){const upd={dt:fm.dt,vn:fm.vn,tp:fm.tp,sv:fm.sv,ds:fm.ds,st:fm.st,co:+fm.co||0,ins:fm.ins||""};await dbU("incidents",editId,upd);setIncidents(p=>p.map(i=>i.id===editId?{...i,...upd}:i));}else{const row={no:"IC-"+String(Date.now()).slice(-6),dt:fm.dt||td,vn:fm.vn||"",tp:fm.tp||"",sv:fm.sv||"보통",st:"접수",co:+fm.co||0,ins:fm.ins||"",ds:fm.ds||""};const saved=await dbI("incidents",row);if(saved)setIncidents(p=>[saved,...p]);notify("⚠️","사고접수","새 사고 접수","["+(fm.sv||"보통")+"] "+(fm.vn||"")+" · "+(fm.tp||""));}X();};
 const del=async id=>{if(confirmDel()){await delRow("incidents",id,setIncidents);cleanThread("incidents",id);}};
 return(<>
-{mob?<div style={{display:"flex",flexDirection:"column",gap:8}}>{fl.map(i=><div key={i.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:14}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}><span style={{fontSize:13,fontWeight:700}}>{i.no}</span><div style={{display:"flex",gap:4}}><B t={i.sv}/><B t={i.st}/></div></div><CR label="사고일" val={i.dt}/><CR label="차량" val={i.vn}/><CR label="유형" val={i.tp}/><CR label="내용" val={i.ds}/><div style={{marginTop:8,display:"flex",gap:4,justifyContent:"flex-end"}}><button style={DB} onClick={()=>startEdit(i,"i")}>수정</button><button style={DBR} onClick={()=>del(i.id)}>삭제</button></div></div>)}</div>
-:<div style={{background:"#fff",borderRadius:12,border:"1px solid #ECEDF0",overflow:"hidden"}}>{fl.map(i=><div key={i.id} style={{display:"flex",padding:"10px 16px",borderBottom:"1px solid #F5F5F7",fontSize:13,alignItems:"center"}}><span style={{flex:"0 0 80px",fontWeight:600}}>{i.no}</span><span style={{flex:"0 0 80px"}}>{i.dt}</span><span style={{flex:"0 0 90px"}}>{i.vn}</span><span style={{flex:"0 0 50px"}}>{i.tp}</span><span style={{flex:"0 0 55px"}}><B t={i.sv}/></span><span style={{flex:1,color:"#6B7280"}}>{i.ds}</span><span style={{flex:"0 0 70px"}}><B t={i.st}/></span><span style={{flex:"0 0 80px",display:"flex",gap:4}}><button style={DB} onClick={()=>startEdit(i,"i")}>수정</button><button style={DBR} onClick={()=>del(i.id)}>삭제</button></span></div>)}</div>}
+<div style={{display:"flex",gap:5,marginBottom:8,flexWrap:"wrap"}}>{["전체","접수","조사","보험진행","종결"].map(s=><button key={s} onClick={()=>setFil(s)} style={fbtn(s)}>{s}{s!=="전체"?" ("+incidents.filter(i=>i.st===s).length+")":""}</button>)}</div>
+<div style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",overflow:"auto"}}>
+<table style={{width:"100%",minWidth:750,borderCollapse:"collapse",fontSize:12.5}}>
+<thead><tr style={{borderBottom:"2px solid #ECEDF0",fontSize:11,fontWeight:700,color:"#9CA3AF",textAlign:"left"}}>
+<th style={{padding:"10px 12px"}}>번호</th><th style={{padding:"10px 8px"}}>사고일</th><th style={{padding:"10px 8px"}}>차량</th><th style={{padding:"10px 8px"}}>유형</th><th style={{padding:"10px 8px"}}>긴급</th><th style={{padding:"10px 8px"}}>보험사</th><th style={{padding:"10px 8px"}}>수리비</th><th style={{padding:"10px 8px"}}>내용</th><th style={{padding:"10px 8px"}}>상태</th><th style={{padding:"10px 8px",width:80}}></th>
+</tr></thead>
+<tbody>{fl.map(i=><tr key={i.id} style={{borderBottom:"1px solid #F5F5F7"}} onMouseEnter={e=>e.currentTarget.style.background="#FAFBFC"} onMouseLeave={e=>e.currentTarget.style.background=""}>
+<td style={{padding:"9px 12px",fontWeight:600}}>{i.no}</td>
+<td style={{padding:"9px 8px"}}>{i.dt}</td>
+<td style={{padding:"9px 8px"}}>{i.vn}</td>
+<td style={{padding:"9px 8px"}}>{i.tp}</td>
+<td style={{padding:"9px 8px"}}><B t={i.sv}/></td>
+<td style={{padding:"9px 8px",color:"#7C3AED"}}>{i.ins||"-"}</td>
+<td style={{padding:"9px 8px"}}>{i.co>0?Number(i.co).toLocaleString()+"원":"-"}</td>
+<td style={{padding:"9px 8px",color:"#6B7280",maxWidth:160,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{i.ds}</td>
+<td style={{padding:"9px 8px"}}><B t={i.st}/></td>
+<td style={{padding:"9px 8px"}}><div style={{display:"flex",gap:3}}><button style={DB} onClick={()=>startEdit(i,"i")}>수정</button><button style={DBR} onClick={()=>del(i.id)}>삭제</button></div></td>
+</tr>)}</tbody>
+</table>
+{!fl.length&&<div style={{padding:20,textAlign:"center",color:"#9CA3AF"}}>데이터 없음</div>}
+</div>
 <Mdl open={mdl==="i"} onClose={X} title={editId?"사고 수정":"사고 접수"} mob={mob}><div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:10}}><div><label style={LS}>사고일</label><input type="date" style={IS} value={fm.dt||""} onChange={e=>F2("dt",e.target.value)}/></div><div><label style={LS}>차량번호</label><select style={IS} value={fm.vn||""} onChange={e=>F2("vn",e.target.value)}><option value="">선택</option>{vehicles.map(v=><option key={v.id} value={v.vn}>{v.vn} ({v.md})</option>)}</select></div><div style={{gridColumn:mob?"1":"1/3"}}><label style={LS}>사고 유형 (복수 선택 가능)</label><div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:4}}>{["대물","대인","단독","도난","파손"].map(t=>{const cur=(fm.tp||"").split("+").filter(Boolean);const sel=cur.includes(t);return <button key={t} type="button" onClick={()=>{const nxt=sel?cur.filter(x=>x!==t):[...cur,t];F2("tp",nxt.join("+"));}} style={{padding:"6px 14px",borderRadius:8,border:sel?"1.5px solid #1E1E1E":"1.5px solid #E5E7EB",background:sel?"#1E1E1E":"#fff",color:sel?"#fff":"#6B7280",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>{t}</button>;})}</div>{fm.tp&&<div style={{marginTop:4,fontSize:11,color:"#3B82F6",fontWeight:600}}>선택: {fm.tp}</div>}</div><div><label style={LS}>긴급도</label><select style={IS} value={fm.sv||"보통"} onChange={e=>F2("sv",e.target.value)}><option>보통</option><option>긴급</option></select></div><div><label style={LS}>보험사</label><input style={IS} value={fm.ins||""} onChange={e=>F2("ins",e.target.value)} placeholder="삼성화재, 현대해상 등"/></div><div><label style={LS}>수리비 (원)</label><input type="number" style={IS} value={fm.co||""} onChange={e=>F2("co",e.target.value)} placeholder="0"/></div>{editId&&<div><label style={LS}>상태</label><select style={IS} value={fm.st||""} onChange={e=>F2("st",e.target.value)}><option>접수</option><option>조사</option><option>보험진행</option><option>종결</option></select></div>}</div><div style={{marginTop:10}}><label style={LS}>사고 내용</label><textarea style={{...IS,height:70}} value={fm.ds||""} onChange={e=>F2("ds",e.target.value)} placeholder="사고 경위, 피해 상황 등"/></div><button onClick={save} style={SB}>{editId?"저장":"접수하기"}</button></Mdl></>);}
 
 /* == 클레임 == */
@@ -396,8 +508,26 @@ const fl=claims.filter(c=>!sq||c.no.includes(sq)||c.cu.includes(sq)||c.ds.includ
 const save=async()=>{if(editId){const upd={ct:fm.ct,cu:fm.cu,pr:fm.pr,ds:fm.ds,st:fm.st};await dbU("claims",editId,upd);setClaims(p=>p.map(c=>c.id===editId?{...c,...upd}:c));}else{const row={no:"CL-"+String(Date.now()).slice(-6),ct:fm.ct||"기타",cu:fm.cu||"",pr:fm.pr||"보통",st:"접수",ds:fm.ds||"",dt:td};const saved=await dbI("claims",row);if(saved)setClaims(p=>[saved,...p]);notify("🧾","클레임","새 클레임 접수","["+(fm.ct||"기타")+"] "+(fm.cu||""));}X();};
 const del=async id=>{if(confirmDel()){await delRow("claims",id,setClaims);cleanThread("claims",id);}};
 return(<>
-{mob?<div style={{display:"flex",flexDirection:"column",gap:8}}>{fl.map(c=><div key={c.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:14}}><div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}><span style={{fontSize:13,fontWeight:700}}>{c.no}</span><div style={{display:"flex",gap:4}}><B t={c.ct}/><B t={c.st}/></div></div><CR label="고객" val={c.cu}/><CR label="긴급도"><B t={c.pr}/></CR><CR label="내용" val={c.ds}/><div style={{marginTop:8,display:"flex",gap:4,justifyContent:"flex-end"}}><button style={DB} onClick={()=>startEdit(c,"cl")}>수정</button><button style={DBR} onClick={()=>del(c.id)}>삭제</button></div></div>)}</div>
-:<div style={{background:"#fff",borderRadius:12,border:"1px solid #ECEDF0",overflow:"hidden"}}>{fl.map(c=><div key={c.id} style={{display:"flex",padding:"10px 16px",borderBottom:"1px solid #F5F5F7",fontSize:13,alignItems:"center"}}><span style={{flex:"0 0 80px",fontWeight:600}}>{c.no}</span><span style={{flex:"0 0 55px"}}><B t={c.ct}/></span><span style={{flex:"0 0 70px"}}>{c.cu}</span><span style={{flex:"0 0 55px"}}><B t={c.pr}/></span><span style={{flex:1,color:"#6B7280"}}>{c.ds}</span><span style={{flex:"0 0 70px"}}><B t={c.st}/></span><span style={{flex:"0 0 80px",display:"flex",gap:4}}><button style={DB} onClick={()=>startEdit(c,"cl")}>수정</button><button style={DBR} onClick={()=>del(c.id)}>삭제</button></span></div>)}</div>}
+<div style={{display:"flex",gap:5,marginBottom:8,flexWrap:"wrap"}}>{["전체","접수","처리중","해결","반려"].map(s=><button key={s} onClick={()=>setFil(s)} style={fbtn(s)}>{s}{s!=="전체"?" ("+claims.filter(c=>c.st===s).length+")":""}</button>)}</div>
+<div style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",overflow:"auto"}}>
+<table style={{width:"100%",minWidth:650,borderCollapse:"collapse",fontSize:12.5}}>
+<thead><tr style={{borderBottom:"2px solid #ECEDF0",fontSize:11,fontWeight:700,color:"#9CA3AF",textAlign:"left"}}>
+<th style={{padding:"10px 12px"}}>번호</th><th style={{padding:"10px 8px"}}>일자</th><th style={{padding:"10px 8px"}}>분류</th><th style={{padding:"10px 8px"}}>고객</th><th style={{padding:"10px 8px"}}>긴급</th><th style={{padding:"10px 8px"}}>내용</th><th style={{padding:"10px 8px"}}>상태</th><th style={{padding:"10px 8px",width:80}}></th>
+</tr></thead>
+<tbody>{fl.map(c=><tr key={c.id} style={{borderBottom:"1px solid #F5F5F7"}} onMouseEnter={e=>e.currentTarget.style.background="#FAFBFC"} onMouseLeave={e=>e.currentTarget.style.background=""}>
+<td style={{padding:"9px 12px",fontWeight:600}}>{c.no}</td>
+<td style={{padding:"9px 8px"}}>{c.dt}</td>
+<td style={{padding:"9px 8px"}}><B t={c.ct}/></td>
+<td style={{padding:"9px 8px"}}>{c.cu}</td>
+<td style={{padding:"9px 8px"}}><B t={c.pr}/></td>
+<td style={{padding:"9px 8px",color:"#6B7280",maxWidth:180,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.ds}</td>
+<td style={{padding:"9px 8px"}}><B t={c.st}/></td>
+<td style={{padding:"9px 8px"}}><div style={{display:"flex",gap:3}}><button style={DB} onClick={()=>startEdit(c,"cl")}>수정</button><button style={DBR} onClick={()=>del(c.id)}>삭제</button></div></td>
+</tr>)}</tbody>
+</table>
+{!fl.length&&<div style={{padding:20,textAlign:"center",color:"#9CA3AF"}}>데이터 없음</div>}
+</div>
+
 <Mdl open={mdl==="cl"} onClose={X} title={editId?"클레임 수정":"클레임 접수"} mob={mob}><div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:10}}><div><label style={LS}>분류</label><select style={IS} value={fm.ct||""} onChange={e=>F2("ct",e.target.value)}><option value="">선택</option><option>요금</option><option>정비</option><option>CS</option><option>환불</option><option>기타</option></select></div><div><label style={LS}>고객명</label><input style={IS} value={fm.cu||""} onChange={e=>F2("cu",e.target.value)}/></div><div><label style={LS}>긴급도</label><select style={IS} value={fm.pr||"보통"} onChange={e=>F2("pr",e.target.value)}><option>보통</option><option>긴급</option></select></div>{editId&&<div><label style={LS}>상태</label><select style={IS} value={fm.st||""} onChange={e=>F2("st",e.target.value)}><option>접수</option><option>처리중</option><option>해결</option><option>반려</option></select></div>}</div><div style={{marginTop:10}}><label style={LS}>내용</label><textarea style={{...IS,height:70}} value={fm.ds||""} onChange={e=>F2("ds",e.target.value)}/></div><button onClick={save} style={SB}>{editId?"저장":"접수하기"}</button></Mdl></>);}
 
 /* == 상담내역 == */
@@ -405,21 +535,35 @@ if(ch==="consults"){
 const stF=["전체","상담중","완료","보류","미연결"];
 const tpF=["전체","신규문의","계약문의","사고문의","해지문의","수리문의","기타"];
 const fl=consults.filter(c=>(fil==="전체"||c.st===fil)&&(!sq||((c.nm||"").includes(sq)||(c.ph||"").includes(sq)||(c.bd||"").includes(sq))));
-const save=async()=>{if(editId){const upd={dt:fm.dt,nm:fm.nm,ph:fm.ph,tp:fm.tp,st:fm.st,bd:fm.bd};await dbU("consultations",editId,upd);setConsults(p=>p.map(c=>c.id===editId?{...c,...upd}:c));}else{const row={dt:fm.dt||td,nm:fm.nm||"",ph:fm.ph||"",tp:fm.tp||"신규문의",st:"상담중",au:u?.name||"",bd:fm.bd||""};const saved=await dbI("consultations",row);if(saved)setConsults(p=>[saved,...p]);notify("📞","상담내역","새 상담 등록",(fm.nm||"")+" · "+(fm.tp||""));}X();};
+const save=async()=>{if(editId){const upd={dt:fm.dt,nm:fm.nm,ph:fm.ph,tp:fm.tp,st:fm.st,bd:fm.bd,loc:fm.loc};await dbU("consultations",editId,upd);setConsults(p=>p.map(c=>c.id===editId?{...c,...upd}:c));}else{const row={dt:fm.dt||td,nm:fm.nm||"",ph:fm.ph||"",tp:fm.tp||"신규문의",st:"상담중",au:u?.name||"",bd:fm.bd||"",loc:fm.loc||""};const saved=await dbI("consultations",row);if(saved)setConsults(p=>[saved,...p]);notify("📞","상담내역","새 상담 등록",(fm.nm||"")+" · "+(fm.tp||""));}X();};
 const del=async id=>{if(confirmDel()){await delRow("consultations",id,setConsults);cleanThread("consultations",id);}};
 return(<>
 <div style={{display:"flex",gap:5,marginBottom:8,flexWrap:"wrap"}}>{stF.map(s=><button key={s} onClick={()=>setFil(s)} style={fbtn(s)}>{s}{s!=="전체"?" ("+consults.filter(c=>c.st===s).length+")":""}</button>)}</div>
-<div style={{display:"flex",flexDirection:"column",gap:8}}>{fl.map(c=><div key={c.id} style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",padding:mob?12:16}}>
-<div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6,flexWrap:"wrap"}}><span style={{fontSize:13,fontWeight:700}}>{c.nm||"(이름없음)"}</span><B t={c.tp}/><B t={c.st}/><span style={{marginLeft:"auto",fontSize:11,color:"#9CA3AF"}}>{c.dt}</span></div>
-<CR label="연락처" val={c.ph}/><CR label="상담유형" val={c.tp}/><CR label="담당자" val={c.au}/>
-{c.bd&&<div style={{marginTop:6,padding:"6px 10px",background:"#F7F8FA",borderRadius:6,fontSize:12,color:"#374151",lineHeight:1.5,whiteSpace:"pre-wrap"}}>{c.bd}</div>}
-<div style={{marginTop:8,display:"flex",gap:4,justifyContent:"flex-end"}}><button style={DB} onClick={()=>startEdit(c,"cs")}>수정</button><button style={DBR} onClick={()=>del(c.id)}>삭제</button></div>
-<Thread itemKey={ik("consults",c.id)}/></div>)}{!fl.length&&<div style={{padding:20,textAlign:"center",color:"#9CA3AF"}}>상담 내역이 없습니다</div>}</div>
+<div style={{background:"#fff",borderRadius:10,border:"1px solid #ECEDF0",overflow:"auto"}}>
+<table style={{width:"100%",minWidth:700,borderCollapse:"collapse",fontSize:12.5}}>
+<thead><tr style={{borderBottom:"2px solid #ECEDF0",fontSize:11,fontWeight:700,color:"#9CA3AF",textAlign:"left"}}>
+<th style={{padding:"10px 12px"}}>상담일</th><th style={{padding:"10px 8px"}}>고객</th><th style={{padding:"10px 8px"}}>연락처</th><th style={{padding:"10px 8px"}}>지역</th><th style={{padding:"10px 8px"}}>유형</th><th style={{padding:"10px 8px"}}>내용</th><th style={{padding:"10px 8px"}}>담당</th><th style={{padding:"10px 8px"}}>상태</th><th style={{padding:"10px 8px",width:80}}></th>
+</tr></thead>
+<tbody>{fl.map(c=><tr key={c.id} style={{borderBottom:"1px solid #F5F5F7"}} onMouseEnter={e=>e.currentTarget.style.background="#FAFBFC"} onMouseLeave={e=>e.currentTarget.style.background=""}>
+<td style={{padding:"9px 12px"}}>{c.dt}</td>
+<td style={{padding:"9px 8px",fontWeight:600}}>{c.nm||"-"}</td>
+<td style={{padding:"9px 8px",color:"#6B7280"}}>{c.ph||"-"}</td>
+<td style={{padding:"9px 8px"}}>{c.loc||"-"}</td>
+<td style={{padding:"9px 8px"}}><B t={c.tp}/></td>
+<td style={{padding:"9px 8px",color:"#6B7280",maxWidth:160,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.bd||""}</td>
+<td style={{padding:"9px 8px"}}>{c.au||"-"}</td>
+<td style={{padding:"9px 8px"}}><B t={c.st}/></td>
+<td style={{padding:"9px 8px"}}><div style={{display:"flex",gap:3}}>{c.st!=="완료"&&<button style={{...DB,color:"#15803D",borderColor:"#86EFAC"}} onClick={async()=>{await dbU("consultations",c.id,{st:"완료"});setConsults(p=>p.map(x=>x.id===c.id?{...x,st:"완료"}:x));}}>완료</button>}{c.st==="완료"&&<button style={{...DB,color:"#F59E0B",borderColor:"#FDE68A"}} onClick={async()=>{await dbU("consultations",c.id,{st:"상담중"});setConsults(p=>p.map(x=>x.id===c.id?{...x,st:"상담중"}:x));}}>재개</button>}<button style={DB} onClick={()=>startEdit(c,"cs")}>수정</button><button style={DBR} onClick={()=>del(c.id)}>삭제</button></div></td>
+</tr>)}</tbody>
+</table>
+{!fl.length&&<div style={{padding:20,textAlign:"center",color:"#9CA3AF"}}>상담 내역이 없습니다</div>}
+</div>
 <Mdl open={mdl==="cs"} onClose={X} title={editId?"상담 수정":"상담 등록"} mob={mob}>
 <div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:10}}>
 <div><label style={LS}>상담일</label><input type="date" style={IS} value={fm.dt||""} onChange={e=>F2("dt",e.target.value)}/></div>
 <div><label style={LS}>고객명</label><input style={IS} value={fm.nm||""} onChange={e=>F2("nm",e.target.value)} placeholder="홍길동"/></div>
 <div><label style={LS}>연락처</label><input style={IS} value={fm.ph||""} onChange={e=>F2("ph",e.target.value)} placeholder="010-0000-0000"/></div>
+<div><label style={LS}>지역</label><input style={IS} value={fm.loc||""} onChange={e=>F2("loc",e.target.value)} placeholder="대구 서구, 달서구 등"/></div>
 <div><label style={LS}>상담유형</label><select style={IS} value={fm.tp||"신규문의"} onChange={e=>F2("tp",e.target.value)}>{tpF.filter(t=>t!=="전체").map(t=><option key={t}>{t}</option>)}</select></div>
 {editId&&<div><label style={LS}>상태</label><select style={IS} value={fm.st||"상담중"} onChange={e=>F2("st",e.target.value)}><option>상담중</option><option>완료</option><option>보류</option><option>미연결</option></select></div>}
 </div>
@@ -626,13 +770,14 @@ return <div key={item.p} onClick={()=>go(item.p)} style={{display:"flex",alignIt
 </div>
 
 {/* 현황 카드 */}
-<div style={{display:"grid",gridTemplateColumns:mob?"repeat(2,1fr)":"repeat(5,1fr)",gap:mob?8:10,marginBottom:mob?12:20}}>
+<div style={{display:"grid",gridTemplateColumns:mob?"repeat(2,1fr)":"repeat(6,1fr)",gap:mob?8:10,marginBottom:mob?12:20}}>
 {[
 {l:"진행 계약",v:contracts.filter(c=>c.st==="진행").length,c:"#1D4ED8",bg:"#EFF6FF",p:"contracts"},
 {l:"연체",v:contracts.filter(c=>c.st==="연체").length,c:"#DC2626",bg:"#FEF2F2",p:"contracts"},
 {l:"가용 차량",v:vehicles.filter(v=>v.st==="가용").length,c:"#15803D",bg:"#F0FDF4",p:"inventory"},
 {l:"진행 사고",v:incidents.filter(i=>i.st!=="종결").length,c:"#F59E0B",bg:"#FFFBEB",p:"incidents"},
 {l:"상담중",v:consults.filter(c=>c.st==="상담중").length,c:"#0EA5E9",bg:"#F0F9FF",p:"consults"},
+{l:"유효 보험",v:insur.filter(i=>i.st==="유효").length,c:"#7C3AED",bg:"#F5F3FF",p:"insurance"},
 ].map(s=><div key={s.l} onClick={()=>go(s.p)} style={{padding:mob?"10px":"14px 16px",borderRadius:10,background:s.bg,border:"1px solid #ECEDF0",cursor:"pointer",transition:"all .15s"}}>
 <div style={{fontSize:mob?22:28,fontWeight:800,color:s.c}}>{s.v}</div>
 <div style={{fontSize:mob?10:11,color:"#6B7280",fontWeight:600,marginTop:2}}>{s.l}</div>
