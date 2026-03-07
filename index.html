@@ -53,8 +53,8 @@ const CHS=[{p:"home",l:"홈",i:"🏠"},{d:1,l:"운영"},{p:"contracts",l:"계약
 const QK=[{p:"contracts",i:"📝",l:"계약관리",d:"렌탈 계약 현황",c:"#3B82F6"},{p:"inventory",i:"📦",l:"차량재고",d:"재고·배정 현황",c:"#10B981"},{p:"dispatch",i:"🚚",l:"출고현황",d:"출고·입고 확인",c:"#F59E0B"},{p:"consult",i:"📞",l:"상담내역",d:"고객 상담·문의 기록",c:"#0EA5E9"},{p:"incidents",i:"⚠️",l:"사고접수",d:"사고 처리 현황",c:"#EF4444"},{p:"claims",i:"🧾",l:"클레임",d:"클레임 접수·처리",c:"#8B5CF6"},{p:"notices",i:"📢",l:"공지사항",d:"업무 공지",c:"#EC4899"},{p:"requests",i:"💬",l:"요청/건의",d:"협의·요청 사항",c:"#06B6D4"},{p:"schedule",i:"📅",l:"일정",d:"미팅·회의·설명회",c:"#14B8A6"},{p:"files",i:"📁",l:"파일",d:"공유 문서",c:"#6366F1"},{p:"meetings",i:"📋",l:"회의록",d:"회의 내용 관리",c:"#F97316"}];
 
 const initUsers=[
-{id:1,email:"admin@teambro.kr",pw:"1234",name:"김대표",role:"관리자",org:"본사",phone:"010-0000-0000",active:true},
-{id:2,email:"se@seglobal.kr",pw:"1234",name:"박매니저",role:"유저",org:"SE글로벌",phone:"010-1234-5678",active:true},
+{id:1,uid:"admin",pw:"1234",name:"김대표",role:"관리자",org:"본사",phone:"010-0000-0000",active:true},
+{id:2,uid:"park",pw:"1234",name:"박매니저",role:"유저",org:"SE글로벌",phone:"010-1234-5678",active:true},
 ];
 
 const sC=[{id:1,no:"CT-0001",nm:"홍길동",ph:"010-1111-2222",md:"OK1 KS",vn:"대구1-1234",s:"2026-01-15",e:"2027-01-14",fee:180000,dep:200000,up:0,st:"진행",loc:"성서"},{id:2,no:"CT-0002",nm:"김철수",ph:"010-3333-4444",md:"OK1 PRO",vn:"대구2-5678",s:"2025-12-01",e:"2026-11-30",fee:220000,dep:200000,up:660000,st:"연체",loc:"달서"},{id:3,no:"CT-0003",nm:"이영희",ph:"010-5555-6666",md:"OK1 KS",vn:"대구3-9012",s:"2026-02-01",e:"2027-01-31",fee:180000,dep:200000,up:0,st:"진행",loc:"북구"},{id:4,no:"CT-0004",nm:"박민수",ph:"010-7777-8888",md:"OK1 PRO",vn:"대구4-3456",s:"2025-06-01",e:"2026-05-31",fee:220000,dep:200000,up:0,st:"만료",loc:"수성"},{id:5,no:"CT-0005",nm:"정수연",ph:"010-9999-0000",md:"OK1 KS",vn:"대구5-7890",s:"2026-03-01",e:"2027-02-28",fee:180000,dep:200000,up:0,st:"진행",loc:"성서"}];
@@ -254,12 +254,12 @@ const notify=(icon,channel,title,body)=>{
 useEffect(()=>{if("Notification"in window&&Notification.permission==="default"){Notification.requestPermission();}},[]);
 
 const login=(e)=>{if(e&&e.preventDefault)e.preventDefault();setEr("");setLd(true);setTimeout(()=>{
-  if(!em||!pw){setEr("이메일과 비밀번호를 입력하세요.");setLd(false);return;}
-  const found=users.find(x=>x.email===em);
-  if(!found){setEr("등록되지 않은 이메일입니다.");setLd(false);return;}
+  if(!em||!pw){setEr("아이디와 비밀번호를 입력하세요.");setLd(false);return;}
+  const found=users.find(x=>x.uid===em);
+  if(!found){setEr("등록되지 않은 아이디입니다.");setLd(false);return;}
   if(!found.active){setEr("비활성화된 계정입니다.");setLd(false);return;}
   if(found.pw&&found.pw!==pw){setEr("비밀번호가 일치하지 않습니다.");setLd(false);return;}
-  setU({name:found.name,role:found.role,org:found.org,email:found.email});SS.setItem("nw_u",JSON.stringify({name:found.name,role:found.role,org:found.org,email:found.email}));SS.setItem("nw_ch","home");setPg("app");setCh("home");setLd(false);},300);};
+  setU({name:found.name,role:found.role,org:found.org,uid:found.uid});SS.setItem("nw_u",JSON.stringify({name:found.name,role:found.role,org:found.org,uid:found.uid}));SS.setItem("nw_ch","home");setPg("app");setCh("home");setLd(false);},300);};
 const logout=()=>{setU(null);setPg("land");setEm("");setPw("");SS.removeItem("nw_u");SS.removeItem("nw_ch");};
 const fbtn=s=>({padding:"5px 10px",borderRadius:6,border:fil===s?"none":"1px solid #E5E7EB",background:fil===s?"#1E1E1E":"#fff",color:fil===s?"#fff":"#6B7280",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"});
 const mm={contracts:"c",inventory:"v",dispatch:"d",incidents:"i",claims:"cl",consult:"cn",notices:"n",requests:"r",meetings:"m",schedule:"s",files:"f",settings:"user"};
@@ -310,7 +310,7 @@ if(pg==="login")return(
 <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 16px 40px"}}><div style={{width:"100%",maxWidth:380,animation:"fadeUp .4s ease"}}><div style={{textAlign:"center",marginBottom:24}}><h1 style={{fontSize:22,fontWeight:800,marginBottom:5}}>로그인</h1><p style={{fontSize:13,color:"#9CA3AF"}}>NETWORK 업무 공간에 접속합니다</p></div>
 <div style={{background:"#fff",borderRadius:14,border:"1px solid #ECEDF0",boxShadow:"0 4px 20px rgba(0,0,0,.05)",padding:mob?20:24}}>
 {er&&<div style={{padding:"9px 12px",borderRadius:7,marginBottom:14,background:"#FEF2F2",border:"1px solid #FECACA",fontSize:12,color:"#DC2626"}}>⚠️ {er}</div>}
-<div><div style={{marginBottom:14}}><label style={LS}>이메일</label><input type="text" autoComplete="email" inputMode="email" value={em} onChange={e=>setEm(e.target.value)} placeholder="이메일" style={IS} onKeyDown={e=>{if(e.key==="Enter")login();}}/></div><div style={{marginBottom:20}}><label style={LS}>비밀번호</label><input type="password" autoComplete="current-password" value={pw} onChange={e=>setPw(e.target.value)} placeholder="••••••••" style={IS} onKeyDown={e=>{if(e.key==="Enter")login();}}/></div><button type="button" onClick={()=>login()} style={{width:"100%",padding:"12px",borderRadius:10,border:"none",background:ld?"#9CA3AF":"#1E1E1E",color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit",WebkitAppearance:"none"}}>{ld?"접속 중...":"접속하기"}</button></div>
+<div><div style={{marginBottom:14}}><label style={LS}>아이디</label><input type="text" autoComplete="username" value={em} onChange={e=>setEm(e.target.value)} placeholder="아이디 입력" style={IS} onKeyDown={e=>{if(e.key==="Enter")login();}}/></div><div style={{marginBottom:20}}><label style={LS}>비밀번호</label><input type="password" autoComplete="current-password" value={pw} onChange={e=>setPw(e.target.value)} placeholder="••••••••" style={IS} onKeyDown={e=>{if(e.key==="Enter")login();}}/></div><button type="button" onClick={()=>login()} style={{width:"100%",padding:"12px",borderRadius:10,border:"none",background:ld?"#9CA3AF":"#1E1E1E",color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit",WebkitAppearance:"none"}}>{ld?"접속 중...":"접속하기"}</button></div>
 {!isStandalone&&<button onClick={doInstall} style={{width:"100%",marginTop:10,padding:"11px",borderRadius:10,border:"1.5px solid #1E1E1E",background:"#fff",color:"#1E1E1E",fontSize:13,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontFamily:"inherit"}}><span style={{fontSize:18}}>📲</span>앱 설치하기</button>}
 </div>
 {showIosGuide&&<div style={{marginTop:16,background:"#fff",borderRadius:14,border:"1px solid #ECEDF0",boxShadow:"0 4px 20px rgba(0,0,0,.05)",padding:mob?16:20}}>
@@ -986,7 +986,7 @@ return(<>
 
 /* == 설정 == */
 if(ch==="settings"){
-const saveUser=()=>{if(editId){setUsers(p=>p.map(x=>x.id===editId?{...x,name:fm.name||x.name,email:fm.email||x.email,role:fm.role||x.role,org:fm.org||x.org,phone:fm.phone||x.phone,pw:fm.pw||x.pw,active:x.active}:x));}else{if(!fm.email||!fm.name){alert("이메일과 이름은 필수입니다.");return;}if(users.find(x=>x.email===fm.email)){alert("이미 등록된 이메일입니다.");return;}setUsers(p=>[...p,{id:nid(p),email:fm.email||"",name:fm.name||"",pw:fm.pw||"1234",role:fm.role||"유저",org:fm.org||"본사",phone:fm.phone||"",active:true}]);}X();};
+const saveUser=()=>{if(editId){setUsers(p=>p.map(x=>x.id===editId?{...x,name:fm.name||x.name,uid:fm.uid||x.uid,role:fm.role||x.role,org:fm.org||x.org,phone:fm.phone||x.phone,pw:fm.pw||x.pw,active:x.active}:x));}else{if(!fm.uid||!fm.name){alert("아이디와 이름은 필수입니다.");return;}if(users.find(x=>x.uid===fm.uid)){alert("이미 등록된 아이디입니다.");return;}setUsers(p=>[...p,{id:nid(p),uid:fm.uid||"",name:fm.name||"",pw:fm.pw||"1234",role:fm.role||"유저",org:fm.org||"본사",phone:fm.phone||"",active:true}]);}X();};
 const delUser=id=>{if(confirmDel("이 사용자를 삭제하시겠습니까?"))setUsers(p=>p.filter(x=>x.id!==id));};
 const toggleActive=id=>{setUsers(p=>p.map(x=>x.id===id?{...x,active:!x.active}:x));};
 return(<>
@@ -996,16 +996,16 @@ return(<>
 {isAdmin&&<button onClick={()=>{setFm({});setEditId(null);setMdl("user");}} style={{padding:"5px 12px",borderRadius:6,border:"none",background:"#1E1E1E",fontSize:11,fontWeight:600,color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>+ 등록</button>}</div>
 {!isAdmin&&<div style={{padding:12,background:"#FFFBEB",borderBottom:"1px solid #FDE68A",fontSize:12,color:"#92400E"}}>⚠️ 사용자 관리는 관리자만 가능합니다.</div>}
 {mob?<div>{users.map(x=><div key={x.id} style={{padding:12,borderBottom:"1px solid #F5F5F7"}}>
-<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}><span style={{fontSize:12.5,fontWeight:600,color:"#3B82F6"}}>{x.email}</span><span style={{display:"inline-block",width:7,height:7,borderRadius:"50%",background:x.active?"#22C55E":"#D1D5DB"}}></span></div>
+<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}><span style={{fontSize:12.5,fontWeight:600,color:"#3B82F6"}}>{x.uid}</span><span style={{display:"inline-block",width:7,height:7,borderRadius:"50%",background:x.active?"#22C55E":"#D1D5DB"}}></span></div>
 <CR label="이름" val={x.name}/><CR label="역할"><B t={x.role}/></CR><CR label="소속" val={x.org}/><CR label="연락처" val={x.phone}/>
 {isAdmin&&<div style={{marginTop:8,display:"flex",gap:4,justifyContent:"flex-end"}}><button style={DB} onClick={()=>startEdit(x,"user")}>수정</button><button style={{...DB,color:x.active?"#EA580C":"#15803D",borderColor:x.active?"#FDBA74":"#86EFAC"}} onClick={()=>toggleActive(x.id)}>{x.active?"비활성":"활성"}</button><button style={DBR} onClick={()=>delUser(x.id)}>삭제</button></div>}</div>)}</div>
-:<div><div style={{display:"flex",padding:"8px 14px",borderBottom:"1px solid #ECEDF0",fontSize:10.5,fontWeight:700,color:"#9CA3AF"}}><span style={{flex:"0 0 160px"}}>이메일</span><span style={{flex:"0 0 70px"}}>이름</span><span style={{flex:"0 0 60px"}}>역할</span><span style={{flex:"0 0 80px"}}>소속</span><span style={{flex:"0 0 110px"}}>연락처</span><span style={{flex:"0 0 50px"}}>상태</span>{isAdmin&&<span style={{flex:"0 0 110px"}}></span>}</div>
+:<div><div style={{display:"flex",padding:"8px 14px",borderBottom:"1px solid #ECEDF0",fontSize:10.5,fontWeight:700,color:"#9CA3AF"}}><span style={{flex:"0 0 160px"}}>아이디</span><span style={{flex:"0 0 70px"}}>이름</span><span style={{flex:"0 0 60px"}}>역할</span><span style={{flex:"0 0 80px"}}>소속</span><span style={{flex:"0 0 110px"}}>연락처</span><span style={{flex:"0 0 50px"}}>상태</span>{isAdmin&&<span style={{flex:"0 0 110px"}}></span>}</div>
 {users.map(x=><div key={x.id} style={{display:"flex",padding:"8px 14px",borderBottom:"1px solid #F5F5F7",fontSize:12.5,alignItems:"center"}} onMouseEnter={e=>e.currentTarget.style.background="#FAFBFC"} onMouseLeave={e=>e.currentTarget.style.background=""}>
-<span style={{flex:"0 0 160px",color:"#3B82F6",fontWeight:600}}>{x.email}</span><span style={{flex:"0 0 70px"}}>{x.name}</span><span style={{flex:"0 0 60px"}}><B t={x.role}/></span><span style={{flex:"0 0 80px",color:"#6B7280"}}>{x.org}</span><span style={{flex:"0 0 110px",color:"#6B7280"}}>{x.phone}</span>
+<span style={{flex:"0 0 160px",color:"#3B82F6",fontWeight:600}}>{x.uid}</span><span style={{flex:"0 0 70px"}}>{x.name}</span><span style={{flex:"0 0 60px"}}><B t={x.role}/></span><span style={{flex:"0 0 80px",color:"#6B7280"}}>{x.org}</span><span style={{flex:"0 0 110px",color:"#6B7280"}}>{x.phone}</span>
 <span style={{flex:"0 0 50px"}}><span style={{display:"inline-block",width:7,height:7,borderRadius:"50%",background:x.active?"#22C55E":"#D1D5DB",marginRight:3}}></span><span style={{fontSize:10.5,color:x.active?"#15803D":"#9CA3AF"}}>{x.active?"활성":"비활성"}</span></span>
 {isAdmin&&<span style={{flex:"0 0 110px",display:"flex",gap:3}}><button style={DB} onClick={()=>startEdit(x,"user")}>수정</button><button style={{...DB,color:x.active?"#EA580C":"#15803D",borderColor:x.active?"#FDBA74":"#86EFAC"}} onClick={()=>toggleActive(x.id)}>{x.active?"비활성":"활성"}</button><button style={DBR} onClick={()=>delUser(x.id)}>삭제</button></span>}</div>)}</div>}</div>
 {isAdmin&&<Mdl open={mdl==="user"} onClose={X} title={editId?"사용자 수정":"사용자 등록"} mob={mob}><div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:10}}>
-<div><label style={LS}>이메일</label><input type="email" style={IS} value={fm.email||""} onChange={e=>F2("email",e.target.value)}/></div>
+<div><label style={LS}>아이디</label><input type="text" style={IS} value={fm.uid||""} onChange={e=>F2("uid",e.target.value)}/></div>
 <div><label style={LS}>이름</label><input style={IS} value={fm.name||""} onChange={e=>F2("name",e.target.value)}/></div>
 <div><label style={LS}>역할</label><select style={IS} value={fm.role||"유저"} onChange={e=>F2("role",e.target.value)}><option>관리자</option><option>유저</option></select></div>
 <div><label style={LS}>소속</label><input style={IS} value={fm.org||""} onChange={e=>F2("org",e.target.value)} placeholder="본사 / SE글로벌"/></div>
