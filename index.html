@@ -41,7 +41,7 @@ if("serviceWorker"in navigator){navigator.serviceWorker.register("./sw.js").catc
 const{useState,useEffect,useCallback}=React;
 /* Supabase 연결 */
 const SB_URL="https://iknhixyfhwiovwtcexjn.supabase.co";
-const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlrbmhpeHlmaHdpb3Z3dGNleGpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE1MDcyMDAsImV4cCI6MjA1NzA4MzIwMH0.MK6m5fr8QfW7BW__Uc3nPQ_W6zTubKq";
+const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlrbmhpeHlmaHdpb3Z3dGNleGpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1NDQxNDcsImV4cCI6MjA4ODEyMDE0N30.50G6xNZvj2PMrfhyv9yqoD5HNSbbNhB8meTg9LH78ug";
 let sb=null;let useDB=false;
 try{sb=window.supabase.createClient(SB_URL,SB_KEY);}catch(e){console.warn("Supabase init failed, using localStorage",e);}
 /* DB 헬퍼 */
