@@ -15,6 +15,7 @@
 <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html,body,#root{height:100%;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Malgun Gothic',sans-serif;-webkit-text-size-adjust:100%}
@@ -37,7 +38,21 @@ if("serviceWorker"in navigator){navigator.serviceWorker.register("./sw.js").catc
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const{useState,useEffect}=React;
+const{useState,useEffect,useCallback}=React;
+/* Supabase 연결 */
+const SB_URL="https://iknhixyfhwiovwtcexjn.supabase.co";
+const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlrbmhpeHlmaHdpb3Z3dGNleGpuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE1MDcyMDAsImV4cCI6MjA1NzA4MzIwMH0.MK6m5fr8QfW7BW__Uc3nPQ_W6zTubKq";
+let sb=null;let useDB=false;
+try{sb=window.supabase.createClient(SB_URL,SB_KEY);}catch(e){console.warn("Supabase init failed, using localStorage",e);}
+/* DB 헬퍼 */
+const dbS=async(t)=>{if(!sb)return null;try{const{data,error}=await sb.from(t).select("*").order("id",{ascending:false});if(error)throw error;return data||[];}catch(e){console.warn("dbS fail",t);return null;}};
+const dbI=async(t,row)=>{if(!sb)return null;try{const{data,error}=await sb.from(t).insert(row).select().single();if(error)throw error;return data;}catch(e){console.warn("dbI fail",t);return null;}};
+const dbU=async(t,id,row)=>{if(!sb)return null;try{const{data,error}=await sb.from(t).update(row).eq("id",id).select().single();if(error)throw error;return data;}catch(e){console.warn("dbU fail",t);return null;}};
+const dbD=async(t,id)=>{if(!sb)return;try{const{error}=await sb.from(t).delete().eq("id",id);if(error)throw error;}catch(e){console.warn("dbD fail",t);}};
+/* localStorage 폴백 */
+const LS_=window.localStorage;
+const lsLoad=(k,fb)=>{try{const v=LS_.getItem("nw_"+k);return v?JSON.parse(v):fb;}catch(e){return fb;}};
+const lsSave=(k,v)=>{try{LS_.setItem("nw_"+k,JSON.stringify(v));}catch(e){}};
 const IS={width:"100%",padding:"10px 12px",border:"1.5px solid #E5E7EB",borderRadius:8,fontSize:13,background:"#fff",fontFamily:"inherit",color:"#1E1E1E"};
 const LS={display:"block",fontSize:12,fontWeight:600,color:"#374151",marginBottom:4};
 const SB={marginTop:16,width:"100%",padding:"12px",borderRadius:10,border:"none",background:"#1E1E1E",color:"#fff",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit"};
@@ -118,9 +133,8 @@ return(<div>
 }
 
 function App(){
-const SS=window.sessionStorage;
-const _u=SS.getItem("nw_u")?JSON.parse(SS.getItem("nw_u")):null;
-const _ch=SS.getItem("nw_ch")||"home";
+const _u=LS_.getItem("nw_u")?JSON.parse(LS_.getItem("nw_u")):null;
+const _ch=LS_.getItem("nw_ch")||"home";
 const[pg,setPg]=useState(_u?"app":"land");const[u,setU]=useState(_u);const[ch,setCh]=useState(_u?_ch:"home");
 const[em,setEm]=useState("");const[pw,setPw]=useState("");const[er,setEr]=useState("");const[ld,setLd]=useState(false);
 const[col,setCol]=useState(false);const[sideOpen,setSideOpen]=useState(false);
@@ -141,25 +155,23 @@ const X=()=>{setFm({});setMdl(null);setDet(null);setEditId(null);};
 const nid=a=>a.length?Math.max(...a.map(x=>x.id))+1:1;
 const $=n=>n?Number(n).toLocaleString()+"원":"";
 const td=new Date().toISOString().slice(0,10);
-const go=p=>{setCh(p);setQ("");setFil("전체");setDet(null);setEditId(null);setSideOpen(false);setFileDet(null);setSelFiles([]);setMoveModal(false);setScDet(null);setDtFrom("");setDtTo("");SS.setItem("nw_ch",p);};
+const go=p=>{setCh(p);setQ("");setFil("전체");setDet(null);setEditId(null);setSideOpen(false);setFileDet(null);setSelFiles([]);setMoveModal(false);setScDet(null);setDtFrom("");setDtTo("");LS_.setItem("nw_ch",p);};
 const isAdmin=u&&u.role==="관리자";
 
-/* 데이터 영속성 - sessionStorage */
-const _load=(key,fb)=>{try{const v=SS.getItem("nw_"+key);return v?JSON.parse(v):fb;}catch(e){return fb;}};
-
-const[contracts,setContracts]=useState(()=>_load("ct",sC));
-const[vehicles,setVehicles]=useState(()=>_load("vh",sV));
-const[dispatches,setDispatches]=useState(()=>_load("dp",sD));
-const[incidents,setIncidents]=useState(()=>_load("ic",sI));
-const[claims,setClaims]=useState(()=>_load("cl",sCL));
-const[notices,setNotices]=useState(()=>_load("nt",sN));
-const[requests,setRequests]=useState(()=>_load("rq",sR));
-const[meetings,setMeetings]=useState(()=>_load("mt",sM));
-const[schedule,setSchedule]=useState(()=>_load("sc",sSc));
-const[consult,setConsult]=useState(()=>_load("cn",sCn));
-const[files,setFiles]=useState(()=>_load("fl",sFl));
-const[folders,setFolders]=useState(()=>_load("fd",sFd));
-const[users,setUsers]=useState(()=>_load("us",initUsers));
+/* 데이터 - localStorage 폴백 + Supabase 동기화 */
+const[contracts,setContracts]=useState(()=>lsLoad("ct",sC));
+const[vehicles,setVehicles]=useState(()=>lsLoad("vh",sV));
+const[dispatches,setDispatches]=useState(()=>lsLoad("dp",sD));
+const[incidents,setIncidents]=useState(()=>lsLoad("ic",sI));
+const[claims,setClaims]=useState(()=>lsLoad("cl",sCL));
+const[notices,setNotices]=useState(()=>lsLoad("nt",sN));
+const[requests,setRequests]=useState(()=>lsLoad("rq",sR));
+const[meetings,setMeetings]=useState(()=>lsLoad("mt",sM));
+const[schedule,setSchedule]=useState(()=>lsLoad("sc",sSc));
+const[consult,setConsult]=useState(()=>lsLoad("cn",sCn));
+const[files,setFiles]=useState(()=>lsLoad("fl",sFl));
+const[folders,setFolders]=useState(()=>lsLoad("fd",sFd));
+const[users,setUsers]=useState(()=>lsLoad("us",initUsers));
 /* 파일공유 채널 전용 state (hooks 규칙 준수를 위해 최상위) */
 const[curFld,setCurFld]=useState("");
 const[fileDragId,setFileDragId]=useState(null);
@@ -177,35 +189,63 @@ const[calMonth,setCalMonth]=useState(()=>{const n=new Date();return n.getFullYea
 const[dtFrom,setDtFrom]=useState("");
 const[dtTo,setDtTo]=useState("");
 /* 이미지 미리보기 (라이트박스) */
-const[imgView,setImgView]=useState(null);/* {images:[],index:0} */
+const[imgView,setImgView]=useState(null);
 const openImg=(images,index)=>setImgView({images,index:index||0});
 const closeImg=()=>setImgView(null);
 const prevImg=()=>setImgView(p=>p?{...p,index:(p.index-1+p.images.length)%p.images.length}:null);
 const nextImg=()=>setImgView(p=>p?{...p,index:(p.index+1)%p.images.length}:null);
 useEffect(()=>{const h=(e)=>{if(!imgView)return;if(e.key==="Escape")closeImg();if(e.key==="ArrowLeft")prevImg();if(e.key==="ArrowRight")nextImg();};window.addEventListener("keydown",h);return()=>window.removeEventListener("keydown",h);},[imgView]);
 
-/* 변경 감지 → 자동 저장 */
-useEffect(()=>{SS.setItem("nw_ct",JSON.stringify(contracts));},[contracts]);
-useEffect(()=>{SS.setItem("nw_vh",JSON.stringify(vehicles));},[vehicles]);
-useEffect(()=>{SS.setItem("nw_dp",JSON.stringify(dispatches));},[dispatches]);
-useEffect(()=>{SS.setItem("nw_ic",JSON.stringify(incidents));},[incidents]);
-useEffect(()=>{SS.setItem("nw_cl",JSON.stringify(claims));},[claims]);
-useEffect(()=>{SS.setItem("nw_nt",JSON.stringify(notices));},[notices]);
-useEffect(()=>{SS.setItem("nw_rq",JSON.stringify(requests));},[requests]);
-useEffect(()=>{SS.setItem("nw_mt",JSON.stringify(meetings));},[meetings]);
-useEffect(()=>{SS.setItem("nw_sc",JSON.stringify(schedule));},[schedule]);
-useEffect(()=>{SS.setItem("nw_cn",JSON.stringify(consult));},[consult]);
-useEffect(()=>{SS.setItem("nw_fl",JSON.stringify(files));},[files]);
-useEffect(()=>{SS.setItem("nw_fd",JSON.stringify(folders));},[folders]);
-useEffect(()=>{SS.setItem("nw_us",JSON.stringify(users));},[users]);
+/* Supabase에서 전체 데이터 로드 */
+const[dbReady,setDbReady]=useState(false);
+const loadAll=useCallback(async()=>{
+  if(!sb){setDbReady(true);return;}
+  try{
+    const tbls=[
+      ["contracts","ct",setContracts],["vehicles","vh",setVehicles],["dispatches","dp",setDispatches],
+      ["incidents","ic",setIncidents],["claims","cl",setClaims],["notices","nt",setNotices],
+      ["requests","rq",setRequests],["meetings","mt",setMeetings],["schedule","sc",setSchedule],
+      ["consult","cn",setConsult],["files","fl",setFiles],["folders","fd",setFolders],["users","us",setUsers]
+    ];
+    const results=await Promise.all(tbls.map(([t])=>dbS(t)));
+    let ok=false;
+    results.forEach((data,i)=>{
+      if(data&&data.length>0){tbls[i][2](data);lsSave(tbls[i][1],data);ok=true;}
+      else if(data&&data.length===0){/* 빈 테이블 - 유지 */}
+    });
+    if(ok)useDB=true;
+    /* comments & reactions는 별도 테이블 */
+    const cmtData=await dbS("comments");
+    if(cmtData){const cmtObj={};cmtData.forEach(c=>{if(!cmtObj[c.item_key])cmtObj[c.item_key]=[];cmtObj[c.item_key].push({id:c.id,au:c.au,txt:c.txt,dt:c.dt,ts:c.ts});});setComments(cmtObj);lsSave("cmt",cmtObj);}
+    const rxnData=await dbS("reactions");
+    if(rxnData){const rxnObj={};rxnData.forEach(r=>{if(!rxnObj[r.item_key])rxnObj[r.item_key]={};if(!rxnObj[r.item_key][r.emoji])rxnObj[r.item_key][r.emoji]=[];rxnObj[r.item_key][r.emoji].push(r.user_name);});setReactions(rxnObj);lsSave("rxn",rxnObj);}
+    setDbReady(true);
+  }catch(e){console.warn("loadAll failed, using localStorage",e);setDbReady(true);}
+},[]);
+useEffect(()=>{loadAll();},[loadAll]);
+
+/* 변경 감지 → localStorage 자동 저장 (폴백 + 캐시) */
+useEffect(()=>{lsSave("ct",contracts);},[contracts]);
+useEffect(()=>{lsSave("vh",vehicles);},[vehicles]);
+useEffect(()=>{lsSave("dp",dispatches);},[dispatches]);
+useEffect(()=>{lsSave("ic",incidents);},[incidents]);
+useEffect(()=>{lsSave("cl",claims);},[claims]);
+useEffect(()=>{lsSave("nt",notices);},[notices]);
+useEffect(()=>{lsSave("rq",requests);},[requests]);
+useEffect(()=>{lsSave("mt",meetings);},[meetings]);
+useEffect(()=>{lsSave("sc",schedule);},[schedule]);
+useEffect(()=>{lsSave("cn",consult);},[consult]);
+useEffect(()=>{lsSave("fl",files);},[files]);
+useEffect(()=>{lsSave("fd",folders);},[folders]);
+useEffect(()=>{lsSave("us",users);},[users]);
 
 /* 토스트 알림 시스템 */
 const[toasts,setToasts]=useState([]);
 /* 댓글 & 이모지 리액션 시스템 */
-const[comments,setComments]=useState(()=>_load("cmt",{}));/* {channelKey_id: [{id,au,txt,dt,ts}]} */
-const[reactions,setReactions]=useState(()=>_load("rxn",{}));/* {channelKey_id: {emoji: [userName,...]}} */
-useEffect(()=>{SS.setItem("nw_cmt",JSON.stringify(comments));},[comments]);
-useEffect(()=>{SS.setItem("nw_rxn",JSON.stringify(reactions));},[reactions]);
+const[comments,setComments]=useState(()=>lsLoad("cmt",{}));
+const[reactions,setReactions]=useState(()=>lsLoad("rxn",{}));
+useEffect(()=>{lsSave("cmt",comments);},[comments]);
+useEffect(()=>{lsSave("rxn",reactions);},[reactions]);
 
 const EMOJIS=["👍","❤️","🔥","👏","😊","✅","❓","👀","🎉","💯"];
 const ik=(ch,id)=>ch+"_"+id;/* item key */
@@ -253,14 +293,23 @@ const notify=(icon,channel,title,body)=>{
 /* 앱 시작 시 알림 권한 요청 */
 useEffect(()=>{if("Notification"in window&&Notification.permission==="default"){Notification.requestPermission();}},[]);
 
-const login=(e)=>{if(e&&e.preventDefault)e.preventDefault();setEr("");setLd(true);setTimeout(()=>{
+const login=(e)=>{if(e&&e.preventDefault)e.preventDefault();setEr("");setLd(true);setTimeout(async()=>{
   if(!em||!pw){setEr("아이디와 비밀번호를 입력하세요.");setLd(false);return;}
-  const found=users.find(x=>x.uid===em);
+  /* Supabase에서 사용자 조회 (uid 또는 email로) */
+  let found=null;
+  if(sb){try{
+    let{data}=await sb.from("users").select("*").eq("uid",em).single();
+    if(!data){const r=await sb.from("users").select("*").eq("email",em).single();data=r.data;}
+    if(data)found=data;
+  }catch(e){}}
+  if(!found)found=users.find(x=>(x.uid===em)||(x.email===em));
   if(!found){setEr("등록되지 않은 아이디입니다.");setLd(false);return;}
-  if(!found.active){setEr("비활성화된 계정입니다.");setLd(false);return;}
+  if(found.active===false){setEr("비활성화된 계정입니다.");setLd(false);return;}
   if(found.pw&&found.pw!==pw){setEr("비밀번호가 일치하지 않습니다.");setLd(false);return;}
-  setU({name:found.name,role:found.role,org:found.org,uid:found.uid});SS.setItem("nw_u",JSON.stringify({name:found.name,role:found.role,org:found.org,uid:found.uid}));SS.setItem("nw_ch","home");setPg("app");setCh("home");setLd(false);},300);};
-const logout=()=>{setU(null);setPg("land");setEm("");setPw("");SS.removeItem("nw_u");SS.removeItem("nw_ch");};
+  const uData={name:found.name,role:found.role,org:found.org,uid:found.uid||found.email};
+  setU(uData);LS_.setItem("nw_u",JSON.stringify(uData));LS_.setItem("nw_ch","home");setPg("app");setCh("home");
+  await loadAll();setLd(false);},300);};
+const logout=()=>{setU(null);setPg("land");setEm("");setPw("");LS_.removeItem("nw_u");LS_.removeItem("nw_ch");};
 const fbtn=s=>({padding:"5px 10px",borderRadius:6,border:fil===s?"none":"1px solid #E5E7EB",background:fil===s?"#1E1E1E":"#fff",color:fil===s?"#fff":"#6B7280",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"});
 const mm={contracts:"c",inventory:"v",dispatch:"d",incidents:"i",claims:"cl",consult:"cn",notices:"n",requests:"r",meetings:"m",schedule:"s",files:"f",settings:"user"};
 const sq=q.toLowerCase();
@@ -986,7 +1035,7 @@ return(<>
 
 /* == 설정 == */
 if(ch==="settings"){
-const saveUser=()=>{if(editId){setUsers(p=>p.map(x=>x.id===editId?{...x,name:fm.name||x.name,uid:fm.uid||x.uid,role:fm.role||x.role,org:fm.org||x.org,phone:fm.phone||x.phone,pw:fm.pw||x.pw,active:x.active}:x));}else{if(!fm.uid||!fm.name){alert("아이디와 이름은 필수입니다.");return;}if(users.find(x=>x.uid===fm.uid)){alert("이미 등록된 아이디입니다.");return;}setUsers(p=>[...p,{id:nid(p),uid:fm.uid||"",name:fm.name||"",pw:fm.pw||"1234",role:fm.role||"유저",org:fm.org||"본사",phone:fm.phone||"",active:true}]);}X();};
+const saveUser=async()=>{if(editId){const row={name:fm.name,uid:fm.uid,role:fm.role,org:fm.org,phone:fm.phone,pw:fm.pw};setUsers(p=>p.map(x=>x.id===editId?{...x,...row,active:x.active}:x));await dbU("users",editId,row);}else{if(!fm.uid||!fm.name){alert("아이디와 이름은 필수입니다.");return;}if(users.find(x=>(x.uid||x.email)===fm.uid)){alert("이미 등록된 아이디입니다.");return;}const row={uid:fm.uid||"",name:fm.name||"",pw:fm.pw||"1234",role:fm.role||"유저",org:fm.org||"본사",phone:fm.phone||"",active:true};const res=await dbI("users",row);if(res)setUsers(p=>[res,...p]);else setUsers(p=>[{id:nid(p),...row},...p]);}X();};
 const delUser=id=>{if(confirmDel("이 사용자를 삭제하시겠습니까?"))setUsers(p=>p.filter(x=>x.id!==id));};
 const toggleActive=id=>{setUsers(p=>p.map(x=>x.id===id?{...x,active:!x.active}:x));};
 return(<>
@@ -996,12 +1045,12 @@ return(<>
 {isAdmin&&<button onClick={()=>{setFm({});setEditId(null);setMdl("user");}} style={{padding:"5px 12px",borderRadius:6,border:"none",background:"#1E1E1E",fontSize:11,fontWeight:600,color:"#fff",cursor:"pointer",fontFamily:"inherit"}}>+ 등록</button>}</div>
 {!isAdmin&&<div style={{padding:12,background:"#FFFBEB",borderBottom:"1px solid #FDE68A",fontSize:12,color:"#92400E"}}>⚠️ 사용자 관리는 관리자만 가능합니다.</div>}
 {mob?<div>{users.map(x=><div key={x.id} style={{padding:12,borderBottom:"1px solid #F5F5F7"}}>
-<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}><span style={{fontSize:12.5,fontWeight:600,color:"#3B82F6"}}>{x.uid}</span><span style={{display:"inline-block",width:7,height:7,borderRadius:"50%",background:x.active?"#22C55E":"#D1D5DB"}}></span></div>
+<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}><span style={{fontSize:12.5,fontWeight:600,color:"#3B82F6"}}>{x.uid||x.email}</span><span style={{display:"inline-block",width:7,height:7,borderRadius:"50%",background:x.active?"#22C55E":"#D1D5DB"}}></span></div>
 <CR label="이름" val={x.name}/><CR label="역할"><B t={x.role}/></CR><CR label="소속" val={x.org}/><CR label="연락처" val={x.phone}/>
 {isAdmin&&<div style={{marginTop:8,display:"flex",gap:4,justifyContent:"flex-end"}}><button style={DB} onClick={()=>startEdit(x,"user")}>수정</button><button style={{...DB,color:x.active?"#EA580C":"#15803D",borderColor:x.active?"#FDBA74":"#86EFAC"}} onClick={()=>toggleActive(x.id)}>{x.active?"비활성":"활성"}</button><button style={DBR} onClick={()=>delUser(x.id)}>삭제</button></div>}</div>)}</div>
 :<div><div style={{display:"flex",padding:"8px 14px",borderBottom:"1px solid #ECEDF0",fontSize:10.5,fontWeight:700,color:"#9CA3AF"}}><span style={{flex:"0 0 160px"}}>아이디</span><span style={{flex:"0 0 70px"}}>이름</span><span style={{flex:"0 0 60px"}}>역할</span><span style={{flex:"0 0 80px"}}>소속</span><span style={{flex:"0 0 110px"}}>연락처</span><span style={{flex:"0 0 50px"}}>상태</span>{isAdmin&&<span style={{flex:"0 0 110px"}}></span>}</div>
 {users.map(x=><div key={x.id} style={{display:"flex",padding:"8px 14px",borderBottom:"1px solid #F5F5F7",fontSize:12.5,alignItems:"center"}} onMouseEnter={e=>e.currentTarget.style.background="#FAFBFC"} onMouseLeave={e=>e.currentTarget.style.background=""}>
-<span style={{flex:"0 0 160px",color:"#3B82F6",fontWeight:600}}>{x.uid}</span><span style={{flex:"0 0 70px"}}>{x.name}</span><span style={{flex:"0 0 60px"}}><B t={x.role}/></span><span style={{flex:"0 0 80px",color:"#6B7280"}}>{x.org}</span><span style={{flex:"0 0 110px",color:"#6B7280"}}>{x.phone}</span>
+<span style={{flex:"0 0 160px",color:"#3B82F6",fontWeight:600}}>{x.uid||x.email}</span><span style={{flex:"0 0 70px"}}>{x.name}</span><span style={{flex:"0 0 60px"}}><B t={x.role}/></span><span style={{flex:"0 0 80px",color:"#6B7280"}}>{x.org}</span><span style={{flex:"0 0 110px",color:"#6B7280"}}>{x.phone}</span>
 <span style={{flex:"0 0 50px"}}><span style={{display:"inline-block",width:7,height:7,borderRadius:"50%",background:x.active?"#22C55E":"#D1D5DB",marginRight:3}}></span><span style={{fontSize:10.5,color:x.active?"#15803D":"#9CA3AF"}}>{x.active?"활성":"비활성"}</span></span>
 {isAdmin&&<span style={{flex:"0 0 110px",display:"flex",gap:3}}><button style={DB} onClick={()=>startEdit(x,"user")}>수정</button><button style={{...DB,color:x.active?"#EA580C":"#15803D",borderColor:x.active?"#FDBA74":"#86EFAC"}} onClick={()=>toggleActive(x.id)}>{x.active?"비활성":"활성"}</button><button style={DBR} onClick={()=>delUser(x.id)}>삭제</button></span>}</div>)}</div>}</div>
 {isAdmin&&<Mdl open={mdl==="user"} onClose={X} title={editId?"사용자 수정":"사용자 등록"} mob={mob}><div style={{display:"grid",gridTemplateColumns:mob?"1fr":"1fr 1fr",gap:10}}>
